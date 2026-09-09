@@ -1,5 +1,24 @@
 # CopaPerso — Imágenes que necesito de ti
 
+## Estado (9 de septiembre de 2026)
+
+**Recibidos y ya integrados (14):** todo `brand/` menos el wordmark, los dos fondos y los cinco
+modos de juego. Ya están optimizados en `public/` y funcionando en la web.
+
+**Faltan (19):** las 6 insignias de tier, los 10 iconos del torneo y las 3 medallas de premios.
+Los prompts están en `docs/06-prompts-de-imagenes.md`. Cuando los dejes en `assets/`, ejecuta:
+
+```bash
+npm run assets
+```
+
+y te dice cuáles siguen faltando.
+
+> El `wordmark.svg` no hace falta: la palabra CopaPerso se compone con tipografía real
+> (Chakra Petch) en el componente `AppLogo`, así se ve nítida a cualquier tamaño.
+
+---
+
 Colócalas en `~/Downloads/copaperso/assets/`, en la subcarpeta que corresponde (ya están creadas).
 Formato preferido **SVG** cuando sea vectorial (logos, iconos) y **PNG con transparencia** cuando sea
 ilustración. Nombres exactos, en minúsculas.

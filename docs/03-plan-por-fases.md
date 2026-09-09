@@ -32,25 +32,31 @@ Herramientas de prueba:
 
 ---
 
-## Fase 1 — Fundaciones  *(1 semana)*
+## Fase 1 — Fundaciones  ·  🟡 construida, pendiente de cerrar
 
-**Entregables**
-- Repo GitHub + Nuxt 4 + TypeScript + ESLint/Prettier + CI.
-- Proyecto Supabase (prod y staging), migraciones versionadas, tipos generados.
-- **Realtime habilitado desde el inicio** (la vista pública en vivo entra al MVP): canal por sesión y
-  vista `public_session_live` con solo datos públicos.
-- Login del host + middleware de rutas `/host/*`.
-- Storage con buckets `players` y `brand`; subida de foto con recorte cuadrado.
-- Layout base con la identidad visual (colores, tipografías, logo).
+**Entregables** — todos hechos:
+
+- ✅ Repo git + Nuxt 4 + TypeScript + ESLint/Prettier + CI en GitHub Actions.
+- ✅ Migraciones versionadas en `supabase/migrations/` (26 tablas, RLS, vistas públicas, buckets).
+- ✅ Login del host: sesión de Supabase **y** comprobación de `app_user` en el servidor.
+- ✅ Subida de foto con recorte cuadrado 512×512 hecho en el servidor.
+- ✅ Identidad visual aplicada + pipeline `assets/` → `public/` (5 MB → 748 kB).
+- ✅ Historial de acciones con payload inverso, listo para el "deshacer" de la Fase 3.
+- ⏳ Proyecto Supabase (prod y staging) y tipos generados: **lo tiene que crear el host**.
 
 **Pruebas de cierre**
-1. `pnpm test && pnpm build` en verde en CI sobre un PR limpio.
-2. E2E: usuario anónimo abre `/host/cctm` → redirige a login. Login correcto → entra. Logout → vuelve a bloquear.
-3. Integración: con el `anon_key`, un `INSERT` y un `UPDATE` sobre `player` fallan por RLS. Con la API del
-   servidor autenticada, funcionan.
-4. Manual: subir una foto de 4 MB, verla renderizada, borrarla.
-5. Migración aplicada desde cero en una base vacía sin errores (`supabase db reset`).
-6. Realtime: dos pestañas abiertas; un cambio escrito por la API llega a la segunda en menos de 2 s.
+
+| # | Prueba | Estado |
+|---|---|---|
+| 1 | `npm run lint`, `typecheck`, `test` y `build` en verde | ✅ 10 tests, todo verde |
+| 2 | Anónimo en `/host` → login; entrar; salir; vuelve a bloquear | 🟡 el bloqueo pasa; entrar/salir necesita Supabase |
+| 3 | Con la llave pública, `INSERT`/`UPDATE` sobre `player` fallan por RLS | ⏳ escrita, necesita Supabase |
+| 4 | Manual: subir una foto de 4 MB, verla, borrarla | ⏳ necesita Supabase |
+| 5 | `supabase db reset` aplica las migraciones desde cero | ⏳ necesita Supabase |
+| 6 | Realtime: un cambio llega a otra pestaña en menos de 2 s | ⏳ necesita Supabase |
+
+Las cuatro pendientes son las que tocan la base de datos real. En cuanto exista el proyecto y estén
+las llaves en `.env`, se ejecutan con `npm run test:e2e` (ver `docs/07-puesta-en-marcha.md`).
 
 ---
 
