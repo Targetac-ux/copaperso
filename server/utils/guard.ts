@@ -27,7 +27,7 @@ export async function requireStaff(event: H3Event): Promise<StaffUser> {
   const { data, error } = await db
     .from('app_user')
     .select('user_id, display_name, role')
-    .eq('user_id', user.id)
+    .eq('user_id', user.sub)
     .maybeSingle()
 
   if (error) {
