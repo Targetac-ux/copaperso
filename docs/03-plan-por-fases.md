@@ -68,24 +68,42 @@ Comprobación rápida de cualquier entorno: `npm run db:check`.
 
 ---
 
-## Fase 2 — Sistema de jugadores, periodos y sesiones  *(1 semana)*
+## Fase 2 — Jugadores, periodos y sesiones  ·  ✅ CERRADA (9 de septiembre de 2026)
 
 **Entregables**
-- CRUD de `player` con `slug` y detección de duplicados.
-- Autocomplete de registro con parser de la línea `Target Mid/Jg Challenger` (§4).
-- Creación de periodo, creación de sesión, listado de sesiones.
-- Creación de participación con 100 LP, **reiniciados cada mes**.
 
-**Pruebas de cierre**
-1. Unit del parser, mínimo 12 casos: `Target Mid/Jg Challenger`, `target mid jg chall`, `Candy ADC`,
-   `Zenix  MID   Challenger` (espacios dobles), `Ramón Mid`, `xX_Player_Xx TOP/JG GM`, nombre con emoji,
-   sin elo, sin roles, rol inválido, elo inválido, cadena vacía.
-2. Unit del matcher de duplicados: `Target` / `Taget` / `Targte` / `TARGET` / `target ` proponen el mismo perfil.
-3. E2E: registrar "Target" nuevo → registrar "Tar" y elegir el existente → hay **1** player y **1** participación.
-4. Integración: crear un periodo nuevo → `participations = 0`; reincorporar a un jugador del mes anterior →
-   nueva participación con `current_lp = 100` y el histórico del mes anterior intacto.
-5. Integración: dos sesiones en el mismo mes acumulan LP sobre **la misma** participación, no sobre dos.
-6. Integración: borrar una participación no borra el `player`.
+- ✅ Perfiles permanentes con slug único y detección de duplicados.
+- ✅ Parser de la línea del stream: `Target Mid/Jg Challenger`, con sinónimos en español.
+- ✅ Autocomplete que propone perfiles existentes y caza erratas.
+- ✅ Periodos: abrir mes, cerrar el anterior, sembrar el catálogo de recompensas.
+- ✅ Sesiones numeradas por periodo, con sus dos equipos creados de entrada.
+- ✅ Participaciones con 100 LP, y baja que no toca el perfil permanente.
+
+**Pruebas de cierre — 25 unitarias nuevas y 4 de punta a punta**
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | Parser, 12 casos mínimo | ✅ **19 casos** |
+| 2 | Duplicados: Target / Taget / Targte / TARGET proponen el mismo perfil | ✅ 10 casos |
+| 3 | Registrar nuevo → teclear el principio → elegirlo: 1 perfil y 1 participación | ✅ |
+| 4 | Mes nuevo vacío; quien vuelve entra con 100 LP y el mes anterior no cambia | ✅ |
+| 5 | Quitar del periodo no borra el perfil permanente | ✅ |
+| extra | Cinco registros seguidos con Enter sin perder ninguno | ✅ |
+
+Total acumulado: **44 unitarias + 15 de punta a punta**.
+
+**Lo que se corrigió durante las pruebas**
+
+- **Zona horaria en la apertura de mes.** `new Date('2026-10-01')` se interpreta como medianoche UTC,
+  que en México es todavía el 30 de septiembre: abrir el mes la noche del día 1 habría creado el
+  periodo del mes anterior. Las fechas se construyen ahora en local (`shared/period.ts`, con test).
+- **Sesión perdida en el servidor.** El middleware usaba `$fetch`, que no reenvía las cookies del
+  navegador cuando corre en SSR; cualquier navegación completa dentro de `/host` rebotaba al login.
+  Ahora usa `useRequestFetch`.
+- **El aviso de "registrado" se borraba al instante**, porque vaciar el campo disparaba el mismo
+  watch que limpia los mensajes. El host nunca habría visto la confirmación.
+- **Borrar a un moderador era imposible**: el historial lo referenciaba y la base lo impedía.
+  La migración `20260909000005` deja el autor a NULL en vez de bloquear, así el historial nunca se pierde.
 
 ---
 

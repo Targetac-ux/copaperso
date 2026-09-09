@@ -13,7 +13,7 @@ cambiar de módulo.
 | Fase | Qué incluye | Estado |
 |---|---|---|
 | 1 | Fundaciones: repo, base de datos, acceso del host, fotos, identidad | ✅ cerrada |
-| 2 | Jugadores, periodos y sesiones | — |
+| 2 | Jugadores, periodos y sesiones | ✅ cerrada |
 | 3 | CCTM Manager | — |
 | 4 | Partidas, resultados y LP | — |
 | 4B | Vista pública en vivo | — |

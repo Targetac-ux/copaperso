@@ -5,6 +5,8 @@ const { staff } = useStaff()
 
 const nav = [
   { to: '/host', label: 'Sesión actual', icon: '▸' },
+  { to: '/host/jugadores', label: 'Jugadores', icon: '◍' },
+  { to: '/host/periodos', label: 'Periodos', icon: '◷' },
   { to: '/host/roster', label: 'Roster', icon: '▤' },
   { to: '/host/tiers', label: 'Tier Manager', icon: '★' },
   { to: '/host/ajustes', label: 'Ajustes', icon: '⚙' },

@@ -54,6 +54,35 @@ type ParticipationRow = {
   updated_at: string
 }
 
+export type SessionMode = 'perso' | 'tryhard' | 'random' | 'analisis' | 'aram_afk'
+export type SessionStatus = 'open' | 'live' | 'closed'
+export type ParticipantState = 'bench' | 'team' | 'jail' | 'graveyard' | 'removed'
+
+type SessionRow = {
+  id: string
+  period_id: string
+  number: number
+  mode: SessionMode
+  status: SessionStatus
+  started_at: string
+  closed_at: string | null
+}
+
+type SessionParticipantRow = {
+  id: string
+  session_id: string
+  participation_id: string
+  state: ParticipantState
+  joined_at: string
+}
+
+type TeamRow = {
+  id: string
+  session_id: string
+  team_number: number
+  name: string | null
+}
+
 type ActionLogRow = {
   id: string
   session_id: string | null
@@ -135,6 +164,38 @@ export type Database = {
         }
         Relationships: []
       }
+      session: {
+        Row: SessionRow
+        Insert: {
+          id?: string
+          period_id: string
+          number: number
+          mode?: SessionMode
+          status?: SessionStatus
+          started_at?: string
+          closed_at?: string | null
+        }
+        Update: { mode?: SessionMode; status?: SessionStatus; closed_at?: string | null }
+        Relationships: []
+      }
+      session_participant: {
+        Row: SessionParticipantRow
+        Insert: {
+          id?: string
+          session_id: string
+          participation_id: string
+          state?: ParticipantState
+          joined_at?: string
+        }
+        Update: { state?: ParticipantState }
+        Relationships: []
+      }
+      team: {
+        Row: TeamRow
+        Insert: { id?: string; session_id: string; team_number: number; name?: string | null }
+        Update: { name?: string | null }
+        Relationships: []
+      }
       action_log: {
         Row: ActionLogRow
         Insert: {
@@ -206,6 +267,9 @@ export type Database = {
       player_role: PlayerRoleDb
       elo_tier: EloTierDb
       period_status: PeriodStatus
+      session_mode: SessionMode
+      session_status: SessionStatus
+      participant_state: ParticipantState
     }
     CompositeTypes: Record<string, never>
   }
