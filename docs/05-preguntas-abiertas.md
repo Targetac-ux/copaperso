@@ -16,7 +16,10 @@
    `adeudo = principal + principal × 0.10 × días`. 400 bits → 440, 480, 520… y 880 al día 12.
 6. **Bits ↔ subs:** no hay tipo de cambio. `1 sub NA/EUW` o `2 subs LATAM` valen *cualquiera* de las
    recompensas y al final lo decide el streamer. Va como nota en la tabla, no como columna calculada.
-7. **Las recompensas no ejecutan nada.** El catálogo es una lista de precios de consulta; el host cumple la
+7. **El CCTM lo usa una sola persona a la vez.** No hay que resolver conflictos de edición
+   concurrente en la Fase 3: se asume un único operador. El esquema mantiene el rol `moderator`
+   por si algún día hace falta, pero no se diseña para uso simultáneo.
+8. **Las recompensas no ejecutan nada.** El catálogo es una lista de precios de consulta; el host cumple la
    recompensa moviendo él mismo a los participantes. El sistema solo deja constancia en la bitácora.
 
 ## 🟡 Importantes
@@ -25,7 +28,6 @@
    columna de "Puntos". ¿Lo decides a mano, o se propone desde el LP del periodo y tú ajustas?
 9. **Equipos incompletos.** ¿Se puede iniciar una partida 4v5, o el sistema debe bloquearlo hasta tener 5v5?
 10. **Rol duplicado.** ¿Puede haber dos MID en el mismo equipo, o debe impedirse?
-11. **¿Cuántas personas operan?** ¿Solo tú, o habrá moderadores con acceso al CCTM Manager?
 12. **ACE.** ¿Lo asignas a criterio, o hay una definición fija?
 13. **Modos de juego.** ¿Cambian las reglas de LP, o son solo etiquetas de la sesión? En ARAM AFK con una
     sola vida, ¿el LP funciona igual?

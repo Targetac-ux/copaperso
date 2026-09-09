@@ -98,8 +98,19 @@ npx playwright install chromium   # solo la primera vez
 npm run test:e2e
 ```
 
-Con `E2E_HOST_EMAIL` y `E2E_HOST_PASSWORD` en el entorno, además se prueba el
-ciclo completo de entrar y salir del panel.
+Los tests que tocan la base necesitan las variables del `.env` y una cuenta de
+host. Para no usar la tuya, hay un usuario de pruebas desechable:
+
+```bash
+set -a; . ./.env; set +a
+node scripts/e2e-user.mjs create > /tmp/e2e.env   # imprime correo y contraseña
+set -a; . /tmp/e2e.env; set +a
+npm run test:e2e
+node scripts/e2e-user.mjs destroy                 # bórralo siempre al terminar
+```
+
+**Bórralo siempre al acabar:** es una cuenta con acceso de host, y mientras
+exista es una puerta abierta más.
 
 ## 6. Desplegar en Vercel
 

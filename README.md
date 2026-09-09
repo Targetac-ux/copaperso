@@ -12,7 +12,7 @@ cambiar de módulo.
 
 | Fase | Qué incluye | Estado |
 |---|---|---|
-| 1 | Fundaciones: repo, base de datos, acceso del host, fotos, identidad | ✅ |
+| 1 | Fundaciones: repo, base de datos, acceso del host, fotos, identidad | ✅ cerrada |
 | 2 | Jugadores, periodos y sesiones | — |
 | 3 | CCTM Manager | — |
 | 4 | Partidas, resultados y LP | — |
@@ -47,6 +47,7 @@ como host— están en [`docs/07-puesta-en-marcha.md`](docs/07-puesta-en-marcha.
 | `npm test` | Unitarios (Vitest) |
 | `npm run test:e2e` | Punta a punta (Playwright) |
 | `npm run assets` | Regenera `public/` desde `assets/` |
+| `npm run db:check` | Comprueba que un entorno tiene el esquema completo |
 | `npm run db:types` | Regenera los tipos desde el esquema |
 
 ## Estructura

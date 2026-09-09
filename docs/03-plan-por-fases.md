@@ -32,31 +32,39 @@ Herramientas de prueba:
 
 ---
 
-## Fase 1 — Fundaciones  ·  🟡 construida, pendiente de cerrar
+## Fase 1 — Fundaciones  ·  ✅ CERRADA (9 de septiembre de 2026)
 
-**Entregables** — todos hechos:
+**Entregables**
 
 - ✅ Repo git + Nuxt 4 + TypeScript + ESLint/Prettier + CI en GitHub Actions.
-- ✅ Migraciones versionadas en `supabase/migrations/` (26 tablas, RLS, vistas públicas, buckets).
+- ✅ Proyecto Supabase en producción, con el esquema aplicado desde las migraciones versionadas.
 - ✅ Login del host: sesión de Supabase **y** comprobación de `app_user` en el servidor.
-- ✅ Subida de foto con recorte cuadrado 512×512 hecho en el servidor.
+- ✅ Storage con recorte cuadrado 512×512 hecho en el servidor.
 - ✅ Identidad visual aplicada + pipeline `assets/` → `public/` (5 MB → 748 kB).
 - ✅ Historial de acciones con payload inverso, listo para el "deshacer" de la Fase 3.
-- ⏳ Proyecto Supabase (prod y staging) y tipos generados: **lo tiene que crear el host**.
+- ✅ Desplegado en Vercel.
 
-**Pruebas de cierre**
+**Pruebas de cierre — 10 unitarias y 10 de punta a punta, todas en verde**
 
-| # | Prueba | Estado |
+| # | Prueba | Resultado |
 |---|---|---|
-| 1 | `npm run lint`, `typecheck`, `test` y `build` en verde | ✅ 10 tests, todo verde |
-| 2 | Anónimo en `/host` → login; entrar; salir; vuelve a bloquear | 🟡 el bloqueo pasa; entrar/salir necesita Supabase |
-| 3 | Con la llave pública, `INSERT`/`UPDATE` sobre `player` fallan por RLS | ⏳ escrita, necesita Supabase |
-| 4 | Manual: subir una foto de 4 MB, verla, borrarla | ⏳ necesita Supabase |
-| 5 | `supabase db reset` aplica las migraciones desde cero | ⏳ necesita Supabase |
-| 6 | Realtime: un cambio llega a otra pestaña en menos de 2 s | ⏳ necesita Supabase |
+| 1 | `lint`, `typecheck`, `test` y `build` | ✅ verde |
+| 2 | Anónimo en `/host` → login; entrar; salir; vuelve a bloquear | ✅ |
+| 3 | Con la llave pública, `INSERT`/`SELECT` sobre `player` y `ledger_account` fallan; las vistas públicas se leen | ✅ |
+| 4 | Foto apaisada de 4,3 MB → 512×512 webp publicada, y registrada en el log | ✅ 4,3 MB → 47 kB |
+| 5 | Las migraciones levantan el esquema desde cero | ✅ 25 tablas, 3 vistas, 2 buckets, catálogo sembrado |
+| 6 | Realtime: un cambio llega a otro espectador en menos de 2 s | ✅ **60 ms** |
 
-Las cuatro pendientes son las que tocan la base de datos real. En cuanto exista el proyecto y estén
-las llaves en `.env`, se ejecutan con `npm run test:e2e` (ver `docs/07-puesta-en-marcha.md`).
+Comprobación rápida de cualquier entorno: `npm run db:check`.
+
+**Lo que se corrigió durante las pruebas**
+
+- `serverSupabaseUser()` devuelve los claims del JWT, donde el id va en `sub`, no en `id`
+  (corregido en `05652d9`).
+- Los e2e pulsaban botones antes de que Vue hidratara. La app marca ahora
+  `<html data-hydrated>` y los tests lo esperan: sin eso, fallaban sin que nada estuviera roto.
+- La navegación tenía enlaces a secciones aún no construidas. Ahora existen como páginas que
+  dicen en qué fase llegan, en vez de dar 404.
 
 ---
 

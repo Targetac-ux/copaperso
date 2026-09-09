@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { gotoHydrated } from './helpers'
 
 /**
  * Prueba de cierre 2 de la Fase 1.
@@ -23,7 +24,7 @@ test.describe('con credenciales de host', () => {
   test.skip(!email || !password, 'Define E2E_HOST_EMAIL y E2E_HOST_PASSWORD')
 
   test('entrar y salir del panel', async ({ page }) => {
-    await page.goto('/host/login')
+    await gotoHydrated(page, '/host/login')
     await page.getByLabel('Correo').fill(email!)
     await page.getByLabel('Contraseña').fill(password!)
     await page.getByRole('button', { name: 'Iniciar sesión' }).click()
