@@ -1,0 +1,45 @@
+{
+  "name": "copaperso",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "db:reset": "supabase db reset",
+    "assets": "node scripts/optimize-assets.mjs",
+    "db:types": "supabase gen types typescript --local > shared/types/database.types.d.ts"
+  },
+  "dependencies": {
+    "@nuxt/fonts": "^0.14.0",
+    "@nuxtjs/supabase": "^2.0.10",
+    "nuxt": "^4.5.2",
+    "sharp": "^0.35.4",
+    "vue": "^3.5.42",
+    "vue-router": "^5.3.1",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
+    "@nuxt/test-utils": "^4.3.2",
+    "@playwright/test": "^1.63.0",
+    "@vue/test-utils": "^2.5.0",
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.8",
+    "happy-dom": "^20.14.0",
+    "prettier": "^3.9.6",
+    "svgo": "^4.1.0",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.0",
+    "vue-tsc": "^3.3.11"
+  }
+}

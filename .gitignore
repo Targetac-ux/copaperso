@@ -1,0 +1,33 @@
+# deps
+node_modules
+.pnpm-store
+
+# nuxt
+.nuxt
+.output
+.data
+dist
+.nitro
+.cache
+
+# env
+.env
+.env.*
+!.env.example
+
+# tests
+coverage
+test-results
+playwright-report
+playwright/.cache
+
+# supabase
+supabase/.branches
+supabase/.temp
+
+# os / editor
+.DS_Store
+*.log
+.vscode
+.idea
+.claude/settings.local.json

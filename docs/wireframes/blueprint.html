@@ -1,0 +1,1095 @@
+<title>CopaPerso Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --ink:#070A18; --panel:#101630; --panel-2:#171E3C; --panel-3:#1E2649;
+    --line:#242C56; --line-soft:#1B2247;
+    --text:#E9ECFB; --muted:#929BC9; --dim:#6C74A3;
+    --violet:#7B5CFF; --violet-dim:#4A38A8; --gold:#F3B94D;
+    --blue:#4C8DFF; --red:#FF5A6E; --green:#3FD69A; --amber:#FFC44D;
+    --wf-row:#161C39; --wf-slot:#131938;
+    --r:10px;
+    --f-display:'Chakra Petch','Trebuchet MS',sans-serif;
+    --f-body:'Barlow','Helvetica Neue',Arial,sans-serif;
+    --f-mono:'JetBrains Mono','SF Mono',Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.6;
+    background-image:radial-gradient(900px 500px at 78% -8%, rgba(123,92,255,.16), transparent 60%),
+                     radial-gradient(700px 420px at 4% 4%, rgba(76,141,255,.09), transparent 62%);
+    background-attachment:fixed;}
+  h1,h2,h3,h4{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:.01em}
+  a{color:var(--violet);text-decoration:none}
+  a:hover{text-decoration:underline}
+  :focus-visible{outline:2px solid var(--violet);outline-offset:2px;border-radius:4px}
+
+  .shell{display:grid;grid-template-columns:236px minmax(0,1fr);gap:0;max-width:1400px;margin:0 auto}
+  /* ---------- nav ---------- */
+  .nav{position:sticky;top:0;height:100vh;overflow-y:auto;padding:26px 18px 30px;border-right:1px solid var(--line-soft)}
+  .brandmark{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+  .crest{width:34px;height:34px;border-radius:9px;background:linear-gradient(150deg,var(--violet),#3B2A93);
+    display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:15px;color:#fff;
+    box-shadow:0 0 0 1px rgba(255,255,255,.09) inset}
+  .brandmark b{font-family:var(--f-display);font-size:15px;letter-spacing:.04em;display:block;line-height:1.15}
+  .brandmark span{font-size:11px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase}
+  .nav ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+  .nav a{display:flex;gap:10px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--muted);font-size:13.5px}
+  .nav a em{font-family:var(--f-mono);font-size:10.5px;font-style:normal;color:var(--dim);min-width:16px}
+  .nav a:hover{background:var(--panel);color:var(--text);text-decoration:none}
+  .nav a.on{background:var(--panel-2);color:var(--text)}
+  .nav a.on em{color:var(--violet)}
+  .nav .foot{margin-top:24px;padding-top:16px;border-top:1px solid var(--line-soft);font-size:11.5px;color:var(--dim);font-family:var(--f-mono);line-height:1.8}
+
+  /* ---------- layout ---------- */
+  main{padding:26px 34px 90px;min-width:0}
+  section{padding:34px 0;border-top:1px solid var(--line-soft)}
+  section:first-of-type{border-top:0}
+  .eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--violet);margin-bottom:8px}
+  h2{font-size:27px;font-weight:600;margin-bottom:6px}
+  .lede{color:var(--muted);max-width:66ch;margin-bottom:22px}
+  h3{font-size:17px;font-weight:600;margin:26px 0 10px}
+  p{max-width:70ch}
+  .prose p{color:#C7CDEC}
+
+  /* ---------- hero ---------- */
+  .hero{padding:44px 0 30px}
+  .hero h1{font-size:clamp(34px,5.2vw,52px);font-weight:700;line-height:1.02;letter-spacing:-.01em}
+  .hero h1 span{color:var(--gold)}
+  .hero .sub{color:var(--muted);font-size:17px;max-width:60ch;margin-top:14px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:26px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+  .kpi b{display:block;font-family:var(--f-display);font-size:22px;font-weight:700;color:var(--text)}
+  .kpi span{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.11em;font-family:var(--f-mono)}
+
+  /* ---------- generic blocks ---------- */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+  .card h4{font-size:15px;margin-bottom:6px}
+  .card p{font-size:13.5px;color:var(--muted);margin:0}
+  .stack-pick{border-left:3px solid var(--violet)}
+  .stack-alt{border-left:3px solid var(--line)}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
+  th{text-align:left;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);
+    padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap;font-weight:500}
+  td{padding:10px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:#CBD1EE}
+  tr:last-child td{border-bottom:0}
+  td b{color:var(--text);font-weight:600}
+  .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  .fix{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 16px;padding:16px 0;border-bottom:1px solid var(--line-soft)}
+  .fix:last-child{border-bottom:0}
+  .fix .tag{font-family:var(--f-mono);font-size:11px;color:var(--ink);background:var(--gold);padding:2px 7px;border-radius:5px;
+    height:fit-content;font-weight:700;letter-spacing:.04em}
+  .fix .tag.crit{background:var(--red);color:#2A0A11}
+  .fix h4{font-size:15.5px;margin-bottom:4px}
+  .fix p{font-size:13.5px;color:var(--muted);margin:0 0 6px}
+  .fix .then{font-family:var(--f-mono);font-size:12px;color:var(--green);display:block}
+
+  /* ---------- wireframes ---------- */
+  .wf{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:18px}
+  .wf-cap{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+  .wf-cap i{font-family:var(--f-mono);font-style:normal;font-size:10.5px;color:var(--violet)}
+  .wf-cap b{font-family:var(--f-display);font-size:13px;font-weight:600}
+  .wf-cap em{font-style:normal;font-size:11.5px;color:var(--dim);margin-left:auto;font-family:var(--f-mono)}
+  .wf-body{padding:14px;overflow-x:auto}
+  .wf-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));align-items:start}
+
+  .pane{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px}
+  .pane-h{display:flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--dim);margin-bottom:9px}
+  .pane-h span{margin-left:auto;color:var(--muted);letter-spacing:0}
+  .row{display:flex;align-items:center;gap:8px;background:var(--wf-row);border-radius:6px;padding:6px 9px;font-size:12px;margin-bottom:5px}
+  .row:last-child{margin-bottom:0}
+  .row .nm{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .meta{margin-left:auto;display:flex;gap:8px;color:var(--dim);font-family:var(--f-mono);font-size:10.5px;white-space:nowrap}
+  .dot{width:18px;height:18px;border-radius:50%;background:var(--panel-3);flex:none;
+    box-shadow:0 0 0 1px var(--line) inset;display:grid;place-items:center;font-size:9px;color:var(--dim);font-family:var(--f-mono)}
+  .dot.on{box-shadow:0 0 0 1px var(--green) inset;color:var(--green)}
+  .slot{display:flex;align-items:center;gap:8px;background:var(--wf-slot);border:1px dashed var(--line);border-radius:6px;
+    padding:6px 9px;font-size:12px;margin-bottom:5px;color:var(--dim)}
+  .slot .rl{font-family:var(--f-mono);font-size:10px;width:30px;color:var(--muted);letter-spacing:.06em}
+  .slot.filled{border-style:solid;color:var(--text);background:var(--wf-row)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:var(--f-display);font-size:11.5px;
+    font-weight:600;padding:7px 12px;border-radius:7px;background:var(--panel-3);color:var(--text);border:1px solid var(--line)}
+  .btn.pri{background:var(--violet);border-color:var(--violet);color:#fff}
+  .btn.gho{background:transparent}
+  .btn.dgr{background:transparent;border-color:var(--red);color:var(--red)}
+  .btn.wide{width:100%}
+  .btns{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{font-family:var(--f-mono);font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .chip.sel{background:var(--violet);border-color:var(--violet);color:#fff}
+  .chip.live{background:rgba(255,90,110,.14);border-color:var(--red);color:var(--red)}
+  .chip.t1{border-color:var(--blue);color:var(--blue)}
+  .chip.t2{border-color:var(--red);color:var(--red)}
+  .team{border-radius:8px;border:1px solid var(--line);background:var(--panel-2);padding:10px}
+  .team.a{border-top:3px solid var(--blue)}
+  .team.b{border-top:3px solid var(--red)}
+  .team-h{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .team-h b{font-family:var(--f-display);font-size:13px;letter-spacing:.05em}
+  .team.a .team-h b{color:var(--blue)} .team.b .team-h b{color:var(--red)}
+  .team-h .cnt{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+  .bar{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--panel-3);border-radius:8px;margin-bottom:12px;flex-wrap:wrap}
+  .bar .t{font-family:var(--f-display);font-weight:600;font-size:13px}
+  .bar .clock{margin-left:auto;font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .step{font-family:var(--f-mono);font-size:10px;padding:4px 9px;border-radius:6px;background:var(--panel-2);color:var(--dim);border:1px solid var(--line-soft)}
+  .step.on{background:var(--violet);color:#fff;border-color:var(--violet)}
+  .field{background:var(--wf-slot);border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:12px;color:var(--dim);margin-bottom:8px}
+  .field b{display:block;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+  .field span{color:var(--text)}
+  .ac{border:1px solid var(--violet);border-radius:6px;overflow:hidden;margin-bottom:8px}
+  .ac .opt{padding:6px 9px;font-size:12px;background:var(--panel-3);border-bottom:1px solid var(--line-soft)}
+  .ac .opt:last-child{border-bottom:0}
+  .ac .opt.new{color:var(--green);font-family:var(--f-mono);font-size:11px}
+  .log{font-family:var(--f-mono);font-size:10.5px;color:var(--muted);line-height:1.9}
+  .log b{color:var(--text);font-weight:500}
+  .log s{color:var(--dim)}
+  .cost{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;padding:4px 0;border-bottom:1px solid var(--line-soft)}
+  .cost:last-child{border-bottom:0}
+  .cost b{color:var(--gold);font-weight:500}
+  .warn{background:rgba(255,196,77,.1);border:1px solid rgba(255,196,77,.35);color:var(--amber);border-radius:6px;
+    padding:7px 10px;font-size:11.5px;font-family:var(--f-mono)}
+  .wheel{aspect-ratio:1;max-width:190px;margin:6px auto;border-radius:50%;
+    background:conic-gradient(var(--violet) 0 25%, var(--panel-3) 0 50%, var(--blue) 0 75%, var(--panel-2) 0);
+    box-shadow:0 0 0 3px var(--line), 0 0 40px rgba(123,92,255,.25);position:relative}
+  .wheel::after{content:"";position:absolute;inset:32%;border-radius:50%;background:var(--panel);box-shadow:0 0 0 2px var(--line)}
+  .tier-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;margin-bottom:6px;align-items:stretch}
+  .tier-badge{display:grid;place-items:center;border-radius:6px;font-family:var(--f-display);font-weight:700;font-size:15px;color:#0A0D1E}
+  .tier-pool{display:flex;gap:6px;flex-wrap:wrap;background:var(--wf-slot);border:1px dashed var(--line);border-radius:6px;padding:7px}
+  .pill{display:flex;align-items:center;gap:6px;background:var(--wf-row);border:1px solid var(--line);border-radius:20px;
+    padding:3px 10px 3px 4px;font-size:11.5px}
+  .mini-hero{background:linear-gradient(115deg,#141B3A,#0D1229);border:1px solid var(--line);border-radius:8px;padding:16px;
+    display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:14px;align-items:center}
+  .mini-hero h5{font-family:var(--f-display);font-size:19px;margin:0 0 6px;line-height:1.15}
+  .mini-hero p{font-size:11.5px;color:var(--muted);margin:0 0 10px}
+  .ph{background:var(--wf-slot);border:1px dashed var(--line);border-radius:8px;display:grid;place-items:center;
+    color:var(--dim);font-family:var(--f-mono);font-size:10px;min-height:96px;text-align:center;padding:8px}
+  .nav-map{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+  .map-col{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px}
+  .map-col ul{list-style:none;margin:6px 0 0;padding:0;font-size:12px;color:var(--muted)}
+  .map-col li{padding:4px 0 4px 12px;border-left:1px solid var(--line);position:relative}
+  .map-col li::before{content:"";position:absolute;left:0;top:13px;width:7px;height:1px;background:var(--line)}
+  .map-col li.sub{margin-left:12px}
+
+  /* ---------- fases ---------- */
+  .phase{display:grid;grid-template-columns:64px minmax(0,1fr);gap:0 18px;padding:20px 0;border-bottom:1px solid var(--line-soft)}
+  .phase:last-of-type{border-bottom:0}
+  .pnum{font-family:var(--f-display);font-size:34px;font-weight:700;color:var(--violet-dim);line-height:1;letter-spacing:-.03em}
+  .phead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:2px}
+  .phead h4{font-size:18px}
+  .dur{font-family:var(--f-mono);font-size:11px;color:var(--dim);border:1px solid var(--line);padding:1px 7px;border-radius:20px}
+  .deliv{display:flex;gap:5px;flex-wrap:wrap;margin:9px 0 12px}
+  .deliv span{font-size:11px;color:var(--muted);background:var(--panel);border:1px solid var(--line-soft);border-radius:5px;padding:2px 7px}
+  .tests{background:var(--panel);border:1px solid var(--line);border-left:2px solid var(--green);border-radius:0 8px 8px 0;padding:12px 15px}
+  .tests h5{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--green);margin:0 0 8px}
+  .tests ol{margin:0;padding-left:18px;font-size:13.3px;color:#C4CAE9;display:flex;flex-direction:column;gap:6px}
+  .tests ol li::marker{color:var(--dim);font-family:var(--f-mono);font-size:11px}
+  .tests code{font-family:var(--f-mono);font-size:12px;color:var(--gold);background:rgba(243,185,77,.08);padding:1px 5px;border-radius:4px}
+
+  .qs{counter-reset:q;display:flex;flex-direction:column;gap:10px}
+  .q{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:13px 16px}
+  .q b{display:block;font-family:var(--f-display);font-size:14.5px;margin-bottom:3px}
+  .q p{margin:0;font-size:13px;color:var(--muted)}
+  .q.block{border-left:3px solid var(--red)}
+  .q.imp{border-left:3px solid var(--gold)}
+
+  @media (max-width:900px){
+    .shell{grid-template-columns:1fr}
+    .nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line-soft)}
+    .nav ol{flex-direction:row;flex-wrap:wrap}
+    main{padding:20px 18px 70px}
+    .phase{grid-template-columns:1fr;gap:8px}
+    .pnum{font-size:24px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="shell">
+  <aside class="nav">
+    <div class="brandmark">
+      <div class="crest">CP</div>
+      <div><b>CopaPerso</b><span>Blueprint v1.1</span></div>
+    </div>
+    <ol>
+      <li><a href="#decisiones" class="on"><em>01</em> Stack y deploy</a></li>
+      <li><a href="#correcciones"><em>02</em> Correcciones al plan</a></li>
+      <li><a href="#datos"><em>03</em> Modelo de datos</a></li>
+      <li><a href="#wireframes"><em>04</em> Wireframes</a></li>
+      <li><a href="#fases"><em>05</em> Fases y pruebas</a></li>
+      <li><a href="#assets"><em>06</em> Imágenes que necesito</a></li>
+      <li><a href="#preguntas"><em>07</em> Preguntas abiertas</a></li>
+    </ol>
+    <div class="foot">
+      12 pantallas<br>10 fases<br>≈11.5–13.5 semanas<br>7 cerradas · 12 dudas
+    </div>
+  </aside>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Revisión del plan de desarrollo</div>
+      <h1>La consola de torneo,<br>no <span>dos Excel</span>.</h1>
+      <p class="sub">Revisión técnica del plan v1, wireframes de las 12 pantallas y un plan de trabajo por
+        fases donde cada una se cierra solo cuando sus pruebas pasan.</p>
+      <div class="kpis">
+        <div class="kpi"><b>Supabase</b><span>Base de datos</span></div>
+        <div class="kpi"><b>Nuxt + Vercel</b><span>App y deploy</span></div>
+        <div class="kpi"><b>&lt; 2 s</b><span>Del host a la vista en vivo</span></div>
+        <div class="kpi"><b>0</b><span>Toques a la BD en vivo</span></div>
+      </div>
+    </header>
+
+    <!-- ================= 01 ================= -->
+    <section id="decisiones" class="prose">
+      <div class="eyebrow">01 · Decisiones</div>
+      <h2>Base de datos y deploy</h2>
+      <p class="lede">Tus dos preguntas, respondidas: Supabase sí, y el backend Node del plan se
+        convierte en las rutas de servidor de un solo proyecto.</p>
+
+      <div class="cards">
+        <div class="card stack-pick">
+          <h4>Base de datos · Supabase (PostgreSQL)</h4>
+          <p>El modelo es relacional de arriba a abajo, y Supabase además trae Auth para el login del host,
+            Storage para las fotos del Tier List, Realtime para la vista pública en vivo —que entra al MVP— y
+            RLS para separar lo público de lo administrativo. Cuatro problemas del plan resueltos sin
+            infraestructura extra.</p>
+        </div>
+        <div class="card stack-pick">
+          <h4>App · Nuxt 4 (Vue 3 + TypeScript)</h4>
+          <p>Un solo repo en vez de un frontend Vue y un backend Node separados. Las rutas
+            <code style="font-family:var(--f-mono);font-size:12px;color:var(--gold)">server/api/*</code>
+            <em>son</em> el backend: ahí viven las reglas de LP, los costos y el log. El navegador nunca escribe
+            directo a la base.</p>
+        </div>
+        <div class="card stack-pick">
+          <h4>Deploy · Vercel + GitHub</h4>
+          <p>Push a <code style="font-family:var(--f-mono);font-size:12px;color:var(--gold)">main</code> despliega
+            producción; cada PR genera un preview contra un Supabase de staging. Migraciones versionadas en el repo,
+            nunca cambios a mano en el panel.</p>
+        </div>
+        <div class="card stack-alt">
+          <h4>Alternativa si prefieres Vue puro</h4>
+          <p>Vite SPA + Supabase Edge Functions (Deno) para las reglas del servidor. Funciona, pero son dos
+            entornos de despliegue, dos lenguajes de runtime y peor SEO en la Home pública.</p>
+        </div>
+      </div>
+
+      <h3>Costo y letras chiquitas</h3>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Pieza</th><th>Servicio</th><th>Costo</th><th>Lo que hay que vigilar</th></tr></thead>
+          <tbody>
+            <tr><td><b>App + API</b></td><td>Vercel Hobby</td><td class="num">$0</td>
+              <td>Hobby es para uso no comercial: si entran patrocinadores pagados, hay que pasar a Pro ($20/mes).</td></tr>
+            <tr><td><b>Base de datos</b></td><td>Supabase Free</td><td class="num">$0 → $25</td>
+              <td>El proyecto Free <b>se pausa a los 7 días sin actividad</b> y CopaPerso se usa 1–2 noches al mes.
+                Cron semanal de ping, o Pro antes del primer torneo real.</td></tr>
+            <tr><td><b>Backups</b></td><td>GitHub Action</td><td class="num">$0</td>
+              <td>Free no tiene recuperación a un punto en el tiempo. <code style="font-family:var(--f-mono);color:var(--gold)">pg_dump</code> semanal desde el día uno.</td></tr>
+            <tr><td><b>Dominio</b></td><td>copaperso.gg / .com</td><td class="num">~$10–35/año</td><td>Apuntado a Vercel.</td></tr>
+            <tr><td><b>Errores en vivo</b></td><td>Sentry Free</td><td class="num">$0</td>
+              <td>Si algo truena a media transmisión, quieres saber qué fue sin adivinar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:14px;color:var(--muted);font-size:13.5px">Región: Supabase y Vercel en la misma
+        (<span class="num">us-east-1</span> o <span class="num">us-west-1</span>). Cada acción del host durante el
+        stream es un viaje de ida y vuelta; no conviene cruzarlo por medio continente.</p>
+    </section>
+
+    <!-- ================= 02 ================= -->
+    <section id="correcciones">
+      <div class="eyebrow">02 · Revisión</div>
+      <h2>Seis cosas que corregir antes de escribir código</h2>
+      <p class="lede">El plan está sólido y muy completo. Estos son los puntos donde, tal como está escrito,
+        el sistema no podría funcionar o se contradice.</p>
+
+      <div class="fix">
+        <span class="tag crit">CRÍTICO</span>
+        <div>
+          <h4>PARTICIPATION mezcla periodo y sesión</h4>
+          <p>§3 le pone <span class="num">period_id</span> y <span class="num">session_id</span> a la vez. Si la
+            participación es por sesión, el LP se reinicia en cada CopaPerso y el roster mensual de §29 no se puede
+            calcular. Si es por periodo, no hay dónde guardar quién está disponible esta noche.</p>
+          <span class="then">→ Dos entidades: participation (por mes, con el LP) + session_participant (la banca de esa noche).</span>
+        </div>
+      </div>
+
+      <div class="fix">
+        <span class="tag crit">CRÍTICO</span>
+        <div>
+          <h4>El LP como contador suelto rompe el "deshacer"</h4>
+          <p>§21 exige poder deshacer acciones importantes, pero si <span class="num">current_lp</span> es un número
+            que se suma y se resta, un undo mal aplicado lo corrompe en silencio y nadie se entera hasta el cierre del mes.</p>
+          <span class="then">→ lp_event es la fuente de verdad; current_lp es una caché recalculable (100 + suma de deltas vivos).</span>
+        </div>
+      </div>
+
+      <div class="fix">
+        <span class="tag" style="background:var(--green);color:#062018">RESUELTO</span>
+        <div>
+          <h4>Los costos vigentes son los de §13</h4>
+          <p>El wireframe traía otros valores (cambio de Team 500 en vez de 150, Blue Shell 1000 en vez de 500).
+            Manda el plan: cupo <span class="num">200</span>, cambio de Team <span class="num">150</span>,
+            sacar de banca <span class="num">200</span>, cambio de rol y reingreso <span class="num">300</span>,
+            sacar del cementerio <span class="num">300</span>, Blue Shell <span class="num">500</span>.
+            Los subs no tienen tipo de cambio: 1 sub NA/EUW o 2 LATAM valen cualquier recompensa, y lo decide el streamer.</p>
+          <span class="then">→ Aun así viven en un catálogo editable y versionado por periodo: subir un precio no reescribe lo ya cobrado.</span>
+        </div>
+      </div>
+
+      <div class="fix">
+        <span class="tag">FALTA</span>
+        <div>
+          <h4>winner_team_id no cubre la doble derrota</h4>
+          <p>El Blue Shell (§16) puede dejar con derrota a un jugador del equipo que ganó, y no hay forma de anular una
+            partida mal registrada.</p>
+          <span class="then">→ El resultado real vive por jugador (win / loss / double_loss); el ganador del equipo queda como dato de conveniencia.</span>
+        </div>
+      </div>
+
+      <div class="fix">
+        <span class="tag">FALTA</span>
+        <div>
+          <h4>PERIOD no existe como entidad</h4>
+          <p>Está implícito en §5 y §29 —todo el reinicio mensual depende de él— pero nunca se declara.</p>
+          <span class="then">→ Entidad propia con estado, para poder cerrar un mes y congelar su roster.</span>
+        </div>
+      </div>
+
+      <div class="fix">
+        <span class="tag" style="background:var(--violet);color:#fff">DECISIÓN</span>
+        <div>
+          <h4>Las recompensas no ejecutan nada: el host mueve a mano</h4>
+          <p>Es la decisión que más simplifica el sistema. No hay motor que valide saldo, cobre y mueva
+            jugadores: el catálogo es una lista de precios de consulta y el host cumple la recompensa
+            arrastrando, asignando o haciendo swap con las herramientas de siempre.</p>
+          <span class="then">→ Se cae toda una capa de lógica: la "negociación" pasa a ser una bitácora de lo reclamado, y cada movimiento real ya es deshacible como cualquier otro.</span>
+        </div>
+      </div>
+
+      <div class="fix">
+        <span class="tag" style="background:var(--green);color:#062018">RESUELTO</span>
+        <div>
+          <h4>Cárcel, cementerio, cupo y reingreso son cuatro cosas distintas</h4>
+          <p><b>Cementerio:</b> no alcanzó a inscribirse, con el draft ya arrancado (300 para salir).
+            <b>Cupo:</b> con los equipos ya hechos, alguien del cementerio entra <em>en lugar de</em> un jugador ya
+            seleccionado y se salta el aleatorio (200); el desplazado vuelve a la banca.
+            <b>Rol y reingreso:</b> ya salió sorteado y quiere otro rol (300).
+            <b>Cárcel:</b> el castigo manual del host, tal cual §17.</p>
+          <span class="then">→ Cementerio y cárcel son estados del participante; cupo y reingreso son recompensas que el host cumple moviendo gente.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 03 ================= -->
+    <section id="datos">
+      <div class="eyebrow">03 · Datos</div>
+      <h2>Modelo revisado</h2>
+      <p class="lede">Del perfil permanente a la estadística, con la economía colgando aparte porque no sigue el
+        ciclo de las partidas.</p>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th>Entidad</th><th>Vive en</th><th>Guarda</th></tr></thead>
+          <tbody>
+            <tr><td><b>player</b></td><td>Para siempre</td><td>Nombre, slug, foto, handle de Twitch. Solo existe para evitar los "Target / Taget / Targte".</td></tr>
+            <tr><td><b>period</b></td><td>Un mes</td><td>Nombre (SEP-2026), fechas, estado. Al cerrarlo, su roster queda congelado.</td></tr>
+            <tr><td><b>participation</b></td><td>Un mes</td><td>Elo, roles, LP inicial 100, LP actual. Se crea vacía cada mes (§5).</td></tr>
+            <tr><td><b>session</b></td><td>Una noche</td><td>Número, modo de juego, estado. Varias por mes, varias por día.</td></tr>
+            <tr><td><b>session_participant</b></td><td>Una noche</td><td><b>La banca de jugadores.</b> Estado: banca / en equipo / cárcel / fuera.</td></tr>
+            <tr><td><b>team · team_member</b></td><td>Una noche</td><td>Los dos equipos y quién ocupa cada rol ahora mismo.</td></tr>
+            <tr><td><b>match · match_player</b></td><td>Una partida</td><td><b>Snapshot congelado</b> al iniciar la partida: eso es lo que genera estadística (§28).</td></tr>
+            <tr><td><b>lp_event</b></td><td>Para siempre</td><td>Cada +15, −15, +5, +10, +2, −30, con su origen y si fue revertido.</td></tr>
+            <tr><td><b>action_catalog</b></td><td>Un mes</td><td>Los costos editables de la negociación.</td></tr>
+            <tr><td><b>ledger_account · entry</b></td><td>Para siempre</td><td><b>Banco de bits/subs.</b> Cuentas de jugadores y de donadores externos que no juegan (§15).</td></tr>
+            <tr><td><b>reward_claim</b></td><td>Una noche</td><td><b>Bitácora</b> de recompensas reclamadas: qué, quién la pagó y con qué. No mueve jugadores ni saldos.</td></tr>
+            <tr><td><b>loan</b></td><td>Para siempre</td><td>Préstamos con interés <b>lineal del 10 % diario</b> sobre el monto original: 400 bits → 440, 480, 520… y 880 al día 12.</td></tr>
+            <tr><td><b>jail · restriction · note · extra</b></td><td>Administrado por el host</td><td>Sobreviven al cambio de mes (§5).</td></tr>
+            <tr><td><b>action_log</b></td><td>Para siempre</td><td>Cada mutación con su payload inverso: es lo que hace posible el deshacer.</td></tr>
+            <tr><td><b>tier_list · tier_entry</b></td><td>Por edición</td><td>D/C/B/A/S/S+; la Home muestra la edición marcada como vigente.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Reglas de LP, tal como quedan en código</h3>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Evento</th><th>LP</th><th>Efecto en el roster</th><th>Quién lo genera</th></tr></thead>
+          <tbody>
+            <tr><td><b>Victoria</b></td><td class="num" style="color:var(--green)">+15</td><td class="num">+1 V</td><td>Resultado de partida</td></tr>
+            <tr><td><b>Derrota</b></td><td class="num" style="color:var(--red)">−15</td><td class="num">+1 D</td><td>Resultado de partida</td></tr>
+            <tr><td><b>MVP</b></td><td class="num" style="color:var(--green)">+5</td><td class="num">+1 MVP</td><td>El host, tras la partida</td></tr>
+            <tr><td><b>ACE</b></td><td class="num" style="color:var(--green)">+10</td><td class="num">+1 ACE</td><td>El host, tras la partida</td></tr>
+            <tr><td><b>Off role</b></td><td class="num" style="color:var(--green)">+2</td><td class="num">marca</td><td>Al armar el equipo</td></tr>
+            <tr><td><b>Doble derrota</b></td><td class="num" style="color:var(--red)">−30</td><td class="num">+2 D</td><td>Blue Shell</td></tr>
+            <tr><td><b>Corrección manual</b></td><td class="num">libre</td><td class="num">—</td><td>El host, con nota obligatoria</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:12px;color:var(--muted);font-size:13.5px">Un jugador que ganó siendo MVP y off-role suma
+        <span class="num" style="color:var(--green)">+22</span>. Deshacer el resultado de una partida revierte sus
+        eventos y recalcula el LP de los diez, sin tocar nada más.</p>
+    </section>
+
+    <!-- ================= 04 ================= -->
+    <section id="wireframes">
+      <div class="eyebrow">04 · Pantallas</div>
+      <h2>Wireframes</h2>
+      <p class="lede">Doce pantallas, las mismas que pide §40. Son esquemas de estructura y jerarquía, no arte final:
+        el objetivo es validar que toda acción del stream tiene dónde ejecutarse.</p>
+
+      <!-- CCTM -->
+      <div class="wf">
+        <div class="wf-cap"><i>01</i><b>CCTM Manager — mesa de control</b><em>/host/cctm · la pantalla que importa</em></div>
+        <div class="wf-body">
+          <div style="min-width:820px">
+            <div class="bar">
+              <span class="t">Sesión #04</span><span class="chip live">● EN VIVO</span>
+              <span class="chip">Copa Perso</span><span class="chip">SEP-2026</span>
+              <span class="clock">01:24:38</span>
+              <span class="btn dgr">Finalizar sesión</span>
+            </div>
+            <div class="steps">
+              <span class="step on">1 · Registro</span><span class="step on">2 · Draft</span>
+              <span class="step on">3 · Equipos 4/5 · 3/5</span><span class="step">4 · Negociación</span>
+              <span class="step">5 · Partida</span><span class="step">6 · Resultado</span>
+            </div>
+            <p style="font-size:11.5px;color:var(--dim);margin:-4px 0 12px;font-family:var(--f-mono)">
+              Las etapas informan, no bloquean: cualquiera se puede tocar en cualquier momento (§12).</p>
+
+            <div style="display:grid;grid-template-columns:1fr 1.35fr .85fr;gap:12px;align-items:start">
+              <!-- banca -->
+              <div class="pane">
+                <div class="pane-h">Banca de jugadores <span>17</span></div>
+                <div class="field" style="margin-bottom:8px"><span>🔍 Buscar jugador…</span></div>
+                <div class="btns" style="margin-bottom:9px"><span class="btn pri wide">+ Agregar participante</span></div>
+                <div class="row"><span class="dot on"></span><span class="nm">Target</span><span class="meta"><span>MID/JG</span><span>CHALL</span></span></div>
+                <div class="row"><span class="dot on"></span><span class="nm">PlayerX</span><span class="meta"><span>TOP</span><span>MASTER</span></span></div>
+                <div class="row"><span class="dot on"></span><span class="nm">Candy</span><span class="meta"><span>ADC</span><span>CHALL</span></span></div>
+                <div class="row"><span class="dot on"></span><span class="nm">Aliencero</span><span class="meta"><span>JG</span><span>CHALL</span></span></div>
+                <div class="row"><span class="dot on"></span><span class="nm">Rayito</span><span class="meta"><span>TOP</span><span>GM</span></span></div>
+                <div class="row"><span class="dot"></span><span class="nm">Kotori</span><span class="meta"><span>SUP</span><span>CHALL</span></span></div>
+                <div class="row"><span class="dot"></span><span class="nm">Szeta</span><span class="meta"><span>ADC</span><span>GM</span></span></div>
+                <p style="font-size:10.5px;color:var(--dim);font-family:var(--f-mono);margin:8px 0 0">
+                  Arrastrar a un equipo · clic para menú</p>
+              </div>
+
+              <!-- equipos -->
+              <div style="display:grid;gap:10px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="team a">
+                    <div class="team-h"><b>TEAM 1</b><span class="cnt">4/5</span></div>
+                    <div class="slot filled"><span class="rl">TOP</span><span class="dot"></span>Zenix<span class="meta" style="margin-left:auto;font-family:var(--f-mono);font-size:10px;color:var(--dim)">CHALL</span></div>
+                    <div class="slot"><span class="rl">JG</span>—</div>
+                    <div class="slot filled"><span class="rl">MID</span><span class="dot"></span>Kotori<span class="meta" style="margin-left:auto;font-family:var(--f-mono);font-size:10px;color:var(--amber)">OFF-ROLE</span></div>
+                    <div class="slot filled"><span class="rl">ADC</span><span class="dot"></span>Szeta</div>
+                    <div class="slot filled"><span class="rl">SUP</span><span class="dot"></span>Rayito</div>
+                    <div class="cost" style="margin-top:8px"><span>Bits del equipo</span><b>2,450</b></div>
+                  </div>
+                  <div class="team b">
+                    <div class="team-h"><b>TEAM 2</b><span class="cnt">3/5</span></div>
+                    <div class="slot filled"><span class="rl">TOP</span><span class="dot"></span>Aliencero</div>
+                    <div class="slot filled"><span class="rl">JG</span><span class="dot"></span>Candy</div>
+                    <div class="slot"><span class="rl">MID</span>—</div>
+                    <div class="slot"><span class="rl">ADC</span>—</div>
+                    <div class="slot filled"><span class="rl">SUP</span><span class="dot"></span>Omega</div>
+                    <div class="cost" style="margin-top:8px"><span>Bits del equipo</span><b>2,100</b></div>
+                  </div>
+                </div>
+                <div class="btns">
+                  <span class="btn pri">▶ Iniciar partida</span>
+                  <span class="btn">Devolver equipos a banca</span>
+                  <span class="btn">Nuevo draft</span>
+                </div>
+              </div>
+
+              <!-- panel derecho -->
+              <div style="display:grid;gap:10px">
+                <div class="pane">
+                  <div class="pane-h">Aleatorio</div>
+                  <span class="btn pri wide" style="margin-bottom:9px">🎲 Sortear jugador</span>
+                  <div class="row"><span class="dot"></span><span class="nm">Target</span><span class="meta"><span>MID/JG</span></span></div>
+                  <p style="font-size:10px;color:var(--dim);font-family:var(--f-mono);margin:8px 0 5px">ROL</p>
+                  <div class="btns"><span class="chip sel">MID</span><span class="chip">JG</span></div>
+                  <p style="font-size:10px;color:var(--dim);font-family:var(--f-mono);margin:9px 0 5px">EQUIPO</p>
+                  <div class="btns"><span class="chip t1">Team 1</span><span class="chip t2">Team 2</span></div>
+                  <span class="btn wide" style="margin-top:9px">Asignar</span>
+                </div>
+                <div class="pane">
+                  <div class="pane-h">Jugador seleccionado</div>
+                  <div class="row"><span class="dot"></span><span class="nm">Target</span><span class="meta"><span>CHALL</span></span></div>
+                  <div class="btns" style="margin-top:8px">
+                    <span class="btn">Asignar</span><span class="btn">Swap</span>
+                    <span class="btn">Cárcel</span><span class="btn dgr">Sacar de sesión</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- strip inferior -->
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px">
+              <div class="pane">
+                <div class="pane-h">Banco de bits/subs</div>
+                <div class="cost"><span>Target</span><b>350</b></div>
+                <div class="cost"><span>Candy</span><b>800</b></div>
+                <div class="cost"><span>Viewer123 ✦</span><b>1 sub</b></div>
+                <span class="btn gho wide" style="margin-top:8px">Registrar movimiento</span>
+              </div>
+              <div class="pane">
+                <div class="pane-h">Recompensas <span>consulta</span></div>
+                <div class="cost"><span>Cupo (tomar lugar)</span><b>200</b></div>
+                <div class="cost"><span>Cambio de Team</span><b>150</b></div>
+                <div class="cost"><span>Sacar de banca</span><b>200</b></div>
+                <div class="cost"><span>Rol + reingreso</span><b>300</b></div>
+                <div class="cost"><span>Del cementerio</span><b>300</b></div>
+                <div class="cost"><span>Blue Shell</span><b>500</b></div>
+                <p style="font-size:9.5px;color:var(--dim);font-family:var(--f-mono);margin:7px 0 0;line-height:1.6">
+                  1 sub NA/EUW o 2 LATAM = cualquier recompensa. Lo decide el host.<br>
+                  Nada se mueve solo: tú cumples la recompensa a mano.</p>
+              </div>
+              <div class="pane">
+                <div class="pane-h">Estados</div>
+                <div class="row"><span class="nm" style="color:var(--red)">🔒 Cárcel</span><span class="meta">1</span></div>
+                <div class="row"><span class="nm" style="color:var(--amber)">⚰ Cementerio</span><span class="meta">2</span></div>
+                <div class="row"><span class="nm">⛔ Restricciones</span><span class="meta">2</span></div>
+                <div class="row"><span class="nm">💸 Préstamos</span><span class="meta">3 · +10%/día</span></div>
+                <div class="row"><span class="nm">★ Extras</span><span class="meta">4</span></div>
+              </div>
+              <div class="pane">
+                <div class="pane-h">Notas de sesión</div>
+                <div class="log">
+                  <b>Zenix</b> — prioridad MID<br>
+                  <b>Candy</b> — permitido cambio<br>
+                  <b>Target</b> — off-role JG ok<br>
+                  <b>PlayerX</b> — no TOP (restr.)
+                </div>
+              </div>
+              <div class="pane">
+                <div class="pane-h">Historial <span>deshacer</span></div>
+                <div class="log">
+                  20:52 <b>Blue Shell</b> → Candy<br>
+                  20:49 <b>Target</b> → Team 2<br>
+                  20:47 <b>+500 bits</b> → Target<br>
+                  20:44 <b>Candy</b> → T2 / ADC<br>
+                  <s>20:41 Target → T1 / MID</s>
+                </div>
+                <span class="btn gho wide" style="margin-top:8px">↶ Deshacer última</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- modales -->
+      <div class="wf-grid">
+        <div class="wf">
+          <div class="wf-cap"><i>02</i><b>Agregar participante</b><em>modal · autocomplete</em></div>
+          <div class="wf-body">
+            <div class="field"><b>Línea rápida</b><span>Target Mid/Jg Challenger</span></div>
+            <div class="ac">
+              <div class="opt"><b>Target</b> · MID/JG · 4 periodos jugados</div>
+              <div class="opt" style="color:var(--muted)">Targetiin · ADC · 1 periodo</div>
+              <div class="opt new">+ Crear jugador nuevo "Target"</div>
+            </div>
+            <p style="font-size:11px;color:var(--dim);font-family:var(--f-mono);margin:0 0 10px">
+              El parser separa nombre · roles · elo. Evita Target / Taget / Targte.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="field"><b>Roles</b><span>MID ✕ &nbsp; JG ✕</span></div>
+              <div class="field"><b>Elo</b><span>Challenger</span></div>
+            </div>
+            <div class="field"><b>Enviar a</b><span>◉ Banca &nbsp; ○ Team 1 &nbsp; ○ Team 2</span></div>
+            <div class="btns"><span class="btn pri">Agregar</span><span class="btn gho">Agregar y mantener abierto</span></div>
+          </div>
+        </div>
+
+        <div class="wf">
+          <div class="wf-cap"><i>03</i><b>SWAP</b><em>modal · opción B (§11)</em></div>
+          <div class="wf-body">
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center">
+              <div class="team a" style="border-top-width:2px">
+                <div class="team-h"><b>TEAM 1</b></div>
+                <div class="slot filled"><span class="rl">MID</span>Target</div>
+              </div>
+              <div style="font-family:var(--f-display);font-size:20px;color:var(--violet)">⇄</div>
+              <div class="team b" style="border-top-width:2px">
+                <div class="team-h"><b>TEAM 2</b></div>
+                <div class="slot filled"><span class="rl">ADC</span>PlayerA</div>
+                <div class="slot"><span class="rl">SUP</span>Omega</div>
+              </div>
+            </div>
+            <div class="warn" style="margin:10px 0">Los roles NO se cambian solos. Target llega a Team 2 como MID.</div>
+            <div class="cost"><span>Recompensa asociada</span><b>Cambio de Team · 150 c/u</b></div>
+            <div class="btns" style="margin-top:10px"><span class="btn pri">Confirmar swap</span><span class="btn gho">Cancelar</span></div>
+          </div>
+        </div>
+
+        <div class="wf">
+          <div class="wf-cap"><i>04</i><b>Registrar recompensa reclamada</b><em>modal · solo bitácora</em></div>
+          <div class="wf-body">
+            <div class="field"><b>Recompensa</b><span>Cambio de Team · 150 bits</span></div>
+            <div class="field"><b>Quién la reclama</b><span>Target · o un donador del banco</span></div>
+            <div class="field"><b>Pagó con</b><span>◉ Bits &nbsp; ○ 1 sub NA/EUW &nbsp; ○ 2 subs LATAM</span></div>
+            <div class="field"><b>Nota</b><span>Pidió pasarse al Team 2</span></div>
+            <div class="warn" style="margin:10px 0">Esto <b>no mueve a nadie ni descuenta saldo</b>. Deja constancia; el cambio lo haces tú en el panel.</div>
+            <div class="btns"><span class="btn pri">Registrar</span><span class="btn gho">Cancelar</span></div>
+          </div>
+        </div>
+
+        <div class="wf">
+          <div class="wf-cap"><i>05</i><b>Blue Shell</b><em>modal · ruleta (§16)</em></div>
+          <div class="wf-body">
+            <div class="field"><b>Objetivo</b><span>Candy · ADC · Team 2</span></div>
+            <div class="wheel"></div>
+            <div class="row" style="justify-content:center;font-family:var(--f-display);font-size:14px">Doble derrota</div>
+            <div class="cost"><span>Efecto</span><b>−30 LP · +2 derrotas</b></div>
+            <div class="btns" style="margin-top:10px"><span class="btn">↻ Girar de nuevo</span><span class="btn gho">Cancelar</span><span class="btn pri">Guardar</span></div>
+            <p style="font-size:11px;color:var(--dim);font-family:var(--f-mono);margin:9px 0 0">
+              Solo "Guardar" escribe el evento. Girar de nuevo no deja rastro.</p>
+          </div>
+        </div>
+
+        <div class="wf">
+          <div class="wf-cap"><i>06</i><b>Resultado de partida</b><em>/host/cctm · partida 2 de 3</em></div>
+          <div class="wf-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+              <div class="team a"><div class="team-h"><b>TEAM 1</b></div><span class="btn pri wide">GANÓ</span></div>
+              <div class="team b"><div class="team-h"><b>TEAM 2</b></div><span class="btn wide">PERDIÓ</span></div>
+            </div>
+            <div class="row"><span class="dot"></span><span class="nm">Zenix</span><span class="meta"><span class="chip sel">MVP</span><span class="chip">ACE</span><span>+20 LP</span></span></div>
+            <div class="row"><span class="dot"></span><span class="nm">Kotori</span><span class="meta"><span class="chip">MVP</span><span class="chip sel">OFF-ROLE</span><span>+17 LP</span></span></div>
+            <div class="row"><span class="dot"></span><span class="nm">Candy</span><span class="meta"><span class="chip live">DOBLE DERROTA</span><span>−30 LP</span></span></div>
+            <div class="btns" style="margin-top:10px">
+              <span class="btn pri">Guardar resultado</span><span class="btn">Volver a jugar</span><span class="btn">Devolver equipos a banca</span>
+            </div>
+            <p style="font-size:11px;color:var(--dim);font-family:var(--f-mono);margin:9px 0 0">
+              Se aplica a la alineación congelada al iniciar la partida (§28).</p>
+          </div>
+        </div>
+
+        <div class="wf">
+          <div class="wf-cap"><i>07</i><b>Login del host</b><em>/host/login</em></div>
+          <div class="wf-body" style="display:grid;place-items:center;padding:26px 14px">
+            <div style="width:100%;max-width:250px;text-align:center">
+              <div class="ph" style="min-height:74px;margin-bottom:14px">isotipo.svg</div>
+              <div class="field" style="text-align:left"><b>Usuario</b><span>host@copaperso.gg</span></div>
+              <div class="field" style="text-align:left"><b>Contraseña</b><span>••••••••••</span></div>
+              <span class="btn pri wide">Iniciar sesión</span>
+              <p style="font-size:10.5px;color:var(--dim);font-family:var(--f-mono);margin-top:10px">Acceso restringido · sin registro público</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- roster -->
+      <div class="wf">
+        <div class="wf-cap"><i>08</i><b>Roster histórico</b><em>/host/roster · vista por periodo (§29)</em></div>
+        <div class="wf-body">
+          <div class="bar" style="margin-bottom:10px">
+            <span class="chip sel">SEP-2026</span><span class="chip">AGO-2026</span><span class="chip">JUL-2026</span>
+            <span class="clock">4 sesiones · 11 partidas</span><span class="btn gho">Exportar CSV</span>
+          </div>
+          <div style="overflow-x:auto"><table style="min-width:640px">
+            <thead><tr><th>#</th><th>Jugador</th><th>Tier</th><th>Ses.</th><th>V</th><th>D</th><th>WR</th><th>MVP</th><th>ACE</th><th>Off-role</th><th>LP</th></tr></thead>
+            <tbody>
+              <tr><td class="num">1</td><td><b>Zenix</b></td><td><span class="chip">S+</span></td><td class="num">12</td><td class="num">8</td><td class="num">4</td><td class="num">66%</td><td class="num">5</td><td class="num">2</td><td class="num">1</td><td class="num" style="color:var(--green)">+240</td></tr>
+              <tr><td class="num">2</td><td><b>Candy</b></td><td><span class="chip">S+</span></td><td class="num">11</td><td class="num">7</td><td class="num">4</td><td class="num">63%</td><td class="num">3</td><td class="num">1</td><td class="num">0</td><td class="num" style="color:var(--green)">+180</td></tr>
+              <tr><td class="num">3</td><td><b>Aliencero</b></td><td><span class="chip">S</span></td><td class="num">10</td><td class="num">6</td><td class="num">4</td><td class="num">60%</td><td class="num">3</td><td class="num">1</td><td class="num">2</td><td class="num" style="color:var(--green)">+120</td></tr>
+              <tr><td class="num">4</td><td><b>Target</b></td><td><span class="chip">S+</span></td><td class="num">9</td><td class="num">6</td><td class="num">3</td><td class="num">67%</td><td class="num">4</td><td class="num">2</td><td class="num">3</td><td class="num" style="color:var(--green)">+160</td></tr>
+              <tr><td class="num">5</td><td><b>Kotori</b></td><td><span class="chip">A</span></td><td class="num">8</td><td class="num">5</td><td class="num">3</td><td class="num">62%</td><td class="num">1</td><td class="num">1</td><td class="num">4</td><td class="num" style="color:var(--green)">+100</td></tr>
+              <tr><td class="num">6</td><td><b>Omega</b></td><td><span class="chip">B</span></td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num" style="color:var(--dim)">—</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num" style="color:var(--dim)">100</td></tr>
+            </tbody>
+          </table></div>
+          <p style="font-size:11px;color:var(--dim);font-family:var(--f-mono);margin:10px 0 0">
+            Jugador sin partidas: WR muestra "—", nunca 0% ni NaN. Clic en la fila → ficha con su histórico entre meses.</p>
+        </div>
+      </div>
+
+      <div class="wf-grid">
+        <div class="wf">
+          <div class="wf-cap"><i>09</i><b>Tier Ranking Manager</b><em>/host/tiers · drag &amp; drop</em></div>
+          <div class="wf-body">
+            <div class="bar" style="margin-bottom:10px"><span class="chip sel">Edición 08 NOV</span><span class="btn gho" style="margin-left:auto">Publicar</span></div>
+            <div class="tier-row"><div class="tier-badge" style="background:var(--gold)">S+</div>
+              <div class="tier-pool"><span class="pill"><span class="dot"></span>Zenix</span><span class="pill"><span class="dot"></span>Candy</span><span class="pill"><span class="dot"></span>Target</span></div></div>
+            <div class="tier-row"><div class="tier-badge" style="background:#C8A6FF">S</div>
+              <div class="tier-pool"><span class="pill"><span class="dot"></span>Rayito</span><span class="pill"><span class="dot"></span>Szeta</span></div></div>
+            <div class="tier-row"><div class="tier-badge" style="background:#7FB4FF">A</div>
+              <div class="tier-pool"><span class="pill"><span class="dot"></span>Kotori</span></div></div>
+            <div class="tier-row"><div class="tier-badge" style="background:#6FD9AE">B</div><div class="tier-pool"><span style="font-family:var(--f-mono);font-size:10px;color:var(--dim)">soltar aquí</span></div></div>
+            <div class="tier-row"><div class="tier-badge" style="background:#A9B0D6">C</div><div class="tier-pool"><span style="font-family:var(--f-mono);font-size:10px;color:var(--dim)">soltar aquí</span></div></div>
+            <div class="tier-row"><div class="tier-badge" style="background:#7A82AD">D</div><div class="tier-pool"><span style="font-family:var(--f-mono);font-size:10px;color:var(--dim)">soltar aquí</span></div></div>
+            <p style="font-size:11px;color:var(--dim);font-family:var(--f-mono);margin:8px 0 0">
+              Sin publicar no cambia nada en la Home. Las ediciones anteriores se conservan.</p>
+          </div>
+        </div>
+
+        <div class="wf">
+          <div class="wf-cap"><i>10</i><b>Home pública</b><em>/ · sin inscripción, el registro es por Twitch (§31)</em></div>
+          <div class="wf-body">
+            <div class="bar" style="margin-bottom:10px;font-size:11px">
+              <span class="ph" style="min-height:0;padding:3px 8px;font-size:9px">logo</span>
+              <span class="chip">Inicio</span><span class="chip">Tier Ranking</span><span class="chip">Reglas</span>
+              <span class="chip">Modos</span><span class="chip">Premios</span>
+              <span class="btn pri" style="margin-left:auto">Ver en Twitch</span>
+            </div>
+            <div class="mini-hero">
+              <div>
+                <h5>La copa de la comunidad,<br>hecha por la comunidad.</h5>
+                <p>Draft en vivo, negociación con bits y puro soloQ.</p>
+                <div class="btns"><span class="btn pri">Ver en Twitch</span><span class="btn gho">Ver ranking</span></div>
+              </div>
+              <div class="ph">trofeo-hero.png</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
+              <div class="pane" style="text-align:center"><div class="pane-h" style="justify-content:center">Modos</div><div class="ph" style="min-height:44px">5 iconos</div></div>
+              <div class="pane" style="text-align:center"><div class="pane-h" style="justify-content:center">Tier vigente</div><div class="btns" style="justify-content:center"><span class="chip">S+</span><span class="chip">S</span><span class="chip">A</span></div></div>
+              <div class="pane" style="text-align:center"><div class="pane-h" style="justify-content:center">Clips</div><div class="ph" style="min-height:44px">Twitch embed</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wf">
+          <div class="wf-cap"><i>11</i><b>Vista pública en vivo</b><em>/en-vivo · entra al MVP · Fase 4B</em></div>
+          <div class="wf-body">
+            <div class="bar" style="margin-bottom:10px"><span class="t">Sesión #04 — Draft en curso</span><span class="chip live">● EN VIVO</span></div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center">
+              <div class="team a"><div class="team-h"><b>TEAM 1</b></div>
+                <div class="slot filled"><span class="rl">TOP</span>Zenix</div><div class="slot filled"><span class="rl">MID</span>Kotori</div><div class="slot"><span class="rl">JG</span>—</div></div>
+              <div style="font-family:var(--f-display);font-size:18px;color:var(--muted)">VS</div>
+              <div class="team b"><div class="team-h"><b>TEAM 2</b></div>
+                <div class="slot filled"><span class="rl">TOP</span>Aliencero</div><div class="slot filled"><span class="rl">JG</span>Candy</div><div class="slot"><span class="rl">MID</span>—</div></div>
+            </div>
+            <div class="log" style="margin-top:10px">Última acción: <b>Candy</b> → Team 2 / JG</div>
+            <p style="font-size:11px;color:var(--dim);font-family:var(--f-mono);margin:8px 0 0">
+              Solo datos públicos: nunca bits, préstamos, cárcel ni notas.</p>
+          </div>
+        </div>
+
+        <div class="wf">
+          <div class="wf-cap"><i>12</i><b>Mapa de navegación</b><em>público vs. host</em></div>
+          <div class="wf-body">
+            <div class="nav-map">
+              <div class="map-col">
+                <div class="pane-h" style="margin:0">Público</div>
+                <ul><li>Inicio</li><li>Tier Ranking</li><li>Reglas y formato</li><li>Modos de juego</li><li>Premios</li><li>FAQ</li><li>En vivo <span style="color:var(--green)">(MVP)</span></li></ul>
+              </div>
+              <div class="map-col">
+                <div class="pane-h" style="margin:0">Host · login</div>
+                <ul>
+                  <li>CCTM Manager</li>
+                  <li class="sub">Registro y banca</li>
+                  <li class="sub">Draft y equipos</li>
+                  <li class="sub">Negociación y banco</li>
+                  <li class="sub">Partidas y resultados</li>
+                  <li>Roster</li><li>Tier Manager</li><li>Ajustes y costos</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 05 ================= -->
+    <section id="fases">
+      <div class="eyebrow">05 · Ejecución</div>
+      <h2>Nueve fases, y cómo se cierra cada una</h2>
+      <p class="lede">Una fase no está terminada porque "ya se ve bien": está terminada cuando pasan sus pruebas.
+        Vitest para las reglas, Playwright para los flujos del host, y un guion manual antes de cerrar.</p>
+
+      <div class="phase">
+        <div class="pnum">0</div>
+        <div>
+          <div class="phead"><h4>Especificación y wireframes</h4><span class="dur">1 semana</span></div>
+          <div class="deliv"><span>Wireframes validados</span><span>Tabla oficial de costos</span><span>Reglas de préstamos</span><span>Diccionario de términos</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>Recorrido en voz alta de una CopaPerso completa: ninguna acción del stream se queda sin pantalla.</li>
+            <li>Caso raro: llega alguien a mitad de la partida 2, paga con 1 sub LATAM y entra off-role al Team 2 sacando a otro a la banca → se puede describir con las pantallas existentes.</li>
+            <li>Todo campo del modelo tiene una pantalla que lo escribe y una que lo lee.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">1</div>
+        <div>
+          <div class="phead"><h4>Fundaciones</h4><span class="dur">1 semana</span></div>
+          <div class="deliv"><span>Repo + Nuxt + CI</span><span>Supabase prod y staging</span><span>Migraciones</span><span>Login del host</span><span>Storage de fotos</span><span>Realtime habilitado</span><span>Identidad visual</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li><code>pnpm test &amp;&amp; pnpm build</code> en verde en CI sobre un PR limpio.</li>
+            <li>E2E: anónimo en <code>/host/cctm</code> → login; login correcto → entra; logout → vuelve a bloquear.</li>
+            <li>Con la llave pública, <code>INSERT</code> y <code>UPDATE</code> sobre <code>player</code> fallan por RLS; por la API del servidor funcionan.</li>
+            <li>Manual: subir una foto de 4 MB, verla renderizada, borrarla.</li>
+            <li><code>supabase db reset</code> aplica todas las migraciones desde cero sin errores.</li>
+            <li>Realtime: dos pestañas abiertas, un cambio escrito por la API llega a la segunda en menos de 2 s.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">2</div>
+        <div>
+          <div class="phead"><h4>Jugadores, periodos y sesiones</h4><span class="dur">1 semana</span></div>
+          <div class="deliv"><span>CRUD de perfiles</span><span>Parser + autocomplete</span><span>Anti-duplicados</span><span>Periodos</span><span>Sesiones</span><span>100 LP por mes</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>Unit del parser, 12 casos mínimo: <code>Target Mid/Jg Challenger</code>, minúsculas, espacios dobles, acentos, sin elo, sin roles, rol inválido, cadena vacía.</li>
+            <li>Unit del anti-duplicados: Target / Taget / Targte / TARGET proponen el mismo perfil.</li>
+            <li>E2E: registrar "Target", luego escribir "Tar" y elegir el existente → 1 player, 1 participación.</li>
+            <li>Periodo nuevo → 0 participaciones; reincorporar a alguien del mes pasado → arranca en 100 LP y el histórico anterior queda intacto.</li>
+            <li>Dos sesiones del mismo mes acumulan LP sobre <b>la misma</b> participación, no sobre dos.</li>
+            <li>Borrar una participación no borra el perfil permanente.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">3A</div>
+        <div>
+          <div class="phead"><h4>CCTM · banca, equipos y asignación</h4><span class="dur">1.5 semanas</span></div>
+          <div class="deliv"><span>Registro en vivo</span><span>Banca</span><span>Drag &amp; drop</span><span>Aleatorio</span><span>Swap</span><span>Roles</span><span>Devolver a banca</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>Unit del aleatorio: solo elige jugadores en banca; 200 tiradas sobre 10 jugadores no se desvían más de ±15% de lo uniforme; banca vacía → error controlado.</li>
+            <li>E2E drag &amp; drop: arrastrar de banca a Team 1 / MID, recargar, sigue ahí.</li>
+            <li>E2E swap: Target (T1/MID) ↔ PlayerA (T2/ADC) intercambian equipo <b>conservando su rol</b>; el log registra dos movimientos.</li>
+            <li>No se puede tener al mismo jugador en dos equipos; rol duplicado según lo que definas en la pregunta 8.</li>
+            <li>Eliminar de la sesión no borra al jugador ni su histórico.</li>
+            <li>Manual cronometrada: <b>10 jugadores desde cero a 2 equipos completos en menos de 3 minutos.</b></li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">3B</div>
+        <div>
+          <div class="phead"><h4>CCTM · economía y estados</h4><span class="dur">1 semana</span><span class="dur" style="border-color:var(--green);color:var(--green)">se encoge: sin motor de acciones</span></div>
+          <div class="deliv"><span>Banco de bits/subs</span><span>Donadores externos</span><span>Lista de precios</span><span>Bitácora de recompensas</span><span>Préstamos +10%/día</span><span>Cárcel</span><span>Cementerio</span><span>Restricciones</span><span>Notas y extras</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>Catálogo sembrado con §13: cupo 200, cambio de Team 150, sacar de banca 200, rol y reingreso 300, cementerio 300, Blue Shell 500. Cada costo se lee del catálogo, nunca de una constante.</li>
+            <li><b>Test de "no automatismo":</b> registrar la recompensa "cambio de Team" para Target → la bitácora la guarda, y equipos, roles y saldo del banco quedan <b>exactamente igual</b>. Si algo se movió solo, el test falla.</li>
+            <li>Cambiar el costo de "cambio de Team" no altera lo ya registrado.</li>
+            <li>E2E: supporter que no juega con 1000 bits, se le registra un Blue Shell reclamado y el host ajusta el saldo a mano → el banco queda en 500 y hay dos asientos en el historial.</li>
+            <li>E2E del cupo: alguien del cementerio entra en lugar de un jugador ya seleccionado, el host lo mueve a mano y el desplazado vuelve a la banca; la bitácora registra 200.</li>
+            <li>Los saldos sobreviven al cierre de sesión y al cambio de mes.</li>
+            <li>Unit de préstamos con la regla real: 400 bits → día 1 = 440, día 2 = 480, día 3 = 520, día 12 = 880. Más un préstamo saldado.</li>
+            <li>E2E de los estados: <b>cárcel</b> (castigo del host), <b>cementerio</b> (no se inscribió a tiempo, con el draft arrancado) y <b>rol + reingreso</b> de alguien ya sorteado. Cada uno con su propio rastro en el log.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">3C</div>
+        <div>
+          <div class="phead"><h4>CCTM · historial y deshacer</h4><span class="dur">1 semana</span></div>
+          <div class="deliv"><span>Log cronológico</span><span>Undo</span><span>Payload inverso</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>Cada mutación escribe exactamente <b>una</b> entrada de log con actor, hora y payload inverso.</li>
+            <li>Deshacer asignación, swap, cambio de rol, negociación, asiento del banco y resultado de partida deja la base idéntica a como estaba (comparación de snapshot).</li>
+            <li>Deshacer dos veces la misma acción no aplica el efecto dos veces.</li>
+            <li>Las acciones no reversibles (cerrar sesión, cerrar periodo) rechazan el undo con un mensaje claro.</li>
+            <li>Manual: 30 acciones seguidas, deshacer 5 salteadas, el panel no queda en un estado imposible.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">4</div>
+        <div>
+          <div class="phead"><h4>Partidas, resultados y LP</h4><span class="dur">1.5 semanas</span></div>
+          <div class="deliv"><span>Snapshot al iniciar</span><span>Ganador</span><span>MVP / ACE / off-role</span><span>Blue Shell</span><span>Cálculo de LP</span><span>Volver a jugar</span><span>Varias partidas</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>Unit de LP con la tabla completa, incluido el combinado victoria + MVP + off-role = <code>+22</code>.</li>
+            <li>Snapshot (§28): iniciar partida → mover a alguien de equipo → finalizar. El resultado se aplica a la alineación congelada, no a la actual.</li>
+            <li>Quien estaba en la banca al iniciar no recibe LP ni aparece en esa partida.</li>
+            <li>Doble derrota en el equipo ganador: el equipo gana, ese jugador registra derrota y −30 LP.</li>
+            <li>Unit de la ruleta: los 4 resultados salen en 400 tiradas; "girar de nuevo" y "cancelar" no guardan nada.</li>
+            <li>E2E: sesión de 3 partidas con negociación intermedia y "devolver a banca" antes de la tercera → LP acumulado correcto y saldos de bits sin cambios.</li>
+            <li>Deshacer el resultado de la partida 2 recalcula el LP de los diez jugadores.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">4B</div>
+        <div>
+          <div class="phead"><h4>Vista pública en vivo</h4><span class="dur">1 semana</span><span class="dur" style="border-color:var(--green);color:var(--green)">nueva · entra al MVP</span></div>
+          <div class="deliv"><span>Ruta /en-vivo</span><span>Realtime con reconexión</span><span>Marcador de partidas</span><span>Modo overlay para OBS</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>El payload de <code>/en-vivo</code> <b>no contiene</b> bits, saldos, préstamos, cárcel, restricciones ni notas. Test que falla si alguno de esos campos aparece en la respuesta.</li>
+            <li>E2E: el host asigna a alguien a Team 1 → la vista pública lo refleja en menos de 2 s sin recargar.</li>
+            <li>Cortar la conexión del espectador 30 s → al volver se resincroniza sola con el estado correcto.</li>
+            <li>Carga: 200 espectadores simultáneos sobre la misma sesión sin degradar el panel del host.</li>
+            <li>Manual: con la sesión cerrada, la ruta dice "no hay sesión en vivo", no una pantalla rota.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">5</div>
+        <div>
+          <div class="phead"><h4>Roster e histórico</h4><span class="dur">1 semana</span></div>
+          <div class="deliv"><span>Vista por periodo</span><span>W / L / WR / LP</span><span>Filtros y orden</span><span>Exportar CSV</span><span>Ficha de jugador</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>Sembrar 3 sesiones con resultados conocidos → cada número coincide con el cálculo hecho a mano en el fixture.</li>
+            <li>WR igual en pantalla y en el CSV; jugador con 0 partidas muestra <code>—</code>, nunca <code>NaN</code>.</li>
+            <li>Cambiar de periodo no mezcla estadísticas; el mes anterior queda congelado.</li>
+            <li>Rendimiento: 60 jugadores y 20 sesiones en menos de 500 ms.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">6</div>
+        <div>
+          <div class="phead"><h4>Tier Ranking Manager</h4><span class="dur">1 semana</span></div>
+          <div class="deliv"><span>D/C/B/A/S/S+</span><span>Drag &amp; drop</span><span>Fotos</span><span>Publicar edición</span><span>Histórico</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>E2E: mover a alguien de A a S+, publicar, y verlo en la Home pública.</li>
+            <li>Publicar una edición no modifica las anteriores; la Home siempre muestra la vigente.</li>
+            <li>Jugador sin foto usa el avatar por defecto sin romper el layout.</li>
+            <li>Manual: ordenar 40 jugadores en 6 tiers sin lag perceptible.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">7</div>
+        <div>
+          <div class="phead"><h4>Home pública</h4><span class="dur">1.5 semanas</span></div>
+          <div class="deliv"><span>Hero</span><span>Modos</span><span>Reglas</span><span>Premios</span><span>Tier público</span><span>Twitch y redes</span><span>SEO</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>Lighthouse móvil: rendimiento ≥ 90, accesibilidad ≥ 95, SEO ≥ 95.</li>
+            <li>360, 768 y 1440 px sin scroll horizontal ni texto cortado.</li>
+            <li>Anónimo no alcanza ninguna ruta <code>/host/*</code> ni endpoint de escritura (403).</li>
+            <li>La Home no expone bits, préstamos, cárcel ni notas, ni en el HTML ni en el payload.</li>
+            <li>Manual: la vista previa del enlace se ve bien en Discord, X y WhatsApp.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="pnum">8</div>
+        <div>
+          <div class="phead"><h4>Prueba real en stream</h4><span class="dur">1 sesión + 1 semana de ajustes</span></div>
+          <div class="deliv"><span>CopaPerso completa solo con la app</span><span>Excel al lado como red</span><span>Bitácora de excepciones</span></div>
+          <div class="tests"><h5>Pruebas de cierre</h5><ol>
+            <li>Ensayo previo con 10 jugadores falsos: sesión de 3 partidas sin tocar la base a mano.</li>
+            <li>Simulacro de caída: cortar el wifi 30 s a mitad de una asignación → al volver no se perdió ni se duplicó nada.</li>
+            <li>Durante el stream real: <b>cero</b> intervenciones manuales en la base de datos.</li>
+            <li>La vista pública en vivo aguantó la audiencia real sin cortarse.</li>
+            <li>Al terminar, el roster de la app coincide con lo que habría dado el Excel.</li>
+            <li>Cada excepción encontrada se convierte en un issue priorizado.</li>
+          </ol></div>
+        </div>
+      </div>
+
+      <h3>Si hay prisa por usarlo en la próxima CopaPerso</h3>
+      <p style="color:var(--muted)">Fases 1 → 2 → 3A → 4, unas <b style="color:var(--text)">6 semanas</b>, ya permiten
+        operar el torneo en vivo. La economía (3B), la vista pública, el roster, el tier y la home pueden seguir en
+        Excel o en el stream mientras tanto. El total completo son 11.5–13.5 semanas.</p>
+    </section>
+
+    <!-- ================= 06 ================= -->
+    <section id="assets">
+      <div class="eyebrow">06 · Assets</div>
+      <h2>Las imágenes que necesito de ti</h2>
+      <p class="lede">Ya dejé las carpetas creadas en el repo. SVG para lo vectorial, PNG con transparencia para
+        ilustración, nombres exactos en minúsculas. Mientras no lleguen, uso placeholders con las mismas medidas.</p>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th>Carpeta</th><th>Archivos</th><th>Especificación</th><th>Bloquea</th></tr></thead>
+          <tbody>
+            <tr><td class="num">assets/brand/</td>
+              <td><b>logo-horizontal.svg</b>, <b>isotipo.svg</b>, <b>favicon.png</b></td>
+              <td>Logo para fondo oscuro, alto 40 px. Isotipo cuadrado legible a 32 px. Favicon 512×512.</td>
+              <td><b style="color:var(--red)">Fase 1</b></td></tr>
+            <tr><td class="num">assets/brand/</td>
+              <td>trofeo-hero.png, og-image.png, wordmark.svg, logo-horizontal-light.svg</td>
+              <td>Trofeo ≥1600 px con transparencia. OG 1200×630 con logo y claim.</td>
+              <td>Fase 7</td></tr>
+            <tr><td class="num">assets/modes/</td>
+              <td>copa-perso · tryhard · random · analisis · aram-afk <span class="num">.svg</span></td>
+              <td>64×64, trazo consistente entre las cinco.</td>
+              <td>Fase 7</td></tr>
+            <tr><td class="num">assets/tiers/</td>
+              <td>tier-s-plus · s · a · b · c · d <span class="num">.svg</span></td>
+              <td>Cuadradas, legibles a 48 px. <b>Opcional:</b> si prefieres, te las genero con CSS.</td>
+              <td>Fase 6</td></tr>
+            <tr><td class="num">assets/ui/</td>
+              <td>blue-shell.png, bits.svg, sub.svg, carcel.svg, dado.svg, avatar-default.png</td>
+              <td>Blue Shell 256×256 (protagoniza la ruleta). Avatar por defecto 512×512.</td>
+              <td>Fase 3</td></tr>
+            <tr><td class="num">assets/backgrounds/</td>
+              <td>hero-bg.jpg</td>
+              <td>1920×1080, oscuro y de bajo contraste para que el texto se lea encima.</td>
+              <td>Fase 7</td></tr>
+            <tr><td class="num">assets/sponsors/</td>
+              <td>logo-1.svg, logo-2.svg…</td>
+              <td>Versión para fondo oscuro, alto de referencia 32 px.</td>
+              <td>Fase 7</td></tr>
+            <tr><td class="num">assets/players/</td>
+              <td><span style="color:var(--dim)">nada por ahora</span></td>
+              <td>Las fotos se suben desde el Tier Manager. Si quieres precargar para la demo: 512×512 cuadradas.</td>
+              <td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:14px;color:var(--muted);font-size:13.5px">Los iconos genéricos —Twitch, Discord, X, TikTok,
+        YouTube, Instagram, flechas, lupa— los pongo yo desde una librería. No los dibujes.</p>
+    </section>
+
+    <!-- ================= 07 ================= -->
+    <section id="preguntas">
+      <div class="eyebrow">07 · Pendientes</div>
+      <h2>Lo que necesito que me aclares</h2>
+      <p class="lede">Siete quedaron cerradas y ya están aplicadas en todo el documento. Ninguna de las que
+        siguen bloquea el esquema: se pueden resolver mientras se construye.</p>
+
+      <div class="qs">
+        <div class="q" style="border-left:3px solid var(--green)"><b>✔ Costos → mandan los de §13</b><p>Cupo 200 · cambio de Team 150 · sacar de banca 200 · rol y reingreso 300 · sacar del cementerio 300 · Blue Shell 500.</p></div>
+        <div class="q" style="border-left:3px solid var(--green)"><b>✔ Cárcel, cementerio, cupo y reingreso son cuatro cosas</b><p>Cementerio: no se inscribió a tiempo, con el draft arrancado. Cupo: entra en lugar de alguien ya seleccionado. Reingreso: ya salió sorteado y quiere otro rol. Cárcel: castigo manual del host.</p></div>
+        <div class="q" style="border-left:3px solid var(--green)"><b>✔ Los 100 LP se reinician cada mes</b><p>Todas las sesiones del periodo acumulan sobre el mismo LP.</p></div>
+        <div class="q" style="border-left:3px solid var(--green)"><b>✔ La vista pública en vivo entra al MVP</b><p>Realtime desde la Fase 1 y nueva Fase 4B.</p></div>
+        <div class="q" style="border-left:3px solid var(--green)"><b>✔ Préstamos: 10 % lineal por día</b><p><span class="num">adeudo = principal + principal × 0.10 × días</span>. 400 bits → 440, 480, 520… y 880 al día 12.</p></div>
+        <div class="q" style="border-left:3px solid var(--green)"><b>✔ Los subs no tienen tipo de cambio</b><p>1 sub NA/EUW o 2 LATAM valen cualquier recompensa; lo decide el streamer. Va como nota en la tabla.</p></div>
+        <div class="q" style="border-left:3px solid var(--green)"><b>✔ Ninguna recompensa se ejecuta sola</b><p>El host mueve a los participantes a mano; el sistema solo deja constancia de lo reclamado.</p></div>
+
+        <div class="q imp"><b>1 · Tier Ranking: ¿a mano o calculado?</b><p>§30 lo describe manual, pero el wireframe muestra una columna de puntos. ¿Lo propone el sistema desde el LP y tú ajustas, o es 100 % tuyo?</p></div>
+        <div class="q imp"><b>2 · ¿Se puede iniciar una partida con equipos incompletos?</b><p>El wireframe muestra 4/5 y 3/5. ¿Bloqueo hasta tener 5v5, o aviso y dejo continuar?</p></div>
+        <div class="q imp"><b>3 · ¿Puede haber dos MID en el mismo equipo?</b><p>¿Lo impido, o lo marco en amarillo y dejo pasar?</p></div>
+        <div class="q imp"><b>4 · ¿Operas solo tú o habrá moderadores?</b><p>Si son varios a la vez en el CCTM, hay que resolver los conflictos de edición desde el diseño.</p></div>
+        <div class="q imp"><b>5 · ¿Qué cuenta como ACE?</b><p>¿Criterio tuyo o definición fija?</p></div>
+        <div class="q imp"><b>6 · Al usar el cupo, ¿el desplazado recibe algo?</b><p>¿Vuelve a la banca sin más, o se le compensa (prioridad en el siguiente draft, bits…)?</p></div>
+
+        <div class="q"><b>7 · ¿Los modos cambian las reglas de LP?</b><p>En ARAM AFK con una sola vida, ¿el LP funciona igual que en Copa Perso?</p></div>
+        <div class="q"><b>8 · Blue Shell: ¿los 4 resultados tienen la misma probabilidad?</b><p>¿Quieres poder editar la lista y sus pesos desde ajustes?</p></div>
+        <div class="q"><b>9 · Fotos de jugadores: ¿las subes tú o se toman de Twitch?</b><p></p></div>
+        <div class="q"><b>10 · ¿Ya tienes dominio reservado?</b><p>copaperso.gg / .com</p></div>
+        <div class="q"><b>11 · ¿Todo en español, incluida la interfaz del host?</b><p></p></div>
+        <div class="q"><b>12 · ¿Importamos el histórico de los Excel?</b><p>Tienes CCTM Manager.xlsm y CCPR Roster.xlsm a mano. Migrarlos son ~media semana extra en la Fase 2; arrancar limpio, cero costo.</p></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.nav a'));
+    var map = {};
+    links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          links.forEach(function (a) { a.classList.remove('on'); });
+          if (map[e.target.id]) map[e.target.id].classList.add('on');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px' });
+    document.querySelectorAll('section[id]').forEach(function (s) { obs.observe(s); });
+  })();
+</script>
+

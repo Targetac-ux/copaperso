@@ -1,0 +1,20 @@
+name: Keepalive
+
+# El plan gratuito de Supabase pausa el proyecto tras 7 días sin actividad, y
+# CopaPerso se usa una o dos noches al mes. Este ping semanal lo mantiene vivo.
+# Si algún día pasamos a Supabase Pro, este workflow se puede borrar.
+
+on:
+  schedule:
+    - cron: '17 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Despertar la base de datos
+        run: |
+          code=$(curl -s -o /tmp/out.json -w '%{http_code}' "${{ secrets.SITE_URL }}/api/health")
+          cat /tmp/out.json
+          test "$code" = "200"

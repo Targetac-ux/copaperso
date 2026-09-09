@@ -1,0 +1,26 @@
+name: Backup
+
+# El plan gratuito no tiene recuperación a un punto en el tiempo. Un volcado
+# semanal guardado como artefacto es la red de seguridad mínima.
+
+on:
+  schedule:
+    - cron: '30 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Volcar la base
+        run: supabase db dump --db-url "${{ secrets.SUPABASE_DB_URL }}" -f dump.sql
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: copaperso-dump-${{ github.run_id }}
+          path: dump.sql
+          retention-days: 90
