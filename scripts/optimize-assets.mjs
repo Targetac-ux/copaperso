@@ -28,6 +28,14 @@ const jobs = [
   { from: 'brand/favicon.png', to: 'brand/favicon-32.png', width: 32, format: 'png' },
   { from: 'brand/favicon.png', to: 'brand/favicon-180.png', width: 180, format: 'png' },
   { from: 'brand/favicon.png', to: 'brand/favicon-512.png', width: 512, format: 'png' },
+  // El key art del hero. Viene con un canal alfa vacío que solo pesa, así que
+  // se aplana. Dos anchos para no mandarle 1424 px a un móvil.
+  { from: 'brand/keyart.png', to: 'brand/keyart.webp', width: 1424, format: 'webp', quality: 78, flatten: true },
+  { from: 'brand/keyart.png', to: 'brand/keyart-900.webp', width: 900, format: 'webp', quality: 76, flatten: true },
+  { from: 'brand/keyart.png', to: 'brand/keyart.jpg', width: 1424, format: 'jpeg', quality: 80 },
+  // La versión cuadrada sirve para avatares de Twitch, Discord e Instagram.
+  { from: 'brand/keyart-cuadrado.png', to: 'brand/keyart-cuadrado.webp', width: 800, format: 'webp', quality: 80, flatten: true },
+
   // El trofeo del hero: webp con alfa + png de respaldo.
   { from: 'brand/trofeo-hero.png', to: 'brand/trofeo-hero.webp', width: 1000, format: 'webp', quality: 82 },
   { from: 'brand/trofeo-hero.png', to: 'brand/trofeo-hero.png', width: 1000, format: 'png' },
@@ -70,6 +78,7 @@ async function run() {
       if (job.width || job.height) {
         img = img.resize(job.width, job.height, { fit: job.height ? 'cover' : 'inside', withoutEnlargement: true })
       }
+      if (job.flatten) img = img.flatten({ background: '#070A18' })
       if (job.format === 'webp') img = img.webp({ quality: job.quality ?? 80 })
       if (job.format === 'jpeg') img = img.flatten({ background: '#070A18' }).jpeg({ quality: job.quality ?? 80, mozjpeg: true })
       if (job.format === 'png') img = img.png({ compressionLevel: 9, palette: true })

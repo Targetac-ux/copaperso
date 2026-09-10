@@ -2,6 +2,12 @@
 
 ## Estado (9 de septiembre de 2026)
 
+**Key art (nuevo, septiembre 2026):** `assets/brand/keyart.png` es el arte apaisado 16:9 que
+protagoniza el hero de la Home; `assets/brand/keyart-cuadrado.png` es la versión cuadrada, para
+avatares de Twitch, Discord e Instagram. El pipeline los deja en 150 kB y 122 kB. El escudo
+(`isotipo.svg`) sigue siendo la marca en nav, favicon y avatar del panel, donde una ilustración no
+se puede leer.
+
 **Recibidos y ya integrados (14):** todo `brand/` menos el wordmark, los dos fondos y los cinco
 modos de juego. Ya están optimizados en `public/` y funcionando en la web.
 

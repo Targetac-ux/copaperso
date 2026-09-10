@@ -8,6 +8,8 @@
 :root {
   /* superficies */
   --ink: #070a18;
+  /* el mismo tono en componentes, para poder graduarlo en degradados */
+  --ink-rgb: 7, 10, 24;
   --panel: #101630;
   --panel-2: #171e3c;
   --panel-3: #1e2649;

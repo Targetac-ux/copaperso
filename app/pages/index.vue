@@ -17,28 +17,45 @@ const modes = [
 
 <template>
   <div>
+    <!--
+      El key art manda en el hero: se ancla a la derecha a su altura natural y
+      un velo lo funde con el fondo por la izquierda, donde va el texto. En
+      móvil el velo sobra y los dos se apilan.
+    -->
     <section class="hero">
-      <div class="wrap hero__inner">
-        <div class="hero__text">
-          <p class="eyebrow">Torneo comunitario 5v5</p>
-          <h1>La copa de la comunidad,<br>hecha por la <span>comunidad</span>.</h1>
-          <p class="hero__lede">
-            Draft en vivo, negociación con bits y puro soloQ. La inscripción se abre en el chat de
-            Twitch: no hay formularios, solo estar ahí cuando empieza.
-          </p>
-          <div class="hero__cta">
-            <a class="btn btn--primary" href="https://twitch.tv" target="_blank" rel="noopener">
-              Ver en Twitch
-            </a>
-            <NuxtLink class="btn btn--ghost" to="/tier-ranking">Ver el Tier Ranking</NuxtLink>
-          </div>
+      <div class="wrap hero__text">
+        <p class="eyebrow">Torneo comunitario 5v5</p>
+        <h1>La copa de la comunidad,<br>hecha por la <span>comunidad</span>.</h1>
+        <p class="hero__lede">
+          Draft en vivo, negociación con bits y puro soloQ. La inscripción se abre en el chat de
+          Twitch: no hay formularios, solo estar ahí cuando empieza.
+        </p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href="https://twitch.tv" target="_blank" rel="noopener">
+            Ver en Twitch
+          </a>
+          <NuxtLink class="btn btn--ghost" to="/tier-ranking">Ver el Tier Ranking</NuxtLink>
         </div>
+      </div>
 
-        <picture class="hero__art">
-          <source srcset="/brand/trofeo-hero.webp" type="image/webp">
-          <img src="/brand/trofeo-hero.png" alt="" width="1000" height="1000" fetchpriority="high">
+      <div class="hero__art">
+        <picture>
+          <source
+            type="image/webp"
+            srcset="/brand/keyart-900.webp 900w, /brand/keyart.webp 1424w"
+            sizes="(max-width: 860px) 100vw, 70vw"
+          >
+          <img
+            src="/brand/keyart.jpg"
+            alt="Póster de CopaPerso: el host sobre un trofeo dorado, rodeado de campeones"
+            width="1424"
+            height="800"
+            fetchpriority="high"
+          >
         </picture>
       </div>
+
+      <div class="hero__veil" aria-hidden="true" />
     </section>
 
     <section class="wrap modes">
@@ -57,31 +74,51 @@ const modes = [
 <style scoped>
 .hero {
   position: relative;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
   overflow: hidden;
+  background: var(--ink);
   border-bottom: 1px solid var(--line-soft);
 }
 
-.hero::before {
-  content: '';
+/* El arte va después en el orden de lectura, pero en escritorio se sale del
+   flujo y se ancla a la derecha, así que visualmente queda al lado del texto. */
+.hero__art {
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(760px 420px at 72% 18%, rgba(123, 92, 255, 0.28), transparent 62%),
-    url('/backgrounds/hero-bg.webp') center / cover no-repeat;
-  opacity: 0.55;
+  top: 0;
+  right: 0;
+  height: 100%;
+  line-height: 0;
 }
 
-.hero__inner {
+.hero__art img {
+  height: 100%;
+  width: auto;
+  display: block;
+}
+
+.hero__veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--ink) 0%,
+    var(--ink) 22%,
+    rgba(var(--ink-rgb), 0.72) 38%,
+    transparent 56%
+  );
+}
+
+.hero__text {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  gap: 30px;
-  align-items: center;
-  padding: 64px 24px 72px;
+  z-index: 1;
+  padding: 56px 24px;
 }
 
 h1 {
-  font-size: clamp(34px, 5.4vw, 58px);
+  font-size: clamp(32px, 4.6vw, 50px);
   font-weight: 700;
   letter-spacing: -0.01em;
   margin: 12px 0 0;
@@ -93,8 +130,8 @@ h1 span {
 
 .hero__lede {
   color: var(--muted);
-  font-size: 17px;
-  max-width: 46ch;
+  font-size: 16.5px;
+  max-width: 38ch;
   margin: 18px 0 26px;
 }
 
@@ -102,13 +139,6 @@ h1 span {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.hero__art img {
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 24px 60px rgba(123, 92, 255, 0.35));
 }
 
 .modes {
@@ -154,14 +184,66 @@ h1 span {
   color: var(--muted);
 }
 
-@media (max-width: 860px) {
-  .hero__inner {
-    grid-template-columns: 1fr;
-    padding: 40px 24px 48px;
+/* Pantallas anchas: que el arte no crezca sin freno. */
+@media (min-width: 1700px) {
+  .hero {
+    min-height: 620px;
   }
 
   .hero__art {
-    max-width: 340px;
+    right: calc((100vw - 1700px) / 2);
+  }
+}
+
+/* Portátil y tablet: el arte es casi tan ancho como la pantalla y se comía el
+   titular. Se baja el alto (y con él el ancho del arte) y se refuerza el velo. */
+@media (max-width: 1200px) {
+  .hero {
+    min-height: 460px;
+  }
+
+  .hero__veil {
+    background: linear-gradient(
+      90deg,
+      var(--ink) 0%,
+      var(--ink) 26%,
+      rgba(var(--ink-rgb), 0.88) 46%,
+      rgba(var(--ink-rgb), 0.4) 66%,
+      transparent 80%
+    );
+  }
+
+  .hero__lede {
+    max-width: 34ch;
+  }
+}
+
+/* Móvil: uno debajo del otro, y el arte se funde con el texto por arriba. */
+@media (max-width: 860px) {
+  .hero {
+    display: block;
+    min-height: 0;
+  }
+
+  .hero__text {
+    padding: 40px 24px 26px;
+  }
+
+  .hero__art {
+    position: static;
+    height: auto;
+    width: 100%;
+  }
+
+  .hero__art img {
+    width: 100%;
+    height: auto;
+    -webkit-mask-image: linear-gradient(transparent 0%, #000 16%);
+    mask-image: linear-gradient(transparent 0%, #000 16%);
+  }
+
+  .hero__veil {
+    display: none;
   }
 }
 </style>
