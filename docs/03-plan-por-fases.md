@@ -197,17 +197,50 @@ Total acumulado: **86 unitarias + 30 de punta a punta**.
 
 ---
 
-### 3C — Log y deshacer  *(1 sem)*
-Historial cronológico, undo de acciones reversibles.
+### 3C — Historial y deshacer  ·  ✅ CERRADA (10 de septiembre de 2026)
 
-**Pruebas de cierre 3C**
-1. Integración: cada mutación de la API escribe exactamente **una** entrada de log con actor, timestamp y payload inverso.
-2. Integración: `undo` de asignación, de swap, de cambio de rol, de negociación, de asiento del banco y de
-   resultado de partida deja la base **idénticamente** igual que antes (comparación de snapshot de tablas).
-3. Integración: `undo` dos veces sobre la misma acción no aplica el efecto dos veces (idempotencia).
-4. Integración: las acciones no reversibles (cierre de sesión, cierre de periodo) rechazan el undo con un
-   mensaje claro.
-5. Manual: 30 acciones seguidas y deshacer 5 salteadas sin dejar el panel en un estado imposible.
+**Entregables**
+
+- ✅ Historial de la sesión con hora, actor y qué pasó, en tres columnas bajo la mesa.
+- ✅ Botón **«Deshacer lo último»** y un ↶ por entrada, para deshacer una concreta.
+- ✅ Lo deshecho se queda **tachado** en el historial, no desaparece.
+- ✅ Ejecutor de reversión con 19 operaciones: draft, estados, banco, préstamos, catálogo,
+  recompensas, notas, restricciones, perfiles y participaciones.
+
+**Pruebas de cierre — 7 de punta a punta**
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | Cada mutación deja **exactamente una** entrada, con actor y payload inverso | ✅ |
+| 2 | Tras deshacer, la base queda **idéntica** (retrato de tablas antes/después) | ✅ |
+| 3 | Deshacer dos veces la misma acción no repite el efecto | ✅ 409 |
+| 4 | Lo irreversible se rechaza con un mensaje claro | ✅ 422 |
+| 5 | Deshacer un movimiento del banco devuelve el saldo | ✅ |
+| 6 | Deshacer una acción antigua con otras encima no rompe el panel | ✅ |
+| 7 | Lo deshecho queda tachado y no se puede volver a deshacer | ✅ |
+
+Total acumulado: **86 unitarias + 37 de punta a punta**.
+
+**El fallo que encontraron las pruebas**
+
+«Deshacer lo último» resolvía en la pantalla cuál era la última acción. Pero el historial del cliente
+puede ir un instante por detrás —basta que la petición anterior siga en vuelo— y entonces el botón
+deshacía **una acción distinta de la que el host acababa de hacer**: en la prueba, deshizo el registro
+de un jugador en vez de su asignación. En directo, ese es el tipo de error que nadie nota hasta que el
+roster no cuadra.
+
+Ahora el botón no manda ningún id: pide al servidor deshacer la última, y es el servidor quien decide
+cuál es en ese instante. Los ↶ individuales sí mandan id, porque ahí no hay ambigüedad.
+
+**Decisiones que se tomaron construyendo**
+
+- **La entrada se marca como deshecha ANTES de revertir.** Es lo que hace que pulsar dos veces seguidas
+  no aplique el efecto dos veces. Si la reversión falla, se desmarca.
+- **El ejecutor es tolerante.** El host puede deshacer algo antiguo con diez acciones encima; si lo que
+  había que revertir ya no existe, se da por hecho en vez de reventar a mitad del stream.
+- **El banco se corrige, no se reescribe.** Deshacer un movimiento anota el asiento contrario en vez de
+  borrar el original: el rastro del dinero nunca se pierde.
+- **Un perfil que ya jugó no se borra al deshacer su alta**, porque se llevaría su histórico por delante.
 
 ---
 

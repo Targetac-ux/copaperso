@@ -16,7 +16,7 @@ cambiar de módulo.
 | 2 | Jugadores, periodos y sesiones | ✅ cerrada |
 | 3A | CCTM: banca, draft, equipos y swap | ✅ cerrada |
 | 3B | CCTM: economía, estados y timer | ✅ cerrada |
-| 3C | CCTM: historial y deshacer | — |
+| 3C | CCTM: historial y deshacer | ✅ cerrada |
 | 4 | Partidas, resultados y LP | — |
 | 4B | Vista pública en vivo | — |
 | 5 | Roster histórico | — |

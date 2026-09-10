@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
     actionType: 'player.create',
     summary: `Perfil creado: ${data.display_name}`,
     payload: { player_id: data.id },
-    inversePayload: { player_id: data.id, op: 'delete' },
+    inversePayload: { op: 'delete_player', player_id: data.id },
   })
 
   setResponseStatus(event, 201)

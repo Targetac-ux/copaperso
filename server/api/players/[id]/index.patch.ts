@@ -57,6 +57,7 @@ export default defineEventHandler(async (event) => {
     summary: `Perfil editado: ${antes.display_name} → ${data.display_name}`,
     payload: { player_id: id, ...input },
     inversePayload: {
+      op: 'player_update',
       player_id: id,
       display_name: antes.display_name,
       twitch_handle: antes.twitch_handle,

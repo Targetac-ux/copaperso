@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
     actionType: 'player.photo',
     summary: `Foto actualizada: ${player.display_name}`,
     payload: { player_id: player.id, path },
-    inversePayload: { player_id: player.id, photo_url: previous },
+    inversePayload: { op: 'player_photo', player_id: player.id, photo_url: previous },
   })
 
   return { photo_url: pub.publicUrl, bytes: square.length }

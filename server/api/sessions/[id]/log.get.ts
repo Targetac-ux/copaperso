@@ -13,11 +13,16 @@ export default defineEventHandler(async (event) => {
 
   const { data, error } = await db
     .from('action_log')
-    .select('id, action_type, summary, created_at, undone_at, reversible')
+    .select('id, action_type, summary, created_at, undone_at, reversible, inverse_payload')
     .eq('session_id', sessionId)
     .order('created_at', { ascending: false })
     .limit(limit)
 
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-  return data ?? []
+
+  // La pantalla solo necesita saber si se puede deshacer, no la receta entera.
+  return (data ?? []).map(({ inverse_payload, ...fila }) => ({
+    ...fila,
+    can_undo: fila.reversible && !fila.undone_at && !!inverse_payload,
+  }))
 })

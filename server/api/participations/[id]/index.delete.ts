@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
     summary: `${nombre} sale del periodo`,
     payload: { participation_id: id, player_id: participation.player_id },
     inversePayload: {
+      op: 'restore_participation',
       player_id: participation.player_id,
       period_id: participation.period_id,
       roles: participation.roles,

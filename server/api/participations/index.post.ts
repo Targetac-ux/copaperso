@@ -141,7 +141,7 @@ export default defineEventHandler(async (event) => {
     actionType: 'participation.create',
     summary: `${player.display_name} entra al periodo con 100 LP`,
     payload: { participation_id: participation.id, player_id: player.id, roles, elo },
-    inversePayload: { participation_id: participation.id, op: 'delete' },
+    inversePayload: { op: 'delete_participation', participation_id: participation.id },
   })
 
   const destino = await colocarEnSesion(event, staff.user_id, input, participation.id, player.display_name)

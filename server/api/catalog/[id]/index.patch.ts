@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
     actionType: 'catalog.update',
     summary: `${antes.label}: ${antes.cost_bits} → ${input.cost_bits ?? antes.cost_bits} bits`,
     payload: { id, ...input },
-    inversePayload: { id, cost_bits: antes.cost_bits, label: antes.label },
+    inversePayload: { op: 'catalog_cost', id, cost_bits: antes.cost_bits, label: antes.label },
   })
 
   return { ...data, ...input }

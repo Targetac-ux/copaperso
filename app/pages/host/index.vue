@@ -23,6 +23,8 @@ interface EntradaLog {
   action_type: string
   summary: string
   created_at: string
+  undone_at: string | null
+  can_undo: boolean
 }
 
 // --- sesión activa ---------------------------------------------------------
@@ -161,8 +163,45 @@ async function recargar() {
   if (!sessionId.value) return
   await load()
   log.value = await $fetch<EntradaLog[]>(`/api/sessions/${sessionId.value}/log`, {
-    query: { limit: 12 },
+    query: { limit: 20 },
   })
+}
+
+const errorUndo = ref('')
+const deshaciendo = ref<string | null>(null)
+
+/** Solo para saber si enseñar el botón; cuál se deshace lo decide el servidor. */
+const hayQueDeshacer = computed(() => log.value.some((e) => e.can_undo))
+
+/**
+ * Deshacer lo último. No manda el id: el historial de la pantalla puede ir un
+ * instante por detrás, y entonces el botón desharía la acción equivocada.
+ */
+async function deshacerUltimo() {
+  if (!sessionId.value) return
+  deshaciendo.value = 'ultimo'
+  errorUndo.value = ''
+  try {
+    await $fetch(`/api/sessions/${sessionId.value}/undo-last`, { method: 'POST' })
+    await Promise.all([recargar(), cargarEconomia()])
+  } catch (e) {
+    errorUndo.value = (e as { statusMessage?: string }).statusMessage ?? 'No se pudo deshacer.'
+  } finally {
+    deshaciendo.value = null
+  }
+}
+
+async function deshacer(id: string) {
+  deshaciendo.value = id
+  errorUndo.value = ''
+  try {
+    await $fetch(`/api/log/${id}/undo`, { method: 'POST' })
+    await Promise.all([recargar(), cargarEconomia()])
+  } catch (e) {
+    errorUndo.value = (e as { statusMessage?: string }).statusMessage ?? 'No se pudo deshacer.'
+  } finally {
+    deshaciendo.value = null
+  }
 }
 
 watch(
@@ -367,11 +406,33 @@ const hora = (iso: string) =>
       />
 
       <section class="log">
-        <h2>Historial</h2>
+        <header class="log__cab">
+          <h2>Historial</h2>
+          <button
+            v-if="hayQueDeshacer"
+            class="btn btn--ghost log__undo"
+            :disabled="!!deshaciendo"
+            @click="deshacerUltimo"
+          >
+            ↶ Deshacer lo último
+          </button>
+        </header>
+
+        <p v-if="errorUndo" class="alert alert--error">{{ errorUndo }}</p>
+
         <ol v-if="log.length">
-          <li v-for="e in log" :key="e.id">
+          <li v-for="e in log" :key="e.id" :class="{ 'is-undone': e.undone_at }">
             <time>{{ hora(e.created_at) }}</time>
             <span>{{ e.summary }}</span>
+            <button
+              v-if="e.can_undo"
+              class="undo"
+              :disabled="!!deshaciendo"
+              :title="`Deshacer: ${e.summary}`"
+              @click="deshacer(e.id)"
+            >
+              ↶
+            </button>
           </li>
         </ol>
         <p v-else class="log__vacio">Todavía no ha pasado nada en esta sesión.</p>
@@ -536,11 +597,52 @@ h1 {
   color: var(--muted);
 }
 
+.log__cab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.log__cab h2 {
+  margin: 0;
+}
+
+.log__undo {
+  margin-left: auto;
+  font-size: 11.5px;
+  padding: 4px 10px;
+}
+
 .log li {
   display: flex;
+  align-items: baseline;
   gap: 8px;
   padding: 2px 0;
   break-inside: avoid;
+}
+
+/* Lo deshecho no se borra: se tacha, para que se vea qué pasó. */
+.log li.is-undone {
+  color: var(--dim);
+  text-decoration: line-through;
+}
+
+.undo {
+  background: none;
+  border: 0;
+  color: var(--dim);
+  font-size: 12px;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+.undo:hover:not(:disabled) {
+  color: var(--violet);
+}
+
+.undo:disabled {
+  opacity: 0.4;
 }
 
 .log time {
