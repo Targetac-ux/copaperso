@@ -74,7 +74,9 @@ const modes = [
 <style scoped>
 .hero {
   position: relative;
-  min-height: 560px;
+  /* El alto crece con el ancho para que el arte no se quede pequeño en
+     pantallas grandes; el tope evita que el hero se coma la página entera. */
+  min-height: clamp(460px, 40vw, 720px);
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -96,6 +98,10 @@ const modes = [
   height: 100%;
   width: auto;
   display: block;
+  /* El fundido viaja con la imagen, no con la ventana: así el borde izquierdo
+     del arte se difumina igual de bien en un portátil que en un ultrapanorámico. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 20%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 20%);
 }
 
 .hero__veil {
@@ -184,17 +190,6 @@ h1 span {
   color: var(--muted);
 }
 
-/* Pantallas anchas: que el arte no crezca sin freno. */
-@media (min-width: 1700px) {
-  .hero {
-    min-height: 620px;
-  }
-
-  .hero__art {
-    right: calc((100vw - 1700px) / 2);
-  }
-}
-
 /* Portátil y tablet: el arte es casi tan ancho como la pantalla y se comía el
    titular. Se baja el alto (y con él el ancho del arte) y se refuerza el velo. */
 @media (max-width: 1200px) {
@@ -238,6 +233,7 @@ h1 span {
   .hero__art img {
     width: 100%;
     height: auto;
+    /* En vertical el arte va debajo del texto, así que el fundido cambia de eje. */
     -webkit-mask-image: linear-gradient(transparent 0%, #000 16%);
     mask-image: linear-gradient(transparent 0%, #000 16%);
   }
