@@ -66,6 +66,97 @@ type SessionRow = {
   status: SessionStatus
   started_at: string
   closed_at: string | null
+  prices_tripled: boolean
+  tripled_at: string | null
+  timer_ends_at: string | null
+  timer_seconds: number
+  timer_running: boolean
+}
+
+export type PaidWithDb = 'bits' | 'sub_na' | 'sub_latam'
+export type AccountKind = 'player' | 'supporter'
+export type LoanStatus = 'open' | 'settled' | 'forgiven'
+export type RestrictionKind = 'no_role' | 'no_team' | 'custom'
+export type NoteScope = 'session' | 'participation' | 'team'
+export type ExtraKind = 'bonus' | 'penalty' | 'prize' | 'condition'
+
+type ActionCatalogRow = {
+  id: string
+  period_id: string
+  code: string
+  label: string
+  cost_bits: number
+  sort_order: number
+  active: boolean
+}
+
+type RewardClaimRow = {
+  id: string
+  session_id: string
+  action_code: string
+  cost_bits: number
+  paid_with: PaidWithDb
+  tripled: boolean
+  beneficiary_participation_id: string | null
+  payer_account_id: string | null
+  note: string | null
+  created_by: string | null
+  created_at: string
+}
+
+type LedgerAccountRow = {
+  id: string
+  player_id: string | null
+  display_name: string
+  kind: AccountKind
+  balance_bits: number
+  balance_subs: number
+  created_at: string
+  updated_at: string
+}
+
+type LedgerEntryRow = {
+  id: string
+  account_id: string
+  delta_bits: number
+  delta_subs: number
+  reason: string
+  session_id: string | null
+  created_by: string | null
+  created_at: string
+}
+
+type LoanRow = {
+  id: string
+  person_name: string
+  player_id: string | null
+  principal_bits: number
+  daily_rate: number
+  lent_at: string
+  status: LoanStatus
+  settled_at: string | null
+  settled_amount: number | null
+  note: string | null
+  created_at: string
+}
+
+type RestrictionRow = {
+  id: string
+  participation_id: string
+  kind: RestrictionKind
+  value: string | null
+  note: string | null
+  active: boolean
+  created_at: string
+}
+
+type NoteRow = {
+  id: string
+  scope: NoteScope
+  ref_id: string
+  body: string
+  created_by: string | null
+  created_at: string
 }
 
 type SessionParticipantRow = {
@@ -195,7 +286,16 @@ export type Database = {
           started_at?: string
           closed_at?: string | null
         }
-        Update: { mode?: SessionMode; status?: SessionStatus; closed_at?: string | null }
+        Update: {
+          mode?: SessionMode
+          status?: SessionStatus
+          closed_at?: string | null
+          prices_tripled?: boolean
+          tripled_at?: string | null
+          timer_ends_at?: string | null
+          timer_seconds?: number
+          timer_running?: boolean
+        }
         Relationships: []
       }
       session_participant: {
@@ -240,6 +340,111 @@ export type Database = {
           released_at?: string | null
         }
         Update: { released_at?: string | null; reason?: string | null }
+        Relationships: []
+      }
+      action_catalog: {
+        Row: ActionCatalogRow
+        Insert: {
+          id?: string
+          period_id: string
+          code: string
+          label: string
+          cost_bits: number
+          sort_order?: number
+          active?: boolean
+        }
+        Update: { label?: string; cost_bits?: number; active?: boolean; sort_order?: number }
+        Relationships: []
+      }
+      reward_claim: {
+        Row: RewardClaimRow
+        Insert: {
+          id?: string
+          session_id: string
+          action_code: string
+          cost_bits: number
+          paid_with?: PaidWithDb
+          tripled?: boolean
+          beneficiary_participation_id?: string | null
+          payer_account_id?: string | null
+          note?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: { note?: string | null }
+        Relationships: []
+      }
+      ledger_account: {
+        Row: LedgerAccountRow
+        Insert: {
+          id?: string
+          player_id?: string | null
+          display_name: string
+          kind?: AccountKind
+          balance_bits?: number
+          balance_subs?: number
+        }
+        Update: { display_name?: string; balance_bits?: number; balance_subs?: number }
+        Relationships: []
+      }
+      ledger_entry: {
+        Row: LedgerEntryRow
+        Insert: {
+          id?: string
+          account_id: string
+          delta_bits?: number
+          delta_subs?: number
+          reason: string
+          session_id?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: { reason?: string }
+        Relationships: []
+      }
+      loan: {
+        Row: LoanRow
+        Insert: {
+          id?: string
+          person_name: string
+          player_id?: string | null
+          principal_bits: number
+          daily_rate?: number
+          lent_at?: string
+          status?: LoanStatus
+          note?: string | null
+        }
+        Update: {
+          status?: LoanStatus
+          settled_at?: string | null
+          settled_amount?: number | null
+          note?: string | null
+        }
+        Relationships: []
+      }
+      restriction: {
+        Row: RestrictionRow
+        Insert: {
+          id?: string
+          participation_id: string
+          kind: RestrictionKind
+          value?: string | null
+          note?: string | null
+          active?: boolean
+        }
+        Update: { active?: boolean; note?: string | null; value?: string | null }
+        Relationships: []
+      }
+      note: {
+        Row: NoteRow
+        Insert: {
+          id?: string
+          scope: NoteScope
+          ref_id: string
+          body: string
+          created_by?: string | null
+        }
+        Update: { body?: string }
         Relationships: []
       }
       action_log: {

@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
   const { data, error } = await db
     .from('session')
     .insert({ period_id: periodId, number, mode: input.mode, status: 'open' })
-    .select('id, period_id, number, mode, status, started_at, closed_at')
+    .select('id, period_id, number, mode, status, started_at, closed_at, prices_tripled, tripled_at, timer_ends_at, timer_seconds, timer_running')
     .single()
 
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })

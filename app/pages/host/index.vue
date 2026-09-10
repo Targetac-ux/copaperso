@@ -34,7 +34,8 @@ const sessionId = computed(() => activa.value?.id)
 
 const cctm = useCctm(sessionId)
 const {
-  draft, busy, error, warnings, available, load, assign, swap, toBench, benchAll, setState, roll,
+  draft, busy, error, warnings, available, jailed, graveyard,
+  load, assign, swap, toBench, benchAll, setState, roll,
   confirmWarnings, dismissWarnings,
 } = cctm
 
@@ -45,6 +46,84 @@ const sorteado = ref<BenchPlayer | null>(null)
 const log = ref<EntradaLog[]>([])
 const creando = ref(false)
 
+// --- economía y cronómetro (Fase 3B) --------------------------------------
+interface Precio { id: string; code: string; label: string; cost_bits: number; effective: number }
+interface Cuenta { id: string; display_name: string; kind: 'player' | 'supporter'; balance_bits: number; balance_subs: number }
+interface Prestamo { id: string; person_name: string; principal_bits: number; lent_at: string; status: 'open' | 'settled' | 'forgiven'; amount_due: number; interest: number }
+interface Reclamo { id: string; action_code: string; cost_bits: number; tripled: boolean; paid_with: 'bits' | 'sub_na' | 'sub_latam'; created_at: string }
+
+const precios = ref<Precio[]>([])
+const cuentas = ref<Cuenta[]>([])
+const prestamos = ref<Prestamo[]>([])
+const reclamos = ref<Reclamo[]>([])
+const tiempoAgotado = ref(false)
+
+const cronometro = computed(() => ({
+  endsAt: activa.value?.timer_ends_at ?? null,
+  seconds: activa.value?.timer_seconds ?? 900,
+  running: activa.value?.timer_running ?? false,
+}))
+
+async function cargarEconomia() {
+  if (!sessionId.value) return
+  const [cat, banco, deudas, claims] = await Promise.all([
+    $fetch<{ tripled: boolean; actions: Precio[] }>('/api/catalog', {
+      query: { session_id: sessionId.value },
+    }),
+    $fetch<Cuenta[]>('/api/ledger'),
+    $fetch<Prestamo[]>('/api/loans'),
+    $fetch<Reclamo[]>(`/api/sessions/${sessionId.value}/claims`),
+  ])
+  precios.value = cat.actions
+  cuentas.value = banco
+  prestamos.value = deudas
+  reclamos.value = claims
+}
+
+async function accionCronometro(payload: { action: 'start' | 'pause' | 'reset'; seconds?: number }) {
+  if (!sessionId.value) return
+  await $fetch(`/api/sessions/${sessionId.value}/timer`, { method: 'POST', body: payload })
+  await refrescarSesiones()
+  await recargar()
+}
+
+async function triplicar(tripled: boolean) {
+  if (!sessionId.value) return
+  await $fetch(`/api/sessions/${sessionId.value}/triple`, { method: 'POST', body: { tripled } })
+  tiempoAgotado.value = false
+  await refrescarSesiones()
+  await cargarEconomia()
+}
+
+async function registrarReclamo(payload: { action_code: string; paid_with: string; note?: string }) {
+  if (!sessionId.value) return
+  await $fetch(`/api/sessions/${sessionId.value}/claims`, { method: 'POST', body: payload })
+  await Promise.all([cargarEconomia(), recargar()])
+}
+
+async function movimientoBanco(payload: { account_id: string; delta_bits: number; reason: string }) {
+  await $fetch(`/api/ledger/${payload.account_id}/entries`, {
+    method: 'POST',
+    body: { delta_bits: payload.delta_bits, reason: payload.reason, session_id: sessionId.value },
+  })
+  await Promise.all([cargarEconomia(), recargar()])
+}
+
+async function abrirCuenta(payload: { display_name: string; balance_bits: number }) {
+  await $fetch('/api/ledger', { method: 'POST', body: payload })
+  await cargarEconomia()
+}
+
+async function nuevoPrestamo(payload: { person_name: string; principal_bits: number }) {
+  await $fetch('/api/loans', { method: 'POST', body: payload })
+  await cargarEconomia()
+}
+
+async function saldarPrestamo(id: string) {
+  await $fetch(`/api/loans/${id}`, { method: 'PATCH', body: { status: 'settled' } })
+  await cargarEconomia()
+}
+
 async function recargar() {
   if (!sessionId.value) return
   await load()
@@ -53,7 +132,14 @@ async function recargar() {
   })
 }
 
-watch(sessionId, recargar, { immediate: true })
+watch(
+  sessionId,
+  async () => {
+    await recargar()
+    await cargarEconomia()
+  },
+  { immediate: true },
+)
 
 // Los participantes del mes que todavía no están en esta sesión.
 const { data: participaciones } = await useFetch<Participacion[]>('/api/participations', {
@@ -141,6 +227,13 @@ const hora = (iso: string) =>
         </span>
         <span class="chip">{{ MODOS[activa.mode] ?? activa.mode }}</span>
         <span class="hueco" />
+        <CctmTimer
+          :timer="cronometro"
+          :tripled="activa.prices_tripled"
+          :busy="busy"
+          @action="accionCronometro"
+          @expired="tiempoAgotado = true"
+        />
         <button class="btn btn--ghost" :disabled="busy" @click="tras(benchAll())">
           Devolver equipos a banca
         </button>
@@ -214,6 +307,25 @@ const hora = (iso: string) =>
         </div>
       </div>
 
+      <CctmEconomy
+        class="eco-panel"
+        :prices="precios"
+        :tripled="activa.prices_tripled"
+        :accounts="cuentas"
+        :loans="prestamos"
+        :claims="reclamos"
+        :jailed="jailed"
+        :graveyard="graveyard"
+        :busy="busy"
+        @claim="registrarReclamo"
+        @entry="movimientoBanco"
+        @open-account="abrirCuenta"
+        @new-loan="nuevoPrestamo"
+        @settle-loan="saldarPrestamo"
+        @restore-prices="triplicar(false)"
+        @free-player="(id) => tras(setState(id, 'bench'))"
+      />
+
       <section class="log">
         <h2>Historial</h2>
         <ol v-if="log.length">
@@ -225,6 +337,14 @@ const hora = (iso: string) =>
         <p v-else class="log__vacio">Todavía no ha pasado nada en esta sesión.</p>
       </section>
     </template>
+
+    <CctmTimeUp
+      :open="tiempoAgotado"
+      :tripled="activa?.prices_tripled ?? false"
+      :prices="precios"
+      @triple="triplicar(true)"
+      @close="tiempoAgotado = false"
+    />
 
     <CctmWarnings :warnings="warnings" @confirm="confirmar" @cancel="dismissWarnings" />
   </div>
@@ -355,6 +475,10 @@ h1 {
 .sumar__lista .btn {
   font-size: 12px;
   padding: 5px 10px;
+}
+
+.eco-panel {
+  margin-top: 12px;
 }
 
 .log {
