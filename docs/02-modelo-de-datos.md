@@ -93,29 +93,48 @@ Añadido al plan en septiembre de 2026. En el stream el host abre un cronómetro
 defecto, pero escribible); cuando se agota, **los precios de todas las recompensas se triplican** y
 empieza un tiempo extra.
 
+**Reglas confirmadas por el host:**
+
+- Los **tramos son libres**: el streamer reinicia el cronómetro con la duración que quiera, tantas
+  veces como quiera. El cronómetro no manda sobre los precios; solo avisa.
+- El multiplicador se aplica **una sola vez por sesión** y se queda en ×3 desde ahí. Si el cronómetro
+  vuelve a agotarse estando ya en ×3, el aviso lo dice y no ofrece volver a multiplicar.
+- El ×3 es **fijo**, no configurable. Es una constante del dominio, no un ajuste.
+- Existe un **botón para deshacerlo** y volver a precio normal.
+
 La tentación sería reescribir `action_catalog` con los precios nuevos. Sería un error: el catálogo es
 **por periodo**, así que triplicarlo dejaría los precios altos para todas las sesiones siguientes, y
 además pisaría el histórico. El multiplicador vive en la **sesión**:
 
 ```text
-SESSION  + price_multiplier   numeric, 1.00 por defecto
-         + timer_ends_at      timestamptz, cuándo salta el aviso
-         + timer_label        text, "Registro", "Tiempo extra"...
+SESSION  + prices_tripled     boolean, false por defecto
+         + tripled_at         timestamptz, cuándo se activó
+         + timer_ends_at      timestamptz, cuándo salta el próximo aviso
+         + timer_seconds      integer, la duración que escribió el host
 ```
 
-- El precio que se enseña en el panel es `action_catalog.cost_bits × session.price_multiplier`.
-- `reward_claim` guarda el **costo efectivo ya multiplicado** más el multiplicador que se aplicó,
-  para que dentro de un mes se sepa por qué alguien pagó 1500 por un Blue Shell.
-- El cambio de multiplicador se escribe en `action_log` con su valor anterior: es deshacible como
-  cualquier otra acción, por si el host lo pulsa sin querer.
-- Un multiplicador de sesión también deja la puerta abierta a otros tramos (×2, ×9) sin tocar nada más.
+Se guarda un **booleano**, no un número: como el ×3 es fijo y se aplica una sola vez, un
+`price_multiplier` numérico invitaría a estados que no existen (×6, ×9) y a preguntarse si es
+acumulable. `prices_tripled` no deja lugar a dudas. El precio mostrado es
+`cost_bits × (prices_tripled ? 3 : 1)`.
+
+- `reward_claim` guarda el **costo efectivo ya multiplicado** más si estaba triplicado, para que
+  dentro de un mes se sepa por qué alguien pagó 1500 por un Blue Shell.
+- La activación se escribe en `action_log`: es deshacible como cualquier otra acción, por si el host
+  la pulsa sin querer.
 
 ```text
-REWARD_CLAIM + multiplier_applied numeric   -- 1.00 o 3.00
+REWARD_CLAIM + tripled   boolean   -- ¿se cobró con los precios triplicados?
 ```
 
 El cronómetro es **informativo, nunca bloqueante**: al llegar a cero avisa, pero no congela el panel
 ni impide registrar a nadie. El host sigue mandando (§2 del plan).
+
+**El cronómetro también se ve en la vista pública en vivo**, con un aviso sonoro sutil al agotarse.
+Ojo con una limitación del navegador: el audio no puede sonar si el espectador no ha interactuado
+antes con la página. La vista pública llevará un control de sonido visible (activado/silenciado) que
+recuerde la elección, y si el navegador bloquea la reproducción el aviso será solo visual: nunca se
+queda a medias sin que se note.
 
 ### A6. Banco de bits/subs: cuenta unificada
 

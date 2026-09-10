@@ -136,11 +136,16 @@ En el stream el host abre un cronómetro de 15 minutos (escribible: puede poner 
 Al agotarse, **los precios de todas las recompensas se triplican** y empieza un tiempo extra.
 
 - Cronómetro en la barra superior del CCTM, con duración escribible, iniciar / pausar / reiniciar.
+  **Los tramos son libres:** el host lo reinicia cuantas veces quiera con la duración que quiera.
 - Al llegar a cero, aviso emergente con dos botones: **«Triplicar precios»** y **«Solo cerrar»**.
+- El ×3 es **fijo** y se aplica **una sola vez por sesión**. Si el cronómetro vuelve a agotarse estando
+  ya triplicado, el aviso lo dice y no vuelve a ofrecerlo.
+- Botón para **deshacer la triplicación** y volver a precio normal.
 - El multiplicador vive en la sesión, no en el catálogo: los precios de los meses siguientes no se tocan
   (ver `docs/02-modelo-de-datos.md`, A7).
 - Todo el panel muestra el precio ya multiplicado, con una marca visible de que está en ×3.
-- El cambio queda en el historial y se puede deshacer.
+- **El cronómetro también se ve en la vista pública en vivo** (Fase 4B), con aviso sonoro sutil y un
+  control de silencio: el navegador no deja sonar audio si el espectador no ha interactuado antes.
 
 **El aviso no bloquea.** Si salta a mitad de una asignación, el host lo cierra y sigue; el cronómetro
 nunca congela el panel ni impide registrar a nadie.
@@ -206,6 +211,8 @@ Entra al MVP por decisión del host, por eso Realtime se habilita ya en la Fase 
 
 **Entregables**
 - Ruta pública `/en-vivo`: equipos en formación, estado de la sesión, marcador de partidas y última acción.
+- **Cronómetro de negociación visible**, con aviso sonoro sutil al agotarse y control de silencio que
+  recuerda la elección del espectador.
 - Suscripción Realtime con reconexión automática y estado "sin conexión" visible.
 - Modo overlay opcional (`?overlay=1`, fondo transparente) por si algún día se pone en OBS.
 
