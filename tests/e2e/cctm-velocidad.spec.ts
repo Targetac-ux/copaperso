@@ -27,17 +27,30 @@ test.describe('velocidad del draft', () => {
   test.setTimeout(240_000)
 
   let sessionId: string | null = null
+  let sessionEraNuestra = false
   const db = () => createClient(url!, secret!, { auth: { persistSession: false } })
 
   test.afterAll(async () => {
     const c = db()
     if (sessionId) {
-      const { data: sps } = await c.from('session_participant').select('id').eq('session_id', sessionId)
-      for (const sp of sps ?? []) await c.from('team_member').delete().eq('session_participant_id', sp.id)
-      await c.from('session_participant').delete().eq('session_id', sessionId)
+      const { data: players } = await c.from('player').select('id').ilike('display_name', `%${sello}%`)
+      for (const p of players ?? []) {
+        const { data: parts } = await c.from('participation').select('id').eq('player_id', p.id)
+        for (const pa of parts ?? []) {
+          const { data: sps } = await c
+            .from('session_participant')
+            .select('id')
+            .eq('participation_id', pa.id)
+          for (const sp of sps ?? []) await c.from('team_member').delete().eq('session_participant_id', sp.id)
+          await c.from('session_participant').delete().eq('participation_id', pa.id)
+        }
+      }
       await c.from('action_log').delete().eq('session_id', sessionId)
-      await c.from('team').delete().eq('session_id', sessionId)
-      await c.from('session').delete().eq('id', sessionId)
+      if (sessionEraNuestra) {
+        await c.from('session_participant').delete().eq('session_id', sessionId)
+        await c.from('team').delete().eq('session_id', sessionId)
+        await c.from('session').delete().eq('id', sessionId)
+      }
     }
     const { data: players } = await c.from('player').select('id').ilike('display_name', `%${sello}%`)
     for (const p of players ?? []) {
@@ -68,13 +81,18 @@ test.describe('velocidad del draft', () => {
 
     // 2. Abrir sesión y meterlos a todos en la banca.
     await gotoHydrated(page, '/host')
-    await page.getByRole('button', { name: 'Abrir sesión' }).click()
+    const abrir = page.getByRole('button', { name: 'Abrir sesión' })
+    if (await abrir.isVisible().catch(() => false)) {
+      await abrir.click()
+      sessionEraNuestra = true
+    }
     await expect(page.getByText(/Sesión #\d+/)).toBeVisible()
 
     const c = db()
     const { data: ses } = await c
       .from('session')
       .select('id')
+      .neq('status', 'closed')
       .order('started_at', { ascending: false })
       .limit(1)
       .single()

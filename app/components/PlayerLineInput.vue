@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { parsePlayerLine } from '#shared/parser'
-import type { Player } from '#shared/types/models'
+import type { Player, PlayerRole } from '#shared/types/models'
 
 /**
  * El campo de registro en directo (§4, §7).
@@ -17,7 +17,23 @@ interface Sugerencia {
   score?: number
 }
 
+const props = withDefaults(
+  defineProps<{
+    /** Si hay una sesión abierta, el registro puede mandarlo directo a ella (§7). */
+    sessionId?: string
+    compact?: boolean
+  }>(),
+  { sessionId: undefined, compact: false },
+)
+
 const emit = defineEmits<{ registered: [] }>()
+
+const ROLES: PlayerRole[] = ['TOP', 'JG', 'MID', 'ADC', 'SUP']
+
+/** A dónde va el recién registrado: a la banca o directo a un equipo. */
+const destino = ref<'bench' | 1 | 2>('bench')
+const rolDestino = ref<PlayerRole | null>(null)
+
 
 const linea = ref('')
 const sugerencias = ref<Sugerencia[]>([])
@@ -29,6 +45,16 @@ const aviso = ref('')
 const campo = ref<HTMLInputElement | null>(null)
 
 const entendido = computed(() => parsePlayerLine(linea.value))
+
+// Si el destino es un equipo y el jugador solo tiene un rol, ya está elegido.
+watch(
+  () => entendido.value?.roles,
+  (roles) => {
+    if (destino.value !== 'bench' && !rolDestino.value && roles?.length === 1) {
+      rolDestino.value = roles[0]!
+    }
+  },
+)
 
 const ETIQUETA_TIPO: Record<string, string> = {
   exact: 'mismo nombre',
@@ -123,14 +149,29 @@ async function registrar() {
       playerCreated: boolean
     }>('/api/participations', {
       method: 'POST',
-      body: elegido.value
-        ? { player_id: elegido.value.id, roles: partes.roles, elo: partes.elo }
-        : { display_name: partes.name, roles: partes.roles, elo: partes.elo },
+      body: {
+        ...(elegido.value
+          ? { player_id: elegido.value.id }
+          : { display_name: partes.name }),
+        roles: partes.roles,
+        elo: partes.elo,
+        ...(props.sessionId ? { session_id: props.sessionId } : {}),
+        ...(props.sessionId && destino.value !== 'bench' && rolDestino.value
+          ? { team_number: destino.value, role: rolDestino.value }
+          : {}),
+      },
     })
 
+    const donde =
+      props.sessionId && destino.value !== 'bench' && rolDestino.value
+        ? ` → Team ${destino.value} / ${rolDestino.value}`
+        : props.sessionId
+          ? ' → banca'
+          : ''
+
     aviso.value = res.created
-      ? `${res.player.display_name} registrado${res.playerCreated ? ' (perfil nuevo)' : ''}`
-      : `${res.player.display_name} ya estaba registrado este mes`
+      ? `${res.player.display_name} registrado${res.playerCreated ? ' (perfil nuevo)' : ''}${donde}`
+      : `${res.player.display_name} ya estaba registrado este mes${donde}`
 
     vaciadoInterno = true
     linea.value = ''
@@ -196,6 +237,48 @@ async function registrar() {
         {{ enviando ? 'Registrando…' : 'Registrar' }}
       </button>
     </form>
+
+    <div v-if="sessionId" class="destino">
+      <span class="destino__etq">Enviar a</span>
+      <button
+        type="button"
+        class="chip"
+        :class="{ 'is-on': destino === 'bench' }"
+        @click="destino = 'bench'"
+      >
+        Banca
+      </button>
+      <button
+        type="button"
+        class="chip t1"
+        :class="{ 'is-on': destino === 1 }"
+        @click="destino = 1"
+      >
+        Team 1
+      </button>
+      <button
+        type="button"
+        class="chip t2"
+        :class="{ 'is-on': destino === 2 }"
+        @click="destino = 2"
+      >
+        Team 2
+      </button>
+
+      <template v-if="destino !== 'bench'">
+        <span class="destino__sep" aria-hidden="true">·</span>
+        <button
+          v-for="r in ROLES"
+          :key="r"
+          type="button"
+          class="chip"
+          :class="{ 'is-on': rolDestino === r, 'is-suyo': entendido?.roles.includes(r) }"
+          @click="rolDestino = r"
+        >
+          {{ r }}
+        </button>
+      </template>
+    </div>
 
     <p v-if="error" class="alert alert--error">{{ error }}</p>
     <p v-else-if="aviso" class="reg__ok">{{ aviso }}</p>
@@ -364,6 +447,58 @@ async function registrar() {
   font-family: var(--f-mono);
   font-size: 10.5px;
   color: var(--ok);
+}
+
+.destino {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.destino__etq {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-right: 3px;
+}
+
+.destino__sep {
+  color: var(--line);
+  margin: 0 2px;
+}
+
+.destino .chip {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  padding: 4px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+}
+
+.destino .chip.is-suyo {
+  color: var(--text);
+  border-color: var(--violet-dim);
+}
+
+.destino .chip.is-on {
+  background: var(--violet);
+  border-color: var(--violet);
+  color: #fff;
+}
+
+.destino .chip.t1.is-on {
+  background: var(--team-1);
+  border-color: var(--team-1);
+}
+
+.destino .chip.t2.is-on {
+  background: var(--team-2);
+  border-color: var(--team-2);
 }
 
 .reg__ok {

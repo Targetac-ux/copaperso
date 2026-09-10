@@ -41,6 +41,8 @@ function onDrop(event: DragEvent) {
       <span class="num">{{ visibles.length }}</span>
     </header>
 
+    <slot name="registro" />
+
     <input v-model="buscar" type="search" placeholder="Buscar jugador…" aria-label="Buscar en la banca">
 
     <ul v-if="visibles.length">

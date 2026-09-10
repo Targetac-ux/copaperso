@@ -114,6 +114,8 @@ Total acumulado: **44 unitarias + 15 de punta a punta**.
 **Entregables**
 
 - ✅ Mesa de control en `/host`: barra de sesión, banca, los dos equipos y panel de acciones.
+- ✅ **Registro en vivo desde la propia mesa** (§7): se teclea la línea del chat y entra a la banca,
+  o directo a un equipo con su rol, sin salir de la pantalla.
 - ✅ Banca de jugadores con búsqueda, y alta desde los registrados del mes.
 - ✅ Arrastrar y soltar de la banca a cualquiera de los diez puestos.
 - ✅ Panel Aleatorio: sortea, pero **no asigna**; el host elige rol y equipo.
@@ -132,8 +134,9 @@ Total acumulado: **44 unitarias + 15 de punta a punta**.
 | 4 | El mismo jugador no puede ocupar dos puestos | ✅ |
 | 5 | Sacar de la sesión no borra el perfil ni la participación del mes | ✅ |
 | 6 | Diez jugadores desde cero a 5v5 | ✅ **64 s** automatizado (límite: 3 min) |
+| 7 | Registrar en vivo desde el CCTM, a la banca y directo a un equipo | ✅ |
 
-Total acumulado: **63 unitarias + 21 de punta a punta**.
+Total acumulado: **63 unitarias + 22 de punta a punta**.
 
 **Decisiones que se tomaron construyendo**
 

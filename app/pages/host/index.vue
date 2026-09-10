@@ -154,7 +154,11 @@ const hora = (iso: string) =>
           :selected="seleccionado"
           @select="alSeleccionar"
           @bench-drop="(id) => tras(toBench(id))"
-        />
+        >
+          <template #registro>
+            <PlayerLineInput :session-id="activa.id" compact @registered="recargar" />
+          </template>
+        </CctmBench>
 
         <div class="centro">
           <div class="equipos">

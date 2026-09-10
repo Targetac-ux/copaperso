@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { parsePlayerLine } from '#shared/parser'
+import { isOffRole } from '#shared/draft'
 import type { Database } from '#shared/types/database.types'
 
 const ROLES = ['TOP', 'JG', 'MID', 'ADC', 'SUP'] as const
@@ -18,6 +19,11 @@ const body = z.object({
   roles: z.array(z.enum(ROLES)).max(5).optional(),
   elo: z.enum(ELOS).nullable().optional(),
   period_id: z.string().uuid().optional(),
+  /** Si viene, además de registrarlo lo mete en la sesión (§7). */
+  session_id: z.string().uuid().optional(),
+  /** Y si además viene equipo y rol, entra directo al equipo sin pasar por la banca. */
+  team_number: z.union([z.literal(1), z.literal(2)]).optional(),
+  role: z.enum(ROLES).optional(),
 })
 
 /**
@@ -111,7 +117,8 @@ export default defineEventHandler(async (event) => {
     .maybeSingle()
 
   if (yaEstaba) {
-    return { player, participation: yaEstaba, created: false, playerCreated }
+    const destino = await colocarEnSesion(event, staff.user_id, input, yaEstaba.id, player.display_name)
+    return { player, participation: yaEstaba, created: false, playerCreated, ...destino }
   }
 
   const { data: participation, error } = await db
@@ -137,6 +144,91 @@ export default defineEventHandler(async (event) => {
     inversePayload: { participation_id: participation.id, op: 'delete' },
   })
 
+  const destino = await colocarEnSesion(event, staff.user_id, input, participation.id, player.display_name)
+
   setResponseStatus(event, 201)
-  return { player, participation, created: true, playerCreated }
+  return { player, participation, created: true, playerCreated, ...destino }
 })
+
+/**
+ * Mete al recién registrado en la sesión que está en marcha.
+ *
+ * El host registra a la gente en directo mientras el chat la va diciendo, así
+ * que lo normal es que quiera que entre a la banca en el mismo gesto. Y si ya
+ * sabe dónde la quiere, directa al equipo (§7).
+ */
+async function colocarEnSesion(
+  event: Parameters<typeof requireStaff>[0],
+  actor: string,
+  input: { session_id?: string; team_number?: 1 | 2; role?: (typeof ROLES)[number] },
+  participationId: string,
+  nombre: string,
+) {
+  if (!input.session_id) return {}
+  const db = serverSupabaseServiceRole<Database>(event)
+
+  const { data: existente } = await db
+    .from('session_participant')
+    .select('id, state')
+    .eq('session_id', input.session_id)
+    .eq('participation_id', participationId)
+    .maybeSingle()
+
+  let spId = existente?.id
+  if (existente) {
+    if (existente.state === 'removed') {
+      await db.from('session_participant').update({ state: 'bench' }).eq('id', existente.id)
+    }
+  } else {
+    const { data, error } = await db
+      .from('session_participant')
+      .insert({ session_id: input.session_id, participation_id: participationId, state: 'bench' })
+      .select('id')
+      .single()
+
+    if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+    spId = data.id
+
+    await logAction(event, {
+      actor,
+      sessionId: input.session_id,
+      actionType: 'session.join',
+      summary: `${nombre} entra a la banca`,
+      payload: { session_participant_id: spId },
+      inversePayload: { op: 'remove', session_participant_id: spId },
+    })
+  }
+
+  if (!input.team_number || !input.role) return { session_participant_id: spId }
+
+  const ids = await teamIds(event, input.session_id)
+  const { data: participacion } = await db
+    .from('participation')
+    .select('roles')
+    .eq('id', participationId)
+    .maybeSingle()
+
+  const offRole = isOffRole(participacion?.roles ?? [], input.role)
+
+  await db.from('team_member').delete().eq('session_participant_id', spId!)
+  const { error } = await db.from('team_member').insert({
+    team_id: ids[input.team_number],
+    session_participant_id: spId!,
+    role: input.role,
+    is_off_role: offRole,
+  })
+  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+
+  await db.from('session_participant').update({ state: 'team' }).eq('id', spId!)
+
+  await logAction(event, {
+    actor,
+    sessionId: input.session_id,
+    actionType: 'draft.assign',
+    summary: `${nombre} → Team ${input.team_number} / ${input.role}${offRole ? ' (off-role)' : ''}`,
+    payload: { session_participant_id: spId, team_number: input.team_number, role: input.role },
+    inversePayload: { op: 'bench', session_participant_id: spId },
+  })
+
+  return { session_participant_id: spId }
+}
