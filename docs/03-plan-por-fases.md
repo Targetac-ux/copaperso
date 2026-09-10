@@ -153,51 +153,49 @@ cambio en la pantalla antes de que conteste el servidor (actualización optimist
 
 ---
 
-### 3B — Economía y estados  *(1 sem — se reduce: no hay motor de acciones)*
-Banco de bits/subs, donadores externos, catálogo de recompensas como lista de precios, bitácora de
-recompensas reclamadas, préstamos, cárcel, cementerio, restricciones, notas, extras.
+### 3B — Economía y estados  ·  ✅ CERRADA (10 de septiembre de 2026)
 
-**Principio de esta entrega:** ninguna recompensa ejecuta cambios. El host cumple la recompensa moviendo él
-mismo a los participantes con las herramientas de 3A; el sistema solo deja constancia.
+**Entregables**
 
-### Timer de negociación *(añadido en septiembre de 2026)*
+- ✅ **Cronómetro de negociación** en la barra del CCTM: 15 min por defecto, duración escribible
+  (`5`, `10 min`, `12:30`, `90s`), iniciar / pausar / reiniciar las veces que haga falta.
+- ✅ **Aviso al agotarse** con «Triplicar precios» y «Solo cerrar», enseñando el antes y el después.
+  No bloquea el panel, y si ya estaban en ×3 lo dice en vez de volver a ofrecerlo.
+- ✅ Lista de precios con el ×3 aplicado y botón para deshacerlo.
+- ✅ Bitácora de recompensas reclamadas, con el costo efectivo y si estaba triplicado.
+- ✅ Banco de bits/subs con donadores externos y movimientos manuales.
+- ✅ Préstamos con interés lineal del 10 % diario.
+- ✅ Paneles de cárcel y cementerio.
+- ✅ Notas, extras (bonus, penalización, premio, condición) y restricciones por jugador.
 
-En el stream el host abre un cronómetro de 15 minutos (escribible: puede poner 10, 20 o los que quiera).
-Al agotarse, **los precios de todas las recompensas se triplican** y empieza un tiempo extra.
+**Pruebas de cierre — 23 unitarias nuevas y 8 de punta a punta**
 
-- Cronómetro en la barra superior del CCTM, con duración escribible, iniciar / pausar / reiniciar.
-  **Los tramos son libres:** el host lo reinicia cuantas veces quiera con la duración que quiera.
-- Al llegar a cero, aviso emergente con dos botones: **«Triplicar precios»** y **«Solo cerrar»**.
-- El ×3 es **fijo** y se aplica **una sola vez por sesión**. Si el cronómetro vuelve a agotarse estando
-  ya triplicado, el aviso lo dice y no vuelve a ofrecerlo.
-- Botón para **deshacer la triplicación** y volver a precio normal.
-- El multiplicador vive en la sesión, no en el catálogo: los precios de los meses siguientes no se tocan
-  (ver `docs/02-modelo-de-datos.md`, A7).
-- Todo el panel muestra el precio ya multiplicado, con una marca visible de que está en ×3.
-- **El cronómetro también se ve en la vista pública en vivo** (Fase 4B), con aviso sonoro sutil y un
-  control de silencio: el navegador no deja sonar audio si el espectador no ha interactuado antes.
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | Catálogo sembrado con §13; los costos se leen del catálogo, nunca de constantes | ✅ |
+| 2 | **Registrar una recompensa no mueve a nadie ni descuenta saldo** | ✅ |
+| 3 | Cambiar un precio no altera lo ya registrado | ✅ |
+| 4 | Triplicar sube los precios de la sesión y **el catálogo del mes no se toca** | ✅ |
+| 5 | Deshacer el ×3 devuelve los precios sin reescribir lo cobrado | ✅ |
+| 6 | El aviso salta una sola vez y no bloquea el panel | ✅ |
+| 7 | Con los precios ya en ×3, el aviso no vuelve a ofrecerlo | ✅ |
+| 8 | Cronómetro: 15:00 por defecto, duración escribible, arranca y pausa | ✅ |
+| 9 | Préstamo de 400 bits a 12 días | ✅ **880** |
+| 10 | Notas, extras y restricciones sobreviven a recargar | ✅ |
 
-**El aviso no bloquea.** Si salta a mitad de una asignación, el host lo cierra y sigue; el cronómetro
-nunca congela el panel ni impide registrar a nadie.
+Total acumulado: **86 unitarias + 30 de punta a punta**.
 
-**Pruebas de cierre 3B**
-1. Unit del catálogo sembrado con §13: cupo (entrar en lugar de alguien) 200, cambio de Team 150,
-   sacar de banca 200, cambio de rol y reingreso 300, sacar del cementerio 300, Blue Shell 500. Cada costo
-   se lee del catálogo, nunca de una constante en el código.
-2. Integración: cambiar el costo de "cambio de Team" no altera las negociaciones ya registradas.
-3. **Test de "no automatismo":** registrar la recompensa "cambio de Team" para Target → la bitácora la
-   guarda, y los equipos, los roles y el saldo del banco quedan **exactamente igual** que antes. Si algo se
-   movió solo, el test falla.
-4. E2E: crear un supporter que no juega, darle 1000 bits, registrar un Blue Shell reclamado a su nombre y
-   ajustar el saldo a mano → el banco muestra 500 y hay dos asientos en el historial.
-5. E2E del cupo: alguien del cementerio entra en lugar de un jugador ya seleccionado; el host lo mueve a mano
-   y el desplazado vuelve a la banca; la bitácora registra 200 bits.
-6. Integración: los saldos del banco sobreviven al cierre de sesión y al cambio de periodo (§14).
-7. Unit de préstamos con la regla real (10 % lineal por día sobre el monto original):
-   400 bits → día 1 = 440, día 2 = 480, día 3 = 520, día 12 = 880. Más un caso de préstamo saldado.
-8. E2E de los estados, que son distintos: **cárcel** (castigo del host), **cementerio** (no alcanzó a
-   inscribirse, con el draft ya arrancado) y **cambio de rol y reingreso** de alguien ya sorteado. Cada uno
-   deja su propio rastro en el log.
+**Decisiones que se tomaron construyendo**
+
+- **La sesión guarda un booleano, no un multiplicador.** Como el ×3 es fijo y se aplica una sola vez,
+  un número invitaría a estados que no existen (×6, ×9) y a dudar si es acumulable.
+- **La hora de fin del cronómetro vive en el servidor**, no en el navegador: así el host y los
+  espectadores verán lo mismo en la Fase 4B aunque sus relojes no coincidan.
+- **El precio se congela al registrar la recompensa.** Subir el catálogo después no reescribe lo cobrado.
+
+**Pendiente para la vista pública (Fase 4B):** el cronómetro con aviso sonoro sutil y control de silencio.
+
+---
 
 ### 3C — Log y deshacer  *(1 sem)*
 Historial cronológico, undo de acciones reversibles.

@@ -99,7 +99,11 @@ test.describe.serial('CCTM · banca, draft y swap', () => {
       await page.getByRole('button', { name: `+ ${nombre}` }).click()
       await expect(page.getByRole('button', { name: `+ ${nombre}` })).toHaveCount(0)
     }
-    await expect(page.getByText('4 disponibles en la banca')).toBeVisible()
+    // Los cuatro están en la banca. Se comprueban por nombre y no por el
+    // contador: otros tests pueden haber dejado gente en la misma sesión.
+    for (const nombre of NOMBRES) {
+      await expect(page.locator('.banca li').filter({ hasText: nombre })).toBeVisible()
+    }
 
     // 4. Arrastrar de la banca al puesto de MID del Team 1.
     const enBanca = page.locator('.banca li').filter({ hasText: NOMBRES[0]! })

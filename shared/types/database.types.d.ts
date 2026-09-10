@@ -150,6 +150,15 @@ type RestrictionRow = {
   created_at: string
 }
 
+type ExtraRow = {
+  id: string
+  scope: NoteScope
+  ref_id: string
+  kind: ExtraKind
+  body: string
+  created_at: string
+}
+
 type NoteRow = {
   id: string
   scope: NoteScope
@@ -445,6 +454,18 @@ export type Database = {
           created_by?: string | null
         }
         Update: { body?: string }
+        Relationships: []
+      }
+      extra: {
+        Row: ExtraRow
+        Insert: {
+          id?: string
+          scope: NoteScope
+          ref_id: string
+          kind: ExtraKind
+          body: string
+        }
+        Update: { body?: string; kind?: ExtraKind }
         Relationships: []
       }
       action_log: {

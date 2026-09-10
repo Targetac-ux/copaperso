@@ -15,7 +15,7 @@ cambiar de módulo.
 | 1 | Fundaciones: repo, base de datos, acceso del host, fotos, identidad | ✅ cerrada |
 | 2 | Jugadores, periodos y sesiones | ✅ cerrada |
 | 3A | CCTM: banca, draft, equipos y swap | ✅ cerrada |
-| 3B | CCTM: economía, estados y timer | — |
+| 3B | CCTM: economía, estados y timer | ✅ cerrada |
 | 3C | CCTM: historial y deshacer | — |
 | 4 | Partidas, resultados y LP | — |
 | 4B | Vista pública en vivo | — |

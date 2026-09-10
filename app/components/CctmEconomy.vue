@@ -49,6 +49,10 @@ const props = defineProps<{
   claims: Reclamo[]
   jailed: BenchPlayer[]
   graveyard: BenchPlayer[]
+  notes: { id: string; body: string }[]
+  extras: { id: string; kind: string; body: string }[]
+  restrictions: { id: string; player_name: string; kind: string; value: string | null; note: string | null }[]
+  players: BenchPlayer[]
   busy: boolean
 }>()
 
@@ -60,9 +64,46 @@ const emit = defineEmits<{
   settleLoan: [id: string]
   restorePrices: []
   freePlayer: [id: string]
+  addNote: [payload: { type: 'note' | 'extra'; kind?: string; body: string }]
+  addRestriction: [payload: { participation_id: string; kind: 'no_role'; value: string }]
+  liftRestriction: [id: string]
 }>()
 
-const pestana = ref<'recompensas' | 'banco' | 'prestamos' | 'estados'>('recompensas')
+const pestana = ref<'recompensas' | 'banco' | 'prestamos' | 'estados' | 'notas'>('recompensas')
+
+const ETIQUETA_EXTRA: Record<string, string> = {
+  bonus: 'Bonus',
+  penalty: 'Penalización',
+  prize: 'Premio',
+  condition: 'Condición',
+}
+const ROLES_RESTRINGIBLES = ['TOP', 'JG', 'MID', 'ADC', 'SUP']
+
+const nuevaNota = ref('')
+const nuevoExtra = reactive({ kind: 'condition', body: '' })
+const nuevaRestriccion = reactive({ jugador: '', rol: 'MID' })
+
+function anotarNota() {
+  if (!nuevaNota.value.trim()) return
+  emit('addNote', { type: 'note', body: nuevaNota.value.trim() })
+  nuevaNota.value = ''
+}
+
+function anotarExtra() {
+  if (!nuevoExtra.body.trim()) return
+  emit('addNote', { type: 'extra', kind: nuevoExtra.kind, body: nuevoExtra.body.trim() })
+  nuevoExtra.body = ''
+}
+
+function anotarRestriccion() {
+  if (!nuevaRestriccion.jugador) return
+  emit('addRestriction', {
+    participation_id: nuevaRestriccion.jugador,
+    kind: 'no_role',
+    value: nuevaRestriccion.rol,
+  })
+  nuevaRestriccion.jugador = ''
+}
 
 // --- registrar recompensa ---
 const accionElegida = ref<string>('')
@@ -130,6 +171,9 @@ const hora = (iso: string) =>
       </button>
       <button :class="{ on: pestana === 'estados' }" @click="pestana = 'estados'">
         Estados <span class="cnt">{{ jailed.length + graveyard.length }}</span>
+      </button>
+      <button :class="{ on: pestana === 'notas' }" @click="pestana = 'notas'">
+        Notas <span class="cnt">{{ notes.length + extras.length + restrictions.length }}</span>
       </button>
     </nav>
 
@@ -250,6 +294,76 @@ const hora = (iso: string) =>
         <input v-model="nuevoPrestamo.bits" type="number" placeholder="Cuántos bits">
         <button class="btn btn--primary" :disabled="busy" @click="crearPrestamo">Prestar</button>
         <p class="nota">400 bits el día 1 son 440; al día 12, 880.</p>
+      </div>
+    </div>
+
+    <!-- ---------------------------------------------------------- notas -->
+    <div v-else-if="pestana === 'notas'" class="cuerpo">
+      <div class="col">
+        <h3>Notas de la sesión</h3>
+        <ul v-if="notes.length" class="lista">
+          <li v-for="n in notes" :key="n.id"><span>{{ n.body }}</span></li>
+        </ul>
+        <p v-else class="vacio">Sin notas.</p>
+        <input
+          v-model="nuevaNota"
+          type="text"
+          placeholder="Escribir una nota…"
+          @keydown.enter="anotarNota"
+        >
+      </div>
+
+      <div class="col">
+        <h3>Extras y condiciones</h3>
+        <ul v-if="extras.length" class="lista">
+          <li v-for="e in extras" :key="e.id">
+            <em>{{ ETIQUETA_EXTRA[e.kind] ?? e.kind }}</em>
+            <span>{{ e.body }}</span>
+          </li>
+        </ul>
+        <p v-else class="vacio">Sin extras.</p>
+        <select v-model="nuevoExtra.kind" aria-label="Tipo de extra">
+          <option v-for="(label, key) in ETIQUETA_EXTRA" :key="key" :value="key">{{ label }}</option>
+        </select>
+        <input
+          v-model="nuevoExtra.body"
+          type="text"
+          placeholder="Premio, penalización, condición…"
+          @keydown.enter="anotarExtra"
+        >
+      </div>
+
+      <div class="col">
+        <h3>Restricciones</h3>
+        <ul v-if="restrictions.length" class="lista">
+          <li v-for="r in restrictions" :key="r.id">
+            <span>{{ r.player_name }}: no puede {{ r.value }}</span>
+            <button class="btn btn--ghost mini" :disabled="busy" @click="emit('liftRestriction', r.id)">
+              Levantar
+            </button>
+          </li>
+        </ul>
+        <p v-else class="vacio">Nadie tiene restricciones.</p>
+        <select v-model="nuevaRestriccion.jugador" aria-label="Jugador">
+          <option value="">Elegir jugador…</option>
+          <option v-for="p in players" :key="p.participationId" :value="p.participationId">
+            {{ p.displayName }}
+          </option>
+        </select>
+        <div class="chips">
+          <button
+            v-for="r in ROLES_RESTRINGIBLES"
+            :key="r"
+            class="chip"
+            :class="{ on: nuevaRestriccion.rol === r }"
+            @click="nuevaRestriccion.rol = r"
+          >
+            {{ r }}
+          </button>
+        </div>
+        <button class="btn btn--ghost" :disabled="!nuevaRestriccion.jugador || busy" @click="anotarRestriccion">
+          No puede {{ nuevaRestriccion.rol }}
+        </button>
       </div>
     </div>
 

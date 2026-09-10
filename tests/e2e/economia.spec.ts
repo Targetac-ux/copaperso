@@ -25,6 +25,15 @@ test.describe.serial('economía y timer', () => {
   let cuentaId: string | null = null
 
   test.beforeEach(async ({ page }) => {
+    // Que ningún test herede el cronómetro vencido del anterior: el aviso
+    // taparía los clics del siguiente.
+    if (sessionId) {
+      await db()
+        .from('session')
+        .update({ timer_ends_at: null, timer_running: false })
+        .eq('id', sessionId)
+    }
+
     await gotoHydrated(page, '/host/login')
     await page.getByLabel('Correo').fill(email!)
     await page.getByLabel('Contraseña').fill(password!)
@@ -70,7 +79,14 @@ test.describe.serial('economía y timer', () => {
       .single()
     sessionId = ses!.id
 
-    // Arranca en 15:00.
+    // Dejar el cronómetro en un punto conocido: el test no puede asumir en qué
+    // estado lo dejó la sesión (o la corrida anterior).
+    await c
+      .from('session')
+      .update({ timer_seconds: 900, timer_ends_at: null, timer_running: false })
+      .eq('id', sessionId)
+    await page.reload()
+    await page.waitForSelector('html[data-hydrated]')
     await expect(page.locator('.timer .reloj')).toHaveText('15:00')
 
     // Se cambia a 5 minutos escribiéndolo.
@@ -80,7 +96,7 @@ test.describe.serial('economía y timer', () => {
     await expect(page.locator('.timer .reloj')).toHaveText('05:00')
 
     // Y arranca la cuenta atrás.
-    await page.locator('.timer').getByRole('button', { name: 'Iniciar' }).click()
+    await page.locator('.timer').getByRole('button', { name: 'Iniciar', exact: true }).click()
     await expect(page.locator('.timer').getByRole('button', { name: 'Pausar' })).toBeVisible()
     await expect
       .poll(async () => (await c.from('session').select('timer_running').eq('id', sessionId!).single()).data?.timer_running)
@@ -91,9 +107,11 @@ test.describe.serial('economía y timer', () => {
     await gotoHydrated(page, '/host')
     const c = db()
 
-    // Antes: Blue Shell a 500.
-    await expect(page.getByText('Blue Shell')).toBeVisible()
-    await expect(page.locator('.eco .precios li').filter({ hasText: 'Blue Shell' })).toContainText('500')
+    // Antes: Blue Shell a 500. ("Blue Shell" aparece también en el desplegable,
+    // así que se busca dentro de la lista de precios.)
+    const blueShell = page.locator('.eco .precios li').filter({ hasText: 'Blue Shell' })
+    await expect(blueShell).toBeVisible()
+    await expect(blueShell).toContainText('500')
 
     // Triplicar por API, que es lo que hace el botón del aviso.
     await page.evaluate(
@@ -180,6 +198,99 @@ test.describe.serial('economía y timer', () => {
       .limit(1)
       .single()
     expect(claim!.cost_bits).toBe(1500)
+  })
+
+  test('al agotarse el tiempo salta el aviso, y no bloquea el panel', async ({ page }) => {
+    const c = db()
+    await c
+      .from('session')
+      .update({ prices_tripled: false, tripled_at: null })
+      .eq('id', sessionId!)
+
+    await gotoHydrated(page, '/host')
+
+    // Un cronómetro de 30 s que ya venció: al cargar, el aviso salta solo.
+    await c
+      .from('session')
+      .update({
+        timer_seconds: 30,
+        timer_ends_at: new Date(Date.now() - 1000).toISOString(),
+        timer_running: true,
+      })
+      .eq('id', sessionId!)
+    await page.reload()
+    await page.waitForSelector('html[data-hydrated]')
+
+    const aviso = page.getByRole('alertdialog')
+    await expect(aviso).toBeVisible()
+    await expect(aviso).toContainText('Se acabó la negociación')
+    // Enseña el antes y el después.
+    await expect(aviso).toContainText('500 → 1500')
+
+    // No bloquea: con el aviso abierto se sigue pudiendo trabajar.
+    await expect(page.locator('.banca')).toBeVisible()
+
+    // "Solo cerrar" no toca ni un precio.
+    await aviso.getByRole('button', { name: 'Solo cerrar' }).click()
+    await expect(aviso).toHaveCount(0)
+    const { data: sinTriplicar } = await c
+      .from('session')
+      .select('prices_tripled')
+      .eq('id', sessionId!)
+      .single()
+    expect(sinTriplicar!.prices_tripled).toBe(false)
+
+    // Y ahora sí, triplicar desde el aviso.
+    await c
+      .from('session')
+      .update({ timer_ends_at: new Date(Date.now() - 1000).toISOString(), timer_running: true })
+      .eq('id', sessionId!)
+    await page.reload()
+    await page.waitForSelector('html[data-hydrated]')
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Triplicar precios' }).click()
+
+    await expect(page.locator('.eco .precios li').filter({ hasText: 'Blue Shell' })).toContainText('1500')
+    await expect(page.locator('.timer')).toContainText('×3')
+  })
+
+  test('si ya están triplicados, el aviso no vuelve a ofrecerlo', async ({ page }) => {
+    const c = db()
+    await c.from('session').update({ prices_tripled: true }).eq('id', sessionId!)
+    await c
+      .from('session')
+      .update({ timer_ends_at: new Date(Date.now() - 1000).toISOString(), timer_running: true })
+      .eq('id', sessionId!)
+
+    await gotoHydrated(page, '/host')
+    const aviso = page.getByRole('alertdialog')
+    await expect(aviso).toBeVisible()
+    await expect(aviso).toContainText('ya están en ×3')
+    await expect(aviso.getByRole('button', { name: 'Triplicar precios' })).toHaveCount(0)
+  })
+
+  test('notas, extras y restricciones quedan apuntadas', async ({ page }) => {
+    await gotoHydrated(page, '/host')
+    await page.getByRole('button', { name: /^Notas/ }).click()
+
+    const nota = `Nota de prueba ${sello}`
+    await page.getByPlaceholder('Escribir una nota…').fill(nota)
+    await page.getByPlaceholder('Escribir una nota…').press('Enter')
+    await expect(page.locator('.eco .lista').first()).toContainText(nota)
+
+    const extra = `Premio extra ${sello}`
+    await page.getByPlaceholder('Premio, penalización, condición…').fill(extra)
+    await page.getByPlaceholder('Premio, penalización, condición…').press('Enter')
+    await expect(page.locator('.eco')).toContainText(extra)
+
+    // Y sobreviven a recargar: están en la base, no solo en pantalla.
+    await page.reload()
+    await page.waitForSelector('html[data-hydrated]')
+    await page.getByRole('button', { name: /^Notas/ }).click()
+    await expect(page.locator('.eco')).toContainText(nota)
+
+    const c = db()
+    await c.from('note').delete().ilike('body', `%${sello}%`)
+    await c.from('extra').delete().ilike('body', `%${sello}%`)
   })
 
   test('un préstamo calcula el 10 % diario', async ({ page }) => {

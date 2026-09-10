@@ -52,7 +52,14 @@ interface Cuenta { id: string; display_name: string; kind: 'player' | 'supporter
 interface Prestamo { id: string; person_name: string; principal_bits: number; lent_at: string; status: 'open' | 'settled' | 'forgiven'; amount_due: number; interest: number }
 interface Reclamo { id: string; action_code: string; cost_bits: number; tripled: boolean; paid_with: 'bits' | 'sub_na' | 'sub_latam'; created_at: string }
 
+interface Nota { id: string; body: string }
+interface Extra { id: string; kind: string; body: string }
+interface Restriccion { id: string; player_name: string; kind: string; value: string | null; note: string | null }
+
 const precios = ref<Precio[]>([])
+const notas = ref<Nota[]>([])
+const extras = ref<Extra[]>([])
+const restricciones = ref<Restriccion[]>([])
 const cuentas = ref<Cuenta[]>([])
 const prestamos = ref<Prestamo[]>([])
 const reclamos = ref<Reclamo[]>([])
@@ -66,18 +73,44 @@ const cronometro = computed(() => ({
 
 async function cargarEconomia() {
   if (!sessionId.value) return
-  const [cat, banco, deudas, claims] = await Promise.all([
+  const [cat, banco, deudas, claims, apuntes] = await Promise.all([
     $fetch<{ tripled: boolean; actions: Precio[] }>('/api/catalog', {
       query: { session_id: sessionId.value },
     }),
     $fetch<Cuenta[]>('/api/ledger'),
     $fetch<Prestamo[]>('/api/loans'),
     $fetch<Reclamo[]>(`/api/sessions/${sessionId.value}/claims`),
+    $fetch<{ notes: Nota[]; extras: Extra[]; restrictions: Restriccion[] }>(
+      `/api/sessions/${sessionId.value}/notes`,
+    ),
   ])
   precios.value = cat.actions
   cuentas.value = banco
   prestamos.value = deudas
   reclamos.value = claims
+  notas.value = apuntes.notes
+  extras.value = apuntes.extras
+  restricciones.value = apuntes.restrictions
+}
+
+async function anotar(payload: { type: 'note' | 'extra'; kind?: string; body: string }) {
+  if (!sessionId.value) return
+  await $fetch(`/api/sessions/${sessionId.value}/notes`, { method: 'POST', body: payload })
+  await Promise.all([cargarEconomia(), recargar()])
+}
+
+async function restringir(payload: { participation_id: string; kind: 'no_role'; value: string }) {
+  if (!sessionId.value) return
+  await $fetch(`/api/sessions/${sessionId.value}/notes`, {
+    method: 'POST',
+    body: { type: 'restriction', ...payload },
+  })
+  await cargarEconomia()
+}
+
+async function levantarRestriccion(id: string) {
+  await $fetch(`/api/restrictions/${id}`, { method: 'DELETE' })
+  await cargarEconomia()
 }
 
 async function accionCronometro(payload: { action: 'start' | 'pause' | 'reset'; seconds?: number }) {
@@ -316,6 +349,10 @@ const hora = (iso: string) =>
         :claims="reclamos"
         :jailed="jailed"
         :graveyard="graveyard"
+        :notes="notas"
+        :extras="extras"
+        :restrictions="restricciones"
+        :players="draft?.bench ?? []"
         :busy="busy"
         @claim="registrarReclamo"
         @entry="movimientoBanco"
@@ -324,6 +361,9 @@ const hora = (iso: string) =>
         @settle-loan="saldarPrestamo"
         @restore-prices="triplicar(false)"
         @free-player="(id) => tras(setState(id, 'bench'))"
+        @add-note="anotar"
+        @add-restriction="restringir"
+        @lift-restriction="levantarRestriccion"
       />
 
       <section class="log">

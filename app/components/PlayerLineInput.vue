@@ -188,7 +188,7 @@ async function registrar() {
 </script>
 
 <template>
-  <div class="reg">
+  <div class="reg" :class="{ 'is-compact': compact }">
     <form class="reg__form" @submit.prevent="registrar">
       <div class="reg__campo">
         <div class="reg__cab">
@@ -204,7 +204,7 @@ async function registrar() {
             <em v-else>sin elo</em>
             <span v-if="elegido" class="reg__usa">· perfil existente</span>
           </p>
-          <p v-else class="reg__leido reg__leido--vacio">
+          <p v-else-if="!compact" class="reg__leido reg__leido--vacio">
             Nombre, roles y elo en una línea. Ejemplo: <code>Target Mid/Jg Challenger</code>
           </p>
         </div>
@@ -290,6 +290,20 @@ async function registrar() {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.reg.is-compact {
+  gap: 6px;
+}
+
+.reg.is-compact .reg__campo input {
+  font-size: 14px;
+  padding: 8px 10px;
+}
+
+.reg.is-compact .btn {
+  font-size: 12px;
+  padding: 8px 12px;
 }
 
 .reg__form {
