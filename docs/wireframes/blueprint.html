@@ -135,6 +135,12 @@
   .bar{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--panel-3);border-radius:8px;margin-bottom:12px;flex-wrap:wrap}
   .bar .t{font-family:var(--f-display);font-weight:600;font-size:13px}
   .bar .clock{margin-left:auto;font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .timer{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:8px;padding:4px 8px}
+  .timer em{font-style:normal;font-family:var(--f-mono);font-size:9px;letter-spacing:.14em;color:var(--dim)}
+  .timer b{font-family:var(--f-mono);font-size:15px;font-variant-numeric:tabular-nums;color:var(--text)}
+  .timer.hot b{color:var(--amber)}
+  .btn.tiny{font-size:10px;padding:3px 8px}
   .steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
   .step{font-family:var(--f-mono);font-size:10px;padding:4px 9px;border-radius:6px;background:var(--panel-2);color:var(--dim);border:1px solid var(--line-soft)}
   .step.on{background:var(--violet);color:#fff;border-color:var(--violet)}
@@ -224,7 +230,7 @@
       <li><a href="#preguntas"><em>07</em> Preguntas abiertas</a></li>
     </ol>
     <div class="foot">
-      12 pantallas<br>10 fases<br>≈11.5–13.5 semanas<br>7 cerradas · 12 dudas
+      13 pantallas<br>10 fases<br>≈11.5–13.5 semanas<br>Fases 1 y 2 cerradas
     </div>
   </aside>
 
@@ -361,6 +367,18 @@
       </div>
 
       <div class="fix">
+        <span class="tag" style="background:var(--violet);color:#fff">NUEVO</span>
+        <div>
+          <h4>El timer triplica los precios de la sesión, no del mes</h4>
+          <p>Cuando se agotan los 15 minutos de negociación, todas las recompensas pasan a valer el triple.
+            La tentación sería reescribir el catálogo con los precios nuevos, pero el catálogo es por
+            <em>periodo</em>: eso dejaría los precios altos para todas las sesiones siguientes y pisaría el
+            histórico.</p>
+          <span class="then">→ El multiplicador vive en la sesión. El panel enseña el precio ya multiplicado, cada recompensa registrada guarda el multiplicador que se le aplicó, y el catálogo del mes no se toca.</span>
+        </div>
+      </div>
+
+      <div class="fix">
         <span class="tag" style="background:var(--violet);color:#fff">DECISIÓN</span>
         <div>
           <h4>Las recompensas no ejecutan nada: el host mueve a mano</h4>
@@ -450,7 +468,12 @@
             <div class="bar">
               <span class="t">Sesión #04</span><span class="chip live">● EN VIVO</span>
               <span class="chip">Copa Perso</span><span class="chip">SEP-2026</span>
-              <span class="clock">01:24:38</span>
+              <span class="timer">
+                <em>NEGOCIACIÓN</em>
+                <b>04:12</b>
+                <span class="chip">15 min</span>
+                <span class="btn gho tiny">Pausar</span>
+              </span>
               <span class="btn dgr">Finalizar sesión</span>
             </div>
             <div class="steps">
@@ -540,7 +563,7 @@
                 <span class="btn gho wide" style="margin-top:8px">Registrar movimiento</span>
               </div>
               <div class="pane">
-                <div class="pane-h">Recompensas <span>consulta</span></div>
+                <div class="pane-h">Recompensas <span>×1 · precio normal</span></div>
                 <div class="cost"><span>Cupo (tomar lugar)</span><b>200</b></div>
                 <div class="cost"><span>Cambio de Team</span><b>150</b></div>
                 <div class="cost"><span>Sacar de banca</span><b>200</b></div>
@@ -636,6 +659,26 @@
             <div class="field"><b>Nota</b><span>Pidió pasarse al Team 2</span></div>
             <div class="warn" style="margin:10px 0">Esto <b>no mueve a nadie ni descuenta saldo</b>. Deja constancia; el cambio lo haces tú en el panel.</div>
             <div class="btns"><span class="btn pri">Registrar</span><span class="btn gho">Cancelar</span></div>
+          </div>
+        </div>
+
+        <div class="wf">
+          <div class="wf-cap"><i>04b</i><b>Se acabó el tiempo</b><em>aviso · no bloquea el panel</em></div>
+          <div class="wf-body">
+            <div class="row" style="justify-content:center;font-family:var(--f-display);font-size:15px;background:transparent">
+              ⏱ Se acabó la negociación
+            </div>
+            <p style="font-size:12px;color:var(--muted);text-align:center;margin:2px 0 12px">
+              Los 15 minutos terminaron. ¿Triplicamos los precios y damos tiempo extra?</p>
+            <div class="cost"><span>Cambio de Team</span><b>150 → 450</b></div>
+            <div class="cost"><span>Cupo</span><b>200 → 600</b></div>
+            <div class="cost"><span>Blue Shell</span><b>500 → 1500</b></div>
+            <div class="btns" style="margin-top:12px">
+              <span class="btn pri">Triplicar precios</span>
+              <span class="btn gho">Solo cerrar</span>
+            </div>
+            <p style="font-size:11px;color:var(--dim);font-family:var(--f-mono);margin:9px 0 0">
+              Se puede deshacer desde el historial. El catálogo del mes no se toca.</p>
           </div>
         </div>
 
@@ -748,6 +791,14 @@
               <div class="pane" style="text-align:center"><div class="pane-h" style="justify-content:center">Modos</div><div class="ph" style="min-height:44px">5 iconos</div></div>
               <div class="pane" style="text-align:center"><div class="pane-h" style="justify-content:center">Tier vigente</div><div class="btns" style="justify-content:center"><span class="chip">S+</span><span class="chip">S</span><span class="chip">A</span></div></div>
               <div class="pane" style="text-align:center"><div class="pane-h" style="justify-content:center">Clips</div><div class="ph" style="min-height:44px">Twitch embed</div></div>
+            </div>
+            <div class="pane" style="margin-top:8px;text-align:center;border-color:rgba(243,185,77,.3)">
+              <div class="pane-h" style="justify-content:center">Apoya la copa</div>
+              <p style="font-size:11.5px;color:var(--muted);margin:0 0 9px">
+                Las donaciones van a los premios y al servidor.</p>
+              <span class="btn pri">Donar con PayPal</span>
+              <p style="font-size:10px;color:var(--dim);font-family:var(--f-mono);margin:8px 0 0">
+                Enlace saliente · CopaPerso no procesa pagos ni guarda datos bancarios</p>
             </div>
           </div>
         </div>
@@ -866,7 +917,7 @@
         <div class="pnum">3B</div>
         <div>
           <div class="phead"><h4>CCTM · economía y estados</h4><span class="dur">1 semana</span><span class="dur" style="border-color:var(--green);color:var(--green)">se encoge: sin motor de acciones</span></div>
-          <div class="deliv"><span>Banco de bits/subs</span><span>Donadores externos</span><span>Lista de precios</span><span>Bitácora de recompensas</span><span>Préstamos +10%/día</span><span>Cárcel</span><span>Cementerio</span><span>Restricciones</span><span>Notas y extras</span></div>
+          <div class="deliv"><span>Banco de bits/subs</span><span>Donadores externos</span><span>Lista de precios</span><span>Bitácora de recompensas</span><span>Timer de negociación</span><span>Precios ×3</span><span>Préstamos +10%/día</span><span>Cárcel</span><span>Cementerio</span><span>Restricciones</span><span>Notas y extras</span></div>
           <div class="tests"><h5>Pruebas de cierre</h5><ol>
             <li>Catálogo sembrado con §13: cupo 200, cambio de Team 150, sacar de banca 200, rol y reingreso 300, cementerio 300, Blue Shell 500. Cada costo se lee del catálogo, nunca de una constante.</li>
             <li><b>Test de "no automatismo":</b> registrar la recompensa "cambio de Team" para Target → la bitácora la guarda, y equipos, roles y saldo del banco quedan <b>exactamente igual</b>. Si algo se movió solo, el test falla.</li>
@@ -876,6 +927,11 @@
             <li>Los saldos sobreviven al cierre de sesión y al cambio de mes.</li>
             <li>Unit de préstamos con la regla real: 400 bits → día 1 = 440, día 2 = 480, día 3 = 520, día 12 = 880. Más un préstamo saldado.</li>
             <li>E2E de los estados: <b>cárcel</b> (castigo del host), <b>cementerio</b> (no se inscribió a tiempo, con el draft arrancado) y <b>rol + reingreso</b> de alguien ya sorteado. Cada uno con su propio rastro en el log.</li>
+            <li>Cronómetro: 15:00 por defecto, duración escribible, y al llegar a 0 el aviso salta <b>una sola vez</b>.</li>
+            <li>«Triplicar precios» pone el Blue Shell en 1500 y el cupo en 600 en todo el panel; «Solo cerrar» no cambia ni un precio.</li>
+            <li>Triplicar en la sesión #4 <b>no altera</b> la #5 ni el mes siguiente: el catálogo del periodo queda intacto.</li>
+            <li>Una recompensa registrada en ×3 guarda el costo efectivo y el multiplicador, para poder auditarla meses después.</li>
+            <li>El aviso <b>no bloquea</b>: con el diálogo abierto se sigue pudiendo registrar y arrastrar jugadores.</li>
           </ol></div>
         </div>
       </div>
@@ -959,13 +1015,14 @@
         <div class="pnum">7</div>
         <div>
           <div class="phead"><h4>Home pública</h4><span class="dur">1.5 semanas</span></div>
-          <div class="deliv"><span>Hero</span><span>Modos</span><span>Reglas</span><span>Premios</span><span>Tier público</span><span>Twitch y redes</span><span>SEO</span></div>
+          <div class="deliv"><span>Hero</span><span>Modos</span><span>Reglas</span><span>Premios</span><span>Tier público</span><span>Donaciones PayPal</span><span>Twitch y redes</span><span>SEO</span></div>
           <div class="tests"><h5>Pruebas de cierre</h5><ol>
             <li>Lighthouse móvil: rendimiento ≥ 90, accesibilidad ≥ 95, SEO ≥ 95.</li>
             <li>360, 768 y 1440 px sin scroll horizontal ni texto cortado.</li>
             <li>Anónimo no alcanza ninguna ruta <code>/host/*</code> ni endpoint de escritura (403).</li>
             <li>La Home no expone bits, préstamos, cárcel ni notas, ni en el HTML ni en el payload.</li>
             <li>Manual: la vista previa del enlace se ve bien en Discord, X y WhatsApp.</li>
+            <li>El enlace de PayPal abre en pestaña nueva con <code>rel="noopener"</code> y apunta al destino correcto. Ningún formulario de pago vive dentro de CopaPerso.</li>
           </ol></div>
         </div>
       </div>
@@ -1046,10 +1103,18 @@
     <section id="preguntas">
       <div class="eyebrow">07 · Pendientes</div>
       <h2>Lo que necesito que me aclares</h2>
-      <p class="lede">Siete quedaron cerradas y ya están aplicadas en todo el documento. Ninguna de las que
-        siguen bloquea el esquema: se pueden resolver mientras se construye.</p>
+      <p class="lede">Las cinco primeras son de lo que acabas de añadir (el timer de negociación y las
+        donaciones) y conviene cerrarlas antes de llegar a la Fase 3B. El resto se puede resolver sobre la
+        marcha. Las siete que ya contestaste están aplicadas en todo el documento.</p>
 
       <div class="qs">
+        <div class="q block"><b>Timer · ¿cuántos tramos hay?</b><p>El flujo es 15 min a precio normal → se triplica → tiempo extra. ¿Y cuando se acaba el tiempo extra? ¿Se cierra la negociación, vuelve a saltar el aviso, o sigue todo en ×3 hasta que empiece la partida?</p></div>
+        <div class="q block"><b>Timer · ¿el ×3 es fijo o escribible?</b><p>Por si algún día quieres ×2 o ×5. Y: ¿se triplica absolutamente todo, o alguna recompensa se queda a precio normal?</p></div>
+        <div class="q imp"><b>Timer · ¿se puede volver a precio normal?</b><p>Lo dejaré deshacible desde el historial por si lo pulsas sin querer, salvo que prefieras que no haya marcha atrás.</p></div>
+        <div class="q imp"><b>Timer · ¿se ve en la vista pública en vivo?</b><p>Que los espectadores vean cuánto queda para que suban los precios podría animar las donaciones. ¿Y quieres aviso sonoro además del emergente?</p></div>
+        <div class="q block"><b>PayPal · ¿qué enlace usamos?</b><p>¿Un paypal.me, el botón de donación de PayPal, o tu correo? ¿Y qué debe decir el apartado? La gente dona más cuando sabe a qué van las donaciones.</p></div>
+
+
         <div class="q" style="border-left:3px solid var(--green)"><b>✔ Costos → mandan los de §13</b><p>Cupo 200 · cambio de Team 150 · sacar de banca 200 · rol y reingreso 300 · sacar del cementerio 300 · Blue Shell 500.</p></div>
         <div class="q" style="border-left:3px solid var(--green)"><b>✔ Cárcel, cementerio, cupo y reingreso son cuatro cosas</b><p>Cementerio: no se inscribió a tiempo, con el draft arrancado. Cupo: entra en lugar de alguien ya seleccionado. Reingreso: ya salió sorteado y quiere otro rol. Cárcel: castigo manual del host.</p></div>
         <div class="q" style="border-left:3px solid var(--green)"><b>✔ Los 100 LP se reinician cada mes</b><p>Todas las sesiones del periodo acumulan sobre el mismo LP.</p></div>

@@ -130,6 +130,21 @@ recompensas reclamadas, préstamos, cárcel, cementerio, restricciones, notas, e
 **Principio de esta entrega:** ninguna recompensa ejecuta cambios. El host cumple la recompensa moviendo él
 mismo a los participantes con las herramientas de 3A; el sistema solo deja constancia.
 
+### Timer de negociación *(añadido en septiembre de 2026)*
+
+En el stream el host abre un cronómetro de 15 minutos (escribible: puede poner 10, 20 o los que quiera).
+Al agotarse, **los precios de todas las recompensas se triplican** y empieza un tiempo extra.
+
+- Cronómetro en la barra superior del CCTM, con duración escribible, iniciar / pausar / reiniciar.
+- Al llegar a cero, aviso emergente con dos botones: **«Triplicar precios»** y **«Solo cerrar»**.
+- El multiplicador vive en la sesión, no en el catálogo: los precios de los meses siguientes no se tocan
+  (ver `docs/02-modelo-de-datos.md`, A7).
+- Todo el panel muestra el precio ya multiplicado, con una marca visible de que está en ×3.
+- El cambio queda en el historial y se puede deshacer.
+
+**El aviso no bloquea.** Si salta a mitad de una asignación, el host lo cierra y sigue; el cronómetro
+nunca congela el panel ni impide registrar a nadie.
+
 **Pruebas de cierre 3B**
 1. Unit del catálogo sembrado con §13: cupo (entrar en lugar de alguien) 200, cambio de Team 150,
    sacar de banca 200, cambio de rol y reingreso 300, sacar del cementerio 300, Blue Shell 500. Cada costo

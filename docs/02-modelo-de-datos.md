@@ -87,6 +87,36 @@ Consecuencias en el modelo:
   deshacible con el mismo mecanismo.
 - Los saldos del banco los ajusta el host a mano, igual que ya hacía en el Excel (§13, §14).
 
+### A7. El timer de negociación multiplica los precios, no los reescribe
+
+Añadido al plan en septiembre de 2026. En el stream el host abre un cronómetro (15 minutos por
+defecto, pero escribible); cuando se agota, **los precios de todas las recompensas se triplican** y
+empieza un tiempo extra.
+
+La tentación sería reescribir `action_catalog` con los precios nuevos. Sería un error: el catálogo es
+**por periodo**, así que triplicarlo dejaría los precios altos para todas las sesiones siguientes, y
+además pisaría el histórico. El multiplicador vive en la **sesión**:
+
+```text
+SESSION  + price_multiplier   numeric, 1.00 por defecto
+         + timer_ends_at      timestamptz, cuándo salta el aviso
+         + timer_label        text, "Registro", "Tiempo extra"...
+```
+
+- El precio que se enseña en el panel es `action_catalog.cost_bits × session.price_multiplier`.
+- `reward_claim` guarda el **costo efectivo ya multiplicado** más el multiplicador que se aplicó,
+  para que dentro de un mes se sepa por qué alguien pagó 1500 por un Blue Shell.
+- El cambio de multiplicador se escribe en `action_log` con su valor anterior: es deshacible como
+  cualquier otra acción, por si el host lo pulsa sin querer.
+- Un multiplicador de sesión también deja la puerta abierta a otros tramos (×2, ×9) sin tocar nada más.
+
+```text
+REWARD_CLAIM + multiplier_applied numeric   -- 1.00 o 3.00
+```
+
+El cronómetro es **informativo, nunca bloqueante**: al llegar a cero avisa, pero no congela el panel
+ni impide registrar a nadie. El host sigue mandando (§2 del plan).
+
 ### A6. Banco de bits/subs: cuenta unificada
 
 §14–§15 piden que un *supporter* que no juega tenga saldo. Se modela como `ledger_account` que apunta

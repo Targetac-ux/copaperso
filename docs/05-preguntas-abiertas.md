@@ -22,6 +22,29 @@
 8. **Las recompensas no ejecutan nada.** El catálogo es una lista de precios de consulta; el host cumple la
    recompensa moviendo él mismo a los participantes. El sistema solo deja constancia en la bitácora.
 
+## 🆕 Sobre el timer de negociación (septiembre 2026)
+
+Lo suficiente para construirlo está claro, pero estas afinan el comportamiento:
+
+- **¿Cuántos tramos hay?** El flujo que describiste es: 15 min a precio normal → se triplica → tiempo
+  extra. ¿Y cuando se acaba el tiempo extra? ¿Se cierra la negociación, vuelve a saltar el aviso, o
+  simplemente sigue todo en ×3 hasta que empiece la partida?
+- **¿El ×3 es fijo?** ¿O prefieres poder escribir el multiplicador, por si algún día quieres ×2 o ×5?
+- **¿Se triplica absolutamente todo?** Cupo, cambio de Team, sacar de banca, rol y reingreso, cementerio
+  y Blue Shell. ¿Alguna se queda a precio normal?
+- **¿Se puede volver a precio normal** en la misma sesión, o una vez triplicado ya no hay marcha atrás?
+  (Lo dejaré deshacible por si lo pulsas sin querer, salvo que digas lo contrario.)
+- **¿El cronómetro se ve en la vista pública en vivo?** Que los espectadores vean cuánto queda para que
+  suban los precios podría animar bastante las donaciones.
+- **¿Quieres aviso sonoro** además del emergente, o solo visual?
+
+## 🆕 Sobre las donaciones de PayPal
+
+- **¿Qué enlace usamos?** ¿Un `paypal.me/…`, el botón de donación de PayPal, o tu correo de PayPal?
+- **¿Qué debe decir el apartado?** Ayuda saber a qué van las donaciones (premios, servidor, la copa) —
+  la gente dona más cuando sabe para qué.
+- **¿Va también en el pie de página**, además del bloque en la Home?
+
 ## 🟡 Importantes
 
 8. **Tier Ranking: ¿manual o calculado?** §30 lo describe administrativo, pero el wireframe muestra una
