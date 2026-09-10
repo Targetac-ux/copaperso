@@ -1,137 +1,420 @@
 <script setup lang="ts">
+import type { BenchPlayer } from '#shared/draft'
+import type { PlayerRole, Player, PlayerRole as Rol } from '#shared/types/models'
+
 definePageMeta({ layout: 'host' })
-useSeoMeta({ title: 'Panel del host', robots: 'noindex' })
+useSeoMeta({ title: 'CCTM Manager', robots: 'noindex' })
 
-const { staff, loadStaff } = useStaff()
-await loadStaff()
+const MODOS: Record<string, string> = {
+  perso: 'Copa Perso',
+  tryhard: 'Copa Tryhard',
+  random: 'Copa Random',
+  analisis: 'Copa Análisis',
+  aram_afk: 'Copa ARAM AFK',
+}
 
-const { data: health } = await useFetch('/api/health')
+interface Participacion {
+  id: string
+  roles: Rol[]
+  player: Player
+}
+interface EntradaLog {
+  id: string
+  action_type: string
+  summary: string
+  created_at: string
+}
 
-/** Lo que ya está construido y lo que llega en cada fase. */
-const modules = [
-  { name: 'CCTM Manager', desc: 'Banca, draft, equipos, swap y aleatorio.', phase: 'Fase 3', ready: false },
-  { name: 'Partidas y LP', desc: 'Resultado, MVP, ACE, off-role y Blue Shell.', phase: 'Fase 4', ready: false },
-  { name: 'Vista en vivo', desc: 'Lo que ven los espectadores durante el draft.', phase: 'Fase 4B', ready: false },
-  { name: 'Roster', desc: 'Estadísticas e histórico por periodo.', phase: 'Fase 5', ready: false },
-  { name: 'Tier Manager', desc: 'La Tier List que sale en la Home.', phase: 'Fase 6', ready: false },
-]
+// --- sesión activa ---------------------------------------------------------
+const { data: sesiones, refresh: refrescarSesiones } = await useFetch('/api/sessions', {
+  default: () => [],
+})
+const activa = computed(() => sesiones.value.find((s) => s.status !== 'closed') ?? null)
+const sessionId = computed(() => activa.value?.id)
+
+const cctm = useCctm(sessionId)
+const {
+  draft, busy, error, warnings, available, load, assign, swap, toBench, benchAll, setState, roll,
+  confirmWarnings, dismissWarnings,
+} = cctm
+
+// --- estado de la pantalla -------------------------------------------------
+const seleccionado = ref<string | null>(null)
+const swapDesde = ref<string | null>(null)
+const sorteado = ref<BenchPlayer | null>(null)
+const log = ref<EntradaLog[]>([])
+const creando = ref(false)
+
+async function recargar() {
+  if (!sessionId.value) return
+  await load()
+  log.value = await $fetch<EntradaLog[]>(`/api/sessions/${sessionId.value}/log`, {
+    query: { limit: 12 },
+  })
+}
+
+watch(sessionId, recargar, { immediate: true })
+
+// Los participantes del mes que todavía no están en esta sesión.
+const { data: participaciones } = await useFetch<Participacion[]>('/api/participations', {
+  default: () => [],
+})
+
+const fuera = computed(() => {
+  const dentro = new Set(draft.value?.bench.map((b) => b.participationId) ?? [])
+  return participaciones.value.filter((p) => !dentro.has(p.id))
+})
+
+async function meterEnBanca(participationId: string) {
+  if (!sessionId.value) return
+  await $fetch(`/api/sessions/${sessionId.value}/participants`, {
+    method: 'POST',
+    body: { participation_id: participationId },
+  })
+  await recargar()
+}
+
+async function nuevaSesion() {
+  creando.value = true
+  try {
+    await $fetch('/api/sessions', { method: 'POST', body: { mode: 'perso' } })
+    await refrescarSesiones()
+    await recargar()
+  } finally {
+    creando.value = false
+  }
+}
+
+// --- acciones del draft ----------------------------------------------------
+async function tras(accion: Promise<unknown>) {
+  await accion
+  await recargar()
+}
+
+function alSoltar(payload: { id: string; role: PlayerRole }, team: 1 | 2) {
+  tras(assign(payload.id, team, payload.role))
+}
+
+function alSeleccionar(id: string) {
+  // Con un swap a medias, el segundo clic elige la pareja.
+  if (swapDesde.value && swapDesde.value !== id) {
+    const desde = swapDesde.value
+    swapDesde.value = null
+    tras(swap(desde, id))
+    return
+  }
+  seleccionado.value = seleccionado.value === id ? null : id
+}
+
+async function sortear() {
+  sorteado.value = await roll()
+}
+
+async function confirmar() {
+  await confirmWarnings()
+  await recargar()
+}
+
+const hora = (iso: string) =>
+  new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
 </script>
 
 <template>
   <div>
-    <header class="head">
-      <div>
-        <p class="eyebrow">Panel del host</p>
-        <h1>Hola, {{ staff?.display_name ?? 'host' }}</h1>
+    <!-- sin sesión abierta -->
+    <section v-if="!activa" class="vacio">
+      <p class="eyebrow">CCTM Manager</p>
+      <h1>No hay ninguna CopaPerso abierta</h1>
+      <p class="vacio__txt">
+        Abre una sesión para empezar a registrar gente, sortear y formar los equipos.
+      </p>
+      <button class="btn btn--primary" :disabled="creando" @click="nuevaSesion">
+        {{ creando ? 'Abriendo…' : 'Abrir sesión' }}
+      </button>
+    </section>
+
+    <template v-else>
+      <div class="barra">
+        <span class="titulo">Sesión #{{ activa.number }}</span>
+        <span class="chip" :class="`is-${activa.status}`">
+          {{ activa.status === 'live' ? 'En vivo' : 'Abierta' }}
+        </span>
+        <span class="chip">{{ MODOS[activa.mode] ?? activa.mode }}</span>
+        <span class="hueco" />
+        <button class="btn btn--ghost" :disabled="busy" @click="tras(benchAll())">
+          Devolver equipos a banca
+        </button>
       </div>
-      <span class="pill" :class="health?.ok ? 'pill--ok' : 'pill--bad'">
-        {{ health?.ok ? 'Base de datos conectada' : 'Sin conexión a la base' }}
-        <em v-if="health?.ok" class="num">{{ health.latencyMs }} ms</em>
-      </span>
-    </header>
 
-    <p class="lede">
-      Las fundaciones están montadas: acceso, base de datos, almacenamiento de fotos e historial de
-      acciones. El CCTM Manager llega en la Fase 3.
-    </p>
+      <p v-if="error" class="alert alert--error">{{ error }}</p>
 
-    <ul class="modules">
-      <li v-for="mod in modules" :key="mod.name" class="card module">
-        <div>
-          <h2>{{ mod.name }}</h2>
-          <p>{{ mod.desc }}</p>
+      <div class="mesa">
+        <CctmBench
+          :players="draft?.bench ?? []"
+          :selected="seleccionado"
+          @select="alSeleccionar"
+          @bench-drop="(id) => tras(toBench(id))"
+        />
+
+        <div class="centro">
+          <div class="equipos">
+            <CctmTeam
+              v-for="t in draft?.teams ?? []"
+              :key="t.teamNumber"
+              :team="t"
+              :selected="seleccionado"
+              :swap-from="swapDesde"
+              @drop="(p) => alSoltar(p, t.teamNumber)"
+              @select="alSeleccionar"
+            />
+          </div>
+
+          <section v-if="fuera.length" class="sumar">
+            <h2>Registrados este mes que no están en la sesión</h2>
+            <div class="sumar__lista">
+              <button
+                v-for="p in fuera"
+                :key="p.id"
+                class="btn btn--ghost"
+                @click="meterEnBanca(p.id)"
+              >
+                + {{ p.player.display_name }}
+              </button>
+            </div>
+          </section>
         </div>
-        <span class="tag">{{ mod.phase }}</span>
-      </li>
-    </ul>
+
+        <div class="derecha">
+          <CctmRandom
+            v-model:picked="sorteado"
+            :available="available.length"
+            :busy="busy"
+            @roll="sortear"
+            @assign="(p) => tras(assign(p.id, p.team, p.role)).then(() => (sorteado = null))"
+          />
+
+          <CctmPlayerActions
+            v-if="seleccionado && draft"
+            :draft="draft"
+            :selected-id="seleccionado"
+            :swap-from="swapDesde"
+            :busy="busy"
+            @assign="(p) => tras(assign(p.id, p.team, p.role))"
+            @bench="(id) => tras(toBench(id))"
+            @state="(p) => tras(setState(p.id, p.state))"
+            @start-swap="(id) => (swapDesde = id)"
+            @cancel-swap="swapDesde = null"
+            @close="seleccionado = null"
+          />
+
+        </div>
+      </div>
+
+      <section class="log">
+        <h2>Historial</h2>
+        <ol v-if="log.length">
+          <li v-for="e in log" :key="e.id">
+            <time>{{ hora(e.created_at) }}</time>
+            <span>{{ e.summary }}</span>
+          </li>
+        </ol>
+        <p v-else class="log__vacio">Todavía no ha pasado nada en esta sesión.</p>
+      </section>
+    </template>
+
+    <CctmWarnings :warnings="warnings" @confirm="confirmar" @cancel="dismissWarnings" />
   </div>
 </template>
 
 <style scoped>
-.head {
+.vacio {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 70px 0;
 }
 
 h1 {
-  font-size: 27px;
+  font-size: 28px;
   font-weight: 600;
-  margin-top: 4px;
-}
-
-.pill {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: var(--panel);
-}
-
-.pill em {
-  font-style: normal;
-  font-size: 11px;
-  color: var(--dim);
-}
-
-.pill--ok {
-  border-color: rgba(63, 214, 154, 0.4);
-  color: var(--ok);
-}
-
-.pill--bad {
-  border-color: rgba(255, 90, 110, 0.4);
-  color: var(--danger);
-}
-
-.lede {
-  color: var(--muted);
-  max-width: 64ch;
-  margin: 0 0 26px;
-}
-
-.modules {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 12px;
-}
-
-.module {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px 18px;
-}
-
-.module h2 {
-  font-size: 15.5px;
-  font-weight: 600;
-}
-
-.module p {
   margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--muted);
 }
 
-.tag {
-  margin-left: auto;
-  flex: none;
+.vacio__txt {
+  color: var(--muted);
+  max-width: 52ch;
+  margin: 0;
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--panel-3);
+  border-radius: var(--r);
+  padding: 9px 13px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.titulo {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.hueco {
+  flex: 1;
+}
+
+.chip {
   font-family: var(--f-mono);
   font-size: 10px;
   letter-spacing: 0.08em;
-  color: var(--dim);
+  text-transform: uppercase;
   border: 1px solid var(--line);
   border-radius: 20px;
-  padding: 2px 8px;
+  padding: 3px 9px;
+  color: var(--muted);
+}
+
+.chip.is-live {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.chip.is-open {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.mesa {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1.05fr);
+  gap: 12px;
+  /* Las tres columnas a la misma altura: si no, la de la derecha se estira
+     sola y las otras dos dejan un hueco muerto debajo. */
+  align-items: stretch;
+  min-height: 62vh;
+}
+
+.centro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.equipos > * {
+  align-self: start;
+}
+
+.equipos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.derecha {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sumar,
+.log {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 14px;
+}
+
+.sumar h2,
+.log h2 {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  font-weight: 500;
+  margin-bottom: 9px;
+}
+
+.sumar__lista {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sumar__lista .btn {
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+.log {
+  margin-top: 12px;
+}
+
+.log ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 3;
+  column-gap: 24px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.log li {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  break-inside: avoid;
+}
+
+.log time {
+  color: var(--dim);
+  flex: none;
+}
+
+.log__vacio {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--dim);
+}
+
+@media (max-width: 1100px) {
+  .log ol {
+    columns: 2;
+  }
+}
+
+@media (max-width: 1300px) {
+  .mesa {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  }
+
+  .derecha {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .derecha > * {
+    flex: 1 1 260px;
+  }
+}
+
+@media (max-width: 900px) {
+  .mesa {
+    grid-template-columns: 1fr;
+  }
+
+  .equipos {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -109,19 +109,46 @@ Total acumulado: **44 unitarias + 15 de punta a punta**.
 
 ## Fase 3 — CCTM Manager  *(3–3.5 semanas, la fase más grande)*
 
-### 3A — Banca, equipos y asignación  *(1.5 sem)*
-Registro en vivo, banca de jugadores, asignación directa, drag & drop, swap, roles, eliminar de sesión,
-devolver a banca, panel aleatorio.
+### 3A — Banca, equipos y asignación  ·  ✅ CERRADA (10 de septiembre de 2026)
 
-**Pruebas de cierre 3A**
-1. Unit del aleatorio: solo elige jugadores en estado `bench`; con 200 tiradas sobre 10 jugadores la
-   distribución no se desvía más de ±15 % de lo uniforme; con banca vacía devuelve error controlado.
-2. E2E drag & drop: arrastrar de banca a Team 1 / MID; recargar la página; sigue ahí.
-3. E2E swap: Target (T1/MID) ↔ PlayerA (T2/ADC) → intercambian equipo y **conservan su rol** (§11);
-   el log registra dos movimientos.
-4. Integración: el mismo jugador no puede estar en dos equipos; rol duplicado según lo que se defina.
-5. E2E: eliminar de la sesión → desaparece del panel, el `player` y su histórico siguen existiendo.
-6. Manual (cronometrada): registrar 10 jugadores desde cero y formar 2 equipos completos en **menos de 3 minutos**.
+**Entregables**
+
+- ✅ Mesa de control en `/host`: barra de sesión, banca, los dos equipos y panel de acciones.
+- ✅ Banca de jugadores con búsqueda, y alta desde los registrados del mes.
+- ✅ Arrastrar y soltar de la banca a cualquiera de los diez puestos.
+- ✅ Panel Aleatorio: sortea, pero **no asigna**; el host elige rol y equipo.
+- ✅ Swap conservando el rol, con dos líneas en el historial.
+- ✅ Cárcel, cementerio, devolver a la banca y sacar de la sesión.
+- ✅ Devolver los dos equipos a la banca de golpe.
+- ✅ Historial de la sesión en vivo.
+
+**Pruebas de cierre — 19 unitarias nuevas y 6 de punta a punta**
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | Aleatorio: solo saca gente disponible; reparto parejo en 200 tiradas; banca vacía da error controlado | ✅ 8 casos |
+| 2 | Arrastrar de banca a Team 1 / MID, recargar, sigue ahí | ✅ |
+| 3 | Swap: intercambian equipo **conservando el rol**, dos entradas en el log | ✅ |
+| 4 | El mismo jugador no puede ocupar dos puestos | ✅ |
+| 5 | Sacar de la sesión no borra el perfil ni la participación del mes | ✅ |
+| 6 | Diez jugadores desde cero a 5v5 | ✅ **64 s** automatizado (límite: 3 min) |
+
+Total acumulado: **63 unitarias + 21 de punta a punta**.
+
+**Decisiones que se tomaron construyendo**
+
+- **Casi nada se prohíbe.** El plan dice que el host manda (§1), así que rol repetido en un equipo y
+  off-role son **avisos** con un «Hacerlo igual», no bloqueos. Solo se impide lo que dejaría la sesión
+  rota: sexto jugador en un equipo, o alguien en dos equipos a la vez.
+- **El sorteo no asigna.** Enseña quién salió y espera; rol y equipo los decide el host (§9).
+- **Cada acción devuelve el estado entero** recalculado por el servidor, y la pantalla lo reemplaza. En
+  directo vale más una pantalla que siempre dice la verdad que una rápida que puede desincronizarse.
+
+**Observación de rendimiento:** cada acción cuesta uno o dos segundos de ida y vuelta a Supabase. Con
+veinte acciones son unos 30 s solo de latencia. Si en el uso real se nota lento, la salida es pintar el
+cambio en la pantalla antes de que conteste el servidor (actualización optimista) y revertir si falla.
+
+---
 
 ### 3B — Economía y estados  *(1 sem — se reduce: no hay motor de acciones)*
 Banco de bits/subs, donadores externos, catálogo de recompensas como lista de precios, bitácora de

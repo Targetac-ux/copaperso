@@ -30,7 +30,8 @@ test.describe('con credenciales de host', () => {
     await page.getByRole('button', { name: 'Iniciar sesión' }).click()
 
     await expect(page).toHaveURL(/\/host$/)
-    await expect(page.getByText('Base de datos conectada')).toBeVisible()
+    // El rail del host solo se pinta con sesión válida.
+    await expect(page.getByRole('link', { name: 'Tier Manager' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Cerrar sesión' }).click()
     await expect(page).toHaveURL(/\/host\/login/)

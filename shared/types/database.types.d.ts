@@ -76,6 +76,26 @@ type SessionParticipantRow = {
   joined_at: string
 }
 
+export type StateKind = 'jail' | 'graveyard'
+
+type StateRecordRow = {
+  id: string
+  session_participant_id: string
+  kind: StateKind
+  reason: string | null
+  entered_at: string
+  released_at: string | null
+}
+
+type TeamMemberRow = {
+  id: string
+  team_id: string
+  session_participant_id: string
+  role: PlayerRoleDb
+  is_off_role: boolean
+  created_at: string
+}
+
 type TeamRow = {
   id: string
   session_id: string
@@ -194,6 +214,32 @@ export type Database = {
         Row: TeamRow
         Insert: { id?: string; session_id: string; team_number: number; name?: string | null }
         Update: { name?: string | null }
+        Relationships: []
+      }
+      team_member: {
+        Row: TeamMemberRow
+        Insert: {
+          id?: string
+          team_id: string
+          session_participant_id: string
+          role: PlayerRoleDb
+          is_off_role?: boolean
+          created_at?: string
+        }
+        Update: { team_id?: string; role?: PlayerRoleDb; is_off_role?: boolean }
+        Relationships: []
+      }
+      state_record: {
+        Row: StateRecordRow
+        Insert: {
+          id?: string
+          session_participant_id: string
+          kind: StateKind
+          reason?: string | null
+          entered_at?: string
+          released_at?: string | null
+        }
+        Update: { released_at?: string | null; reason?: string | null }
         Relationships: []
       }
       action_log: {
