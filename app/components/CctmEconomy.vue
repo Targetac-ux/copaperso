@@ -1,19 +1,14 @@
 <script setup lang="ts">
 import type { BenchPlayer } from '#shared/draft'
+import type { PartidaCargada } from '#shared/match'
 
 /**
- * Los paneles de economía y estados de la sesión (§13–§19).
+ * Los paneles de consulta de la sesión (§13–§19).
  *
  * Todo es de consulta y administración: aquí no se ejecuta nada por su cuenta.
- * Los canjeos en bits viven en su propio panel, a la derecha de la mesa.
+ * Lo que se toca a menudo tiene card propia arriba —canjeos y banco—; aquí
+ * queda lo que se mira de vez en cuando.
  */
-interface Cuenta {
-  id: string
-  display_name: string
-  kind: 'player' | 'supporter'
-  balance_bits: number
-  balance_subs: number
-}
 interface Prestamo {
   id: string
   person_name: string
@@ -24,7 +19,7 @@ interface Prestamo {
   interest: number
 }
 const props = defineProps<{
-  accounts: Cuenta[]
+  matches: PartidaCargada[]
   loans: Prestamo[]
   jailed: BenchPlayer[]
   graveyard: BenchPlayer[]
@@ -36,8 +31,6 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  entry: [payload: { account_id: string; delta_bits: number; reason: string }]
-  openAccount: [payload: { display_name: string; balance_bits: number }]
   newLoan: [payload: { person_name: string; principal_bits: number }]
   settleLoan: [id: string]
   freePlayer: [id: string]
@@ -46,7 +39,7 @@ const emit = defineEmits<{
   liftRestriction: [id: string]
 }>()
 
-const pestana = ref<'banco' | 'prestamos' | 'estados' | 'notas'>('banco')
+const pestana = ref<'partidas' | 'prestamos' | 'estados' | 'notas'>('partidas')
 
 const ETIQUETA_EXTRA: Record<string, string> = {
   bonus: 'Bonus',
@@ -82,31 +75,6 @@ function anotarRestriccion() {
   nuevaRestriccion.jugador = ''
 }
 
-// --- banco ---
-const nuevaCuenta = ref('')
-const saldoInicial = ref('')
-const movimiento = reactive({ cuenta: '', bits: '', motivo: '' })
-
-function abrirCuenta() {
-  const nombre = nuevaCuenta.value.trim()
-  if (!nombre) return
-  emit('openAccount', { display_name: nombre, balance_bits: Number(saldoInicial.value) || 0 })
-  nuevaCuenta.value = ''
-  saldoInicial.value = ''
-}
-
-function registrarMovimiento() {
-  const bits = Number(movimiento.bits)
-  if (!movimiento.cuenta || !bits || !movimiento.motivo.trim()) return
-  emit('entry', {
-    account_id: movimiento.cuenta,
-    delta_bits: bits,
-    reason: movimiento.motivo.trim(),
-  })
-  movimiento.bits = ''
-  movimiento.motivo = ''
-}
-
 // --- préstamos ---
 const nuevoPrestamo = reactive({ persona: '', bits: '' })
 
@@ -119,13 +87,26 @@ function crearPrestamo() {
 }
 
 const prestamosAbiertos = computed(() => props.loans.filter((l) => l.status === 'open'))
+
+/** MVP, ACE y dobles derrotas de una partida, en una línea. */
+function premios(m: PartidaCargada) {
+  const out: string[] = []
+  const mvp = m.players.find((p) => p.isMvp)
+  const ace = m.players.find((p) => p.isAce)
+  if (mvp) out.push(`MVP ${mvp.displayName}`)
+  if (ace) out.push(`ACE ${ace.displayName}`)
+  for (const d of m.players.filter((p) => p.result === 'double_loss')) {
+    out.push(`doble derrota ${d.displayName}`)
+  }
+  return out
+}
 </script>
 
 <template>
   <section class="eco">
     <nav class="tabs">
-      <button :class="{ on: pestana === 'banco' }" @click="pestana = 'banco'">
-        Banco <span class="cnt">{{ accounts.length }}</span>
+      <button :class="{ on: pestana === 'partidas' }" @click="pestana = 'partidas'">
+        Partidas <span class="cnt">{{ matches.length }}</span>
       </button>
       <button :class="{ on: pestana === 'prestamos' }" @click="pestana = 'prestamos'">
         Préstamos <span class="cnt">{{ prestamosAbiertos.length }}</span>
@@ -138,40 +119,26 @@ const prestamosAbiertos = computed(() => props.loans.filter((l) => l.status === 
       </button>
     </nav>
 
-    <!-- ---------------------------------------------------------- banco -->
-    <div v-if="pestana === 'banco'" class="cuerpo">
-      <div class="col">
-        <h3>Saldos</h3>
-        <ul v-if="accounts.length" class="lista">
-          <li v-for="a in accounts" :key="a.id">
-            <span>{{ a.display_name }}<em v-if="a.kind === 'supporter'"> ✦</em></span>
-            <b>{{ a.balance_bits }}</b>
-            <em v-if="a.balance_subs">{{ a.balance_subs }} subs</em>
+    <!-- ------------------------------------------------------- partidas -->
+    <div v-if="pestana === 'partidas'" class="cuerpo">
+      <div class="col ancha">
+        <h3>Jugadas esta sesión</h3>
+        <ol v-if="matches.length" class="partidas">
+          <li v-for="m in matches" :key="m.id" :class="`is-${m.status}`">
+            <span class="num">{{ m.matchNumber }}</span>
+            <span v-if="m.status === 'live'" class="estado">en juego</span>
+            <span v-else-if="m.winnerTeam" class="gana" :class="`is-t${m.winnerTeam}`">
+              gana Team {{ m.winnerTeam }}
+            </span>
+            <span v-else class="estado">sin resultado</span>
+            <span class="premio">{{ premios(m).join(' · ') }}</span>
+            <span class="cuantos">{{ m.players.length }} jugadores</span>
           </li>
-        </ul>
-        <p v-else class="vacio">Nadie tiene saldo todavía.</p>
-        <p class="nota">✦ donador externo: tiene saldo pero no juega.</p>
-      </div>
-
-      <div class="col">
-        <h3>Registrar movimiento</h3>
-        <select v-model="movimiento.cuenta" aria-label="Cuenta">
-          <option value="">Elegir cuenta…</option>
-          <option v-for="a in accounts" :key="a.id" :value="a.id">
-            {{ a.display_name }} ({{ a.balance_bits }})
-          </option>
-        </select>
-        <input v-model="movimiento.bits" type="number" placeholder="Bits (negativo para restar)">
-        <input v-model="movimiento.motivo" type="text" placeholder="Motivo">
-        <button class="btn btn--primary" :disabled="busy" @click="registrarMovimiento">Anotar</button>
-      </div>
-
-      <div class="col">
-        <h3>Abrir cuenta</h3>
-        <input v-model="nuevaCuenta" type="text" placeholder="Nombre o nick de Twitch">
-        <input v-model="saldoInicial" type="number" placeholder="Saldo inicial en bits">
-        <button class="btn btn--ghost" :disabled="busy" @click="abrirCuenta">Abrir</button>
-        <p class="nota">Los saldos se conservan entre sesiones y entre meses.</p>
+        </ol>
+        <p v-else class="vacio">Todavía no se ha jugado ninguna.</p>
+        <p class="nota">
+          La alineación es la que se congeló al empezar cada partida, no los equipos de ahora.
+        </p>
       </div>
     </div>
 
@@ -516,6 +483,79 @@ input:focus {
 .vacio {
   margin: 0;
   font-size: 12.5px;
+  color: var(--dim);
+}
+
+.partidas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.partidas li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 5px 9px;
+  font-size: 12px;
+}
+
+.partidas li.is-live {
+  border-color: var(--ok);
+}
+
+.partidas .num {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--dim);
+  width: 14px;
+}
+
+.partidas .gana {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+}
+
+.partidas .gana.is-t1 {
+  color: var(--team-1);
+}
+
+.partidas .gana.is-t2 {
+  color: var(--team-2);
+}
+
+.partidas .estado {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ok);
+}
+
+.partidas li:not(.is-live) .estado {
+  color: var(--dim);
+}
+
+.partidas .premio {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--gold);
+  font-size: 11.5px;
+}
+
+.partidas .cuantos {
+  font-family: var(--f-mono);
+  font-size: 10px;
   color: var(--dim);
 }
 </style>

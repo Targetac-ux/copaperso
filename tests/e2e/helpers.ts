@@ -27,15 +27,31 @@ export const ESPERA_REGISTRO = { timeout: 15_000 }
 /**
  * Escribe una línea de registro y la envía.
  *
- * Comprueba que el campo se quedó con lo que se escribió **antes** de pulsar
- * Enter. Con la suite entera en marcha se vio alguna vez un `fill()` que no
- * llegaba a aplicarse: el Enter salía con el campo vacío, no se registraba a
- * nadie y el fallo aparecía mucho después, en la aserción de que el jugador
- * está en la banca. Verificar aquí lo convierte en una espera, no en un fallo.
+ * Comprueba que la app ha **entendido** la línea antes de pulsar Enter, no solo
+ * que el `<input>` la tenga: son cosas distintas y esa diferencia era el fallo
+ * intermitente que aparecía en media suite.
+ *
+ * `fill()` escribe el valor y dispara un `input` de golpe. Si entre medias
+ * llega un re-render —el que provoca el registro anterior al recargar la
+ * banca—, la directiva `v-model` reescribe el `value` del input con lo que
+ * tiene Vue (vacío) y se lleva por delante lo recién escrito. El Enter salía
+ * entonces con el campo vacío, no se registraba a nadie, y el fallo aparecía
+ * mucho después, en la aserción de que el jugador está en la banca.
+ *
+ * Escribiendo a mano no pasa: cada tecla dispara su `input` al instante, así
+ * que Vue nunca va por detrás. Es un efecto de escribir la línea entera de una
+ * vez, y por eso se arregla aquí y no en el componente.
  */
 export async function registrarLinea(page: Page, linea: string) {
   const campo = page.getByLabel('Registrar participante')
-  await campo.fill(linea)
-  await expect(campo).toHaveValue(linea)
+  const nombre = linea.split(' ')[0]!
+
+  await expect(async () => {
+    await campo.fill(linea)
+    // `reg__leido` es lo que la app dice haber entendido: si ahí está el
+    // nombre, la línea llegó al estado de Vue y no solo al DOM.
+    await expect(page.locator('.reg__leido strong')).toHaveText(nombre, { timeout: 1500 })
+  }).toPass({ timeout: 20_000 })
+
   await campo.press('Enter')
 }

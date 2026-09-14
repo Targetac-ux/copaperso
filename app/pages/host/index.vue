@@ -459,8 +459,6 @@ const hora = (iso: string) =>
             @assign="(p) => tras(assign(p.id, p.team, p.role)).then(() => (sorteado = null))"
           />
 
-          <CctmMatchList :matches="partidas" />
-
           <section v-if="fuera.length" class="sumar">
             <h2>Registrados este mes que no están en la sesión</h2>
             <div class="sumar__lista">
@@ -475,6 +473,14 @@ const hora = (iso: string) =>
             </div>
           </section>
         </div>
+
+        <CctmBank
+          class="banco"
+          :accounts="cuentas"
+          :busy="busy"
+          @entry="movimientoBanco"
+          @open-account="abrirCuenta"
+        />
 
         <div class="derecha">
           <CctmCanjeos
@@ -505,7 +511,7 @@ const hora = (iso: string) =>
 
       <CctmEconomy
         class="eco-panel"
-        :accounts="cuentas"
+        :matches="partidas"
         :loans="prestamos"
         :jailed="jailed"
         :graveyard="graveyard"
@@ -514,8 +520,6 @@ const hora = (iso: string) =>
         :restrictions="restricciones"
         :players="draft?.bench ?? []"
         :busy="busy"
-        @entry="movimientoBanco"
-        @open-account="abrirCuenta"
         @new-loan="nuevoPrestamo"
         @settle-loan="saldarPrestamo"
         @free-player="(id) => tras(setState(id, 'bench'))"
@@ -660,14 +664,28 @@ h1 {
   min-height: 62vh;
 }
 
-/* Tres zonas en una sola fila, en el orden del DOM: banca, equipos, canjeos.
-   El sorteo va dentro de la columna central, debajo de los equipos, que es
-   donde sobraba sitio. */
+/* Dos filas. Arriba: banca · equipos+sorteo · canjeos. Abajo, ocupando el
+   ancho de las dos últimas, el banco.
+
+   La colocación va explícita porque el banco cruza dos columnas: dejándolo al
+   flujo automático acababa donde le tocara según el orden del DOM. */
+.banca {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
 .centro {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.banco {
+  grid-column: 2 / span 2;
+  grid-row: 2;
 }
 
 .equipos > * {
@@ -685,6 +703,8 @@ h1 {
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+  grid-column: 3;
+  grid-row: 1;
 }
 
 .sumar,
@@ -806,10 +826,22 @@ h1 {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
   }
 
+  /* Con dos columnas la banca ocupa una sola fila: si sigue ocupando dos, los
+     canjeos se le montan encima y tapan el arrastre desde la banca. */
+  .banca {
+    grid-row: 1;
+  }
+
   .derecha {
     grid-column: 1 / -1;
+    grid-row: 2;
     flex-direction: row;
     flex-wrap: wrap;
+  }
+
+  .banco {
+    grid-column: 1 / -1;
+    grid-row: 3;
   }
 
   .derecha > * {
@@ -820,6 +852,18 @@ h1 {
 @media (max-width: 900px) {
   .mesa {
     grid-template-columns: 1fr;
+  }
+
+  .banca,
+  .centro,
+  .derecha,
+  .banco {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .sorteo {
+    flex: none;
   }
 
   .equipos {

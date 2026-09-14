@@ -404,6 +404,31 @@ entera un cuarto de segundo después de que el host vea su propio cambio.
 
 ---
 
+## Disposición de la mesa (cambios del host)
+
+La colocación de las cards la ha ido ajustando el host al usarla en directo. Estado actual:
+
+| Zona | Qué lleva |
+|---|---|
+| Columna 1 | Banca de jugadores, con el registro en vivo |
+| Columna 2 | Team 1 y Team 2, y debajo el sorteo |
+| Columna 3 | Canjeos en bits, y debajo las acciones del jugador seleccionado |
+| Fila 2, columnas 2-3 | **Banco de bits**, card propia |
+| Banda inferior | Partidas · Préstamos · Estados · Notas, en pestañas · Historial |
+
+El banco salió de las pestañas porque es lo que más se consulta durante la negociación —quién tiene
+saldo para pujar— y estaba al final de la página. Las partidas ocuparon su hueco en las pestañas: se
+miran de vez en cuando, no en mitad de un draft.
+
+**Un intento que hubo que descartar:** para que la columna del centro terminase justo a la altura de
+los canjeos se probó a estirar la card del sorteo (`flex: 1`, y también `justify-content:
+space-between` en la columna). **Las dos rompen el arrastre de la banca a los equipos** de forma
+reproducible: el hueco sigue visible y sin nada encima —comprobado con `elementFromPoint`— pero el
+drop deja de registrarse. No hizo falta: como las dos columnas viven en la misma fila del grid, la
+segunda fila ya arranca por debajo de la más alta y el banco queda alineado solo.
+
+---
+
 ## Fase 5 — Roster e histórico  *(1 semana)*
 
 **Entregables**
