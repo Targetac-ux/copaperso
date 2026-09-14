@@ -341,24 +341,66 @@ ya es la fuente de verdad de las estadísticas (§28) y duplicarlo solo daba dos
 
 ---
 
-## Fase 4B — Vista pública en vivo  *(1 semana)*
-
-Entra al MVP por decisión del host, por eso Realtime se habilita ya en la Fase 1.
+## Fase 4B — Vista pública en vivo  ·  ✅ CERRADA
 
 **Entregables**
-- Ruta pública `/en-vivo`: equipos en formación, estado de la sesión, marcador de partidas y última acción.
-- **Cronómetro de negociación visible**, con aviso sonoro sutil al agotarse y control de silencio que
-  recuerda la elección del espectador.
-- Suscripción Realtime con reconexión automática y estado "sin conexión" visible.
-- Modo overlay opcional (`?overlay=1`, fondo transparente) por si algún día se pone en OBS.
+- ✅ Ruta pública `/en-vivo`: equipos en formación, banca, marcador, partida en curso y último
+  movimiento.
+- ✅ Cronómetro de negociación visible, con aviso sonoro sutil al agotarse y silenciador que recuerda
+  la elección del espectador (aparte del que usa el host: silenciar el panel no calla la vista).
+- ✅ Realtime con reconexión automática y un «Sin conexión» bien visible.
+- ✅ Modo overlay (`?overlay=1`): sin cabecera y con fondo transparente, para OBS.
 
-**Pruebas de cierre**
-1. Integración: el payload de `/en-vivo` **no contiene** bits, saldos, préstamos, cárcel, restricciones ni
-   notas. Test que falla si alguno de esos campos aparece en la respuesta.
-2. E2E: el host asigna un jugador a Team 1 → la vista pública lo refleja en menos de 2 s sin recargar.
-3. E2E: cortar la conexión de la vista pública 30 s → al volver se resincroniza sola con el estado correcto.
-4. Carga: 200 espectadores simultáneos sobre la misma sesión sin degradar el panel del host.
-5. Manual: con la sesión cerrada, la ruta muestra "no hay sesión en vivo", no una pantalla rota.
+**Cómo llega el estado al público, y por qué así**
+
+Por un canal de **broadcast**, no por cambios de tabla. El espectador no tiene cuenta, así que todo
+lo que llegue a su navegador es público para siempre. Escuchando tablas, un permiso mal puesto
+enseñaría bits, cárcel o notas; escuchando un canal, el espectador **solo recibe el objeto que el
+servidor decide publicar** y no consulta la base ni una vez.
+
+Ese objeto (`shared/live.ts`) pasa una auditoría antes de salir: si alguien añade un campo con
+`bits`, `saldo`, `jail`, `restriction`… no se publica. Y el texto del «último movimiento» sale de una
+lista blanca de acciones, porque los resúmenes están escritos para el host —«Movimiento en el banco:
+−200 bits»— y publicarlos todos filtraría justo lo que esta vista esconde. Deshacer avisa al público
+pero sin repetir el texto de lo deshecho.
+
+**Pruebas**
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | El payload no lleva bits, saldos, préstamos, cárcel, restricciones ni notas | ✅ 20 unitarias + e2e |
+| 2 | El host asigna y la pantalla pública lo refleja sin recargar | ✅ e2e · 1,8 s |
+| 3 | Se corta la red del espectador, el host mueve, y al volver se resincroniza sola | ✅ e2e |
+| 4 | 200 espectadores a la vez | ✅ ver abajo |
+| 5 | Sin sesión abierta lo dice, no una pantalla rota | ✅ e2e |
+| 6 | El overlay se queda sin cabecera y sin fondo | ✅ e2e |
+
+Total acumulado: **147 unitarias** y **57 e2e**.
+
+**La prueba de carga, y un techo que conviene saber** (`node scripts/carga-en-vivo.mjs 200`)
+
+Los 200 espectadores conectan y **todos** reciben el aviso: 174 ms de mediana, 198 ms el último. El
+panel del host no se entera, porque publicar cuesta lo mismo con uno que con doscientos: es un POST,
+y el reparto lo hace Supabase.
+
+Pero 200 es **justo el techo** del plan de Supabase contratado, no un número con margen: con esos 200
+puestos, el espectador 201 ya no conecta y su pantalla se queda en «Sin conexión». Falla de forma
+visible y no rompe nada, pero si la grada puede pasar de 200 hay que subir de plan.
+
+**Un arreglo que salió de las pruebas:** avisar al público costaba **1,9 s a cada acción del host**,
+porque armar y publicar el estado se hacía dentro de su petición. Ahora se lanza sin esperarlo
+(`waitUntil` donde la plataforma lo ofrece): la acción del host vuelve a ser suya y el público se
+entera un cuarto de segundo después de que el host vea su propio cambio.
+
+**Decisiones:**
+
+- **La página se pinta en el navegador** (`ssr: false`). Todo lo que enseña cambia cada pocos
+  segundos, así que el HTML del servidor nacía caducado: solo aportaba un parpadeo al hidratar y un
+  cronómetro con la hora del servidor.
+- **La vista `public_session_live` se queda sin usar.** Se escribió en la Fase 1 pensando en que el
+  público leyera tablas; al elegir broadcast dejó de hacer falta. Se conserva porque los tests que
+  vigilan que las vistas públicas no filtren nada siguen cubriéndola, y porque `session.status`
+  tampoco pasa a `live` hoy.
 
 ---
 

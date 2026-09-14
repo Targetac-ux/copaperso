@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
-import { gotoHydrated } from './helpers'
+import { ESPERA_REGISTRO, gotoHydrated, registrarLinea } from './helpers'
 
 /**
  * Pruebas de cierre de la Fase 4: partidas, resultados y LP.
@@ -119,13 +119,11 @@ test.describe.serial('partidas y LP', () => {
     await campo.waitFor()
 
     for (const [nombre, rol] of NOMBRES) {
-      await campo.fill(`${nombre} ${rol}`)
-      await campo.press('Enter')
-      await expect(page.getByRole('row', { name: new RegExp(nombre) })).toBeVisible()
+      await registrarLinea(page, `${nombre} ${rol}`)
+      await expect(page.getByRole('row', { name: new RegExp(nombre) })).toBeVisible(ESPERA_REGISTRO)
     }
-    await campo.fill(`${SUPLENTE} MID`)
-    await campo.press('Enter')
-    await expect(page.getByRole('row', { name: new RegExp(SUPLENTE) })).toBeVisible()
+    await registrarLinea(page, `${SUPLENTE} MID`)
+    await expect(page.getByRole('row', { name: new RegExp(SUPLENTE) })).toBeVisible(ESPERA_REGISTRO)
 
     await gotoHydrated(page, '/host')
     const abrir = page.getByRole('button', { name: 'Abrir sesión' })

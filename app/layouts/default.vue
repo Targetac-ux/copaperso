@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const nav = [
   { to: '/', label: 'Inicio' },
+  { to: '/en-vivo', label: 'En vivo' },
   { to: '/tier-ranking', label: 'Tier Ranking' },
   { to: '/reglas', label: 'Reglas' },
   { to: '/modos', label: 'Modos' },

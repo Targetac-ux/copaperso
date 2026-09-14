@@ -58,5 +58,16 @@ export default defineNuxtConfig({
     },
   },
 
+  /**
+   * La vista en vivo se pinta en el navegador, no en el servidor.
+   *
+   * Todo lo que enseña cambia cada pocos segundos y llega por un canal de
+   * Realtime, así que el HTML del servidor nace caducado: lo único que aportaba
+   * era un parpadeo al hidratar y un cronómetro con la hora del servidor.
+   */
+  routeRules: {
+    '/en-vivo': { ssr: false },
+  },
+
   nitro: { preset: process.env.VERCEL ? 'vercel' : undefined },
 })

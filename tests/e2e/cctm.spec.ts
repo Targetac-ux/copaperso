@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
-import { gotoHydrated } from './helpers'
+import { ESPERA_REGISTRO, gotoHydrated, registrarLinea } from './helpers'
 
 /**
  * Pruebas de cierre de la Fase 3A: la mesa de control.
@@ -69,9 +69,8 @@ test.describe.serial('CCTM · banca, draft y swap', () => {
     const campo = page.getByLabel('Registrar participante')
     await campo.waitFor()
     for (const nombre of NOMBRES) {
-      await campo.fill(`${nombre} MID`)
-      await campo.press('Enter')
-      await expect(page.getByRole('row', { name: new RegExp(nombre) })).toBeVisible()
+      await registrarLinea(page, `${nombre} MID`)
+      await expect(page.getByRole('row', { name: new RegExp(nombre) })).toBeVisible(ESPERA_REGISTRO)
     }
 
     // 2. Trabajar sobre la sesión abierta. Si no hay ninguna, la creamos
@@ -129,16 +128,14 @@ test.describe.serial('CCTM · banca, draft y swap', () => {
 
     // 1. A la banca, que es el destino por defecto.
     const aBanca = `Vivo${sello}`
-    await campo.fill(`${aBanca} SUP Master`)
-    await campo.press('Enter')
-    await expect(page.locator('.banca li').filter({ hasText: aBanca })).toBeVisible()
+    await registrarLinea(page, `${aBanca} SUP Master`)
+    await expect(page.locator('.banca li').filter({ hasText: aBanca })).toBeVisible(ESPERA_REGISTRO)
 
     // 2. Directo a un equipo, sin pasar por la banca.
     const aEquipo = `Directo${sello}`
     await page.locator('.destino').getByRole('button', { name: 'Team 2' }).click()
     await page.locator('.destino').getByRole('button', { name: 'SUP', exact: true }).click()
-    await campo.fill(`${aEquipo} SUP Diamante`)
-    await campo.press('Enter')
+    await registrarLinea(page, `${aEquipo} SUP Diamante`)
 
     await expect(page.locator('.team.is-t2 li').filter({ hasText: 'SUP' })).toContainText(aEquipo)
     await expect(page.locator('.banca li').filter({ hasText: aEquipo })).toHaveCount(0)
@@ -156,9 +153,8 @@ test.describe.serial('CCTM · banca, draft y swap', () => {
 
     const demons = [`DemonA${sello}`, `DemonB${sello}`]
     for (const nombre of demons) {
-      await campo.fill(`${nombre} JG Demon`)
-      await campo.press('Enter')
-      await expect(page.locator('.banca li').filter({ hasText: nombre })).toBeVisible()
+      await registrarLinea(page, `${nombre} JG Demon`)
+      await expect(page.locator('.banca li').filter({ hasText: nombre })).toBeVisible(ESPERA_REGISTRO)
     }
 
     const acc = page.locator('.acc')

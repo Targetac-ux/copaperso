@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
-import { gotoHydrated } from './helpers'
+import { ESPERA_REGISTRO, gotoHydrated } from './helpers'
 
 /**
  * El caso de uso real: el host registra a diez personas seguidas mientras el
@@ -50,7 +50,7 @@ test.describe('registro seguido', () => {
       await campo.fill(linea)
       // Enter, como lo haría el host: sin soltar el teclado.
       await campo.press('Enter')
-      await expect(page.getByRole('row', { name: new RegExp(linea.split(' ')[0]!) })).toBeVisible()
+      await expect(page.getByRole('row', { name: new RegExp(linea.split(' ')[0]!) })).toBeVisible(ESPERA_REGISTRO)
       await expect(campo).toHaveValue('')
     }
 

@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { esAccionPublica } from '#shared/live'
 import type { Database } from '#shared/types/database.types'
 
 export interface LogInput {
@@ -31,4 +32,23 @@ export async function logAction(event: H3Event, input: LogInput) {
   })
 
   if (error) console.error('[action_log] no se pudo registrar:', error.message)
+
+  // Una acción, una entrada en el historial, un aviso al público. Engancharlo
+  // aquí en vez de en cada endpoint evita el fallo de olvidarse en uno: si algo
+  // se registra y cambia lo que se ve, el público se entera.
+  //
+  // **Sin esperar a que salga.** Armar el estado público y publicarlo cuesta
+  // más de un segundo, y hacerlo dentro de la petición se lo cobraba al host:
+  // cada asignación en directo tardaba el doble por avisar a la grada. El
+  // espectador puede esperar ese segundo; quien está arrastrando jugadores con
+  // diez personas mirando, no.
+  if (input.sessionId && esAccionPublica(input.actionType)) {
+    const tarea = publicarEnVivo(event, input.actionType, input.summary)
+
+    // En Vercel la función se congela al responder, así que hay que pedir que
+    // la mantenga viva. En local no existe y basta con dejar correr la promesa.
+    const seguir = (event as { waitUntil?: (p: Promise<unknown>) => void }).waitUntil
+    if (typeof seguir === 'function') seguir.call(event, tarea)
+    else void tarea
+  }
 }

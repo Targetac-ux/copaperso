@@ -174,9 +174,10 @@ poder construir. Quedan aquí escritos para que se puedan cambiar a sabiendas:
 - **`match_event` no se escribe.** `match_player` ya guarda resultado, MVP, ACE y off role, y es de
   donde leen `public_roster` y el cálculo de derrotas. Escribir además un evento por concepto daba
   dos fuentes para el mismo dato, que es justo lo que A3 evita.
-- **`session.status` sigue en `open`** aunque haya una partida en juego. La vista
-  `public_session_live` filtra por `status = 'live'`, así que hoy no devuelve nada; quien lo encienda
-  es la Fase 4B, que es la que necesita esa vista.
+- **`session.status` sigue en `open`** aunque haya una partida en juego, y la vista
+  `public_session_live` —que filtra por `status = 'live'`— no devuelve nada. La Fase 4B no la
+  necesitó: el público recibe su estado por un canal de broadcast que arma el servidor, así que no
+  lee tablas. La vista se conserva por si algún día hace falta un consumidor por SQL.
 
 ### A6. Banco de bits/subs: cuenta unificada
 

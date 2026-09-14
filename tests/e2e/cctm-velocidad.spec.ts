@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
-import { gotoHydrated } from './helpers'
+import { ESPERA_REGISTRO, gotoHydrated, registrarLinea } from './helpers'
 
 /**
  * Prueba de cierre 6 de la Fase 3A: diez jugadores desde cero a dos equipos
@@ -73,9 +73,8 @@ test.describe('velocidad del draft', () => {
     const campo = page.getByLabel('Registrar participante')
     await campo.waitFor()
     for (const [nombre, rol] of JUGADORES) {
-      await campo.fill(`${nombre} ${rol}`)
-      await campo.press('Enter')
-      await expect(page.getByRole('row', { name: new RegExp(nombre) })).toBeVisible()
+      await registrarLinea(page, `${nombre} ${rol}`)
+      await expect(page.getByRole('row', { name: new RegExp(nombre) })).toBeVisible(ESPERA_REGISTRO)
     }
     const tRegistro = Date.now() - arranque
 
