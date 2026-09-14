@@ -1,21 +1,12 @@
 <script setup lang="ts">
-import { SUBS_NOTE, PAID_WITH_LABEL } from '#shared/economy'
-import type { PaidWith } from '#shared/economy'
 import type { BenchPlayer } from '#shared/draft'
 
 /**
  * Los paneles de economía y estados de la sesión (§13–§19).
  *
- * Todo es de consulta y bitácora: aquí no se ejecuta ninguna recompensa. El
- * host cumple lo que se reclama moviendo él mismo a los participantes.
+ * Todo es de consulta y administración: aquí no se ejecuta nada por su cuenta.
+ * Los canjeos en bits viven en su propio panel, a la derecha de la mesa.
  */
-interface Precio {
-  id: string
-  code: string
-  label: string
-  cost_bits: number
-  effective: number
-}
 interface Cuenta {
   id: string
   display_name: string
@@ -32,21 +23,9 @@ interface Prestamo {
   amount_due: number
   interest: number
 }
-interface Reclamo {
-  id: string
-  action_code: string
-  cost_bits: number
-  tripled: boolean
-  paid_with: PaidWith
-  created_at: string
-}
-
 const props = defineProps<{
-  prices: Precio[]
-  tripled: boolean
   accounts: Cuenta[]
   loans: Prestamo[]
-  claims: Reclamo[]
   jailed: BenchPlayer[]
   graveyard: BenchPlayer[]
   notes: { id: string; body: string }[]
@@ -57,19 +36,17 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  claim: [payload: { action_code: string; paid_with: PaidWith; note?: string }]
   entry: [payload: { account_id: string; delta_bits: number; reason: string }]
   openAccount: [payload: { display_name: string; balance_bits: number }]
   newLoan: [payload: { person_name: string; principal_bits: number }]
   settleLoan: [id: string]
-  restorePrices: []
   freePlayer: [id: string]
   addNote: [payload: { type: 'note' | 'extra'; kind?: string; body: string }]
   addRestriction: [payload: { participation_id: string; kind: 'no_role'; value: string }]
   liftRestriction: [id: string]
 }>()
 
-const pestana = ref<'recompensas' | 'banco' | 'prestamos' | 'estados' | 'notas'>('recompensas')
+const pestana = ref<'banco' | 'prestamos' | 'estados' | 'notas'>('banco')
 
 const ETIQUETA_EXTRA: Record<string, string> = {
   bonus: 'Bonus',
@@ -103,16 +80,6 @@ function anotarRestriccion() {
     value: nuevaRestriccion.rol,
   })
   nuevaRestriccion.jugador = ''
-}
-
-// --- registrar recompensa ---
-const accionElegida = ref<string>('')
-const pagoCon = ref<PaidWith>('bits')
-
-function registrar() {
-  if (!accionElegida.value) return
-  emit('claim', { action_code: accionElegida.value, paid_with: pagoCon.value })
-  accionElegida.value = ''
 }
 
 // --- banco ---
@@ -152,17 +119,11 @@ function crearPrestamo() {
 }
 
 const prestamosAbiertos = computed(() => props.loans.filter((l) => l.status === 'open'))
-const hora = (iso: string) =>
-  new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
 </script>
 
 <template>
   <section class="eco">
     <nav class="tabs">
-      <button :class="{ on: pestana === 'recompensas' }" @click="pestana = 'recompensas'">
-        Recompensas
-        <span v-if="tripled" class="x3">×3</span>
-      </button>
       <button :class="{ on: pestana === 'banco' }" @click="pestana = 'banco'">
         Banco <span class="cnt">{{ accounts.length }}</span>
       </button>
@@ -177,65 +138,8 @@ const hora = (iso: string) =>
       </button>
     </nav>
 
-    <!-- ---------------------------------------------------- recompensas -->
-    <div v-if="pestana === 'recompensas'" class="cuerpo">
-      <div class="col">
-        <h3>Lista de precios</h3>
-        <ul class="precios">
-          <li v-for="p in prices" :key="p.id">
-            <span>{{ p.label }}</span>
-            <b :class="{ alto: tripled }">{{ p.effective }}</b>
-            <em v-if="tripled">era {{ p.cost_bits }}</em>
-          </li>
-        </ul>
-        <button v-if="tripled" class="btn btn--ghost mini" :disabled="busy" @click="emit('restorePrices')">
-          Deshacer el ×3
-        </button>
-        <p class="nota">{{ SUBS_NOTE }}</p>
-      </div>
-
-      <div class="col">
-        <h3>Registrar recompensa reclamada</h3>
-        <select v-model="accionElegida" aria-label="Recompensa">
-          <option value="">Elegir recompensa…</option>
-          <option v-for="p in prices" :key="p.code" :value="p.code">
-            {{ p.label }} · {{ p.effective }} bits
-          </option>
-        </select>
-        <div class="chips">
-          <button
-            v-for="(label, key) in PAID_WITH_LABEL"
-            :key="key"
-            class="chip"
-            :class="{ on: pagoCon === key }"
-            @click="pagoCon = key as PaidWith"
-          >
-            {{ label }}
-          </button>
-        </div>
-        <button class="btn btn--primary" :disabled="!accionElegida || busy" @click="registrar">
-          Registrar
-        </button>
-        <p class="nota aviso">
-          Esto <b>no mueve a nadie ni descuenta saldo</b>. Deja constancia; el cambio lo haces tú.
-        </p>
-      </div>
-
-      <div class="col">
-        <h3>Reclamadas en esta sesión</h3>
-        <ul v-if="claims.length" class="lista">
-          <li v-for="c in claims" :key="c.id">
-            <time>{{ hora(c.created_at) }}</time>
-            <span>{{ c.action_code }}</span>
-            <b>{{ c.cost_bits }}<em v-if="c.tripled">×3</em></b>
-          </li>
-        </ul>
-        <p v-else class="vacio">Nada reclamado todavía.</p>
-      </div>
-    </div>
-
     <!-- ---------------------------------------------------------- banco -->
-    <div v-else-if="pestana === 'banco'" class="cuerpo">
+    <div v-if="pestana === 'banco'" class="cuerpo">
       <div class="col">
         <h3>Saldos</h3>
         <ul v-if="accounts.length" class="lista">

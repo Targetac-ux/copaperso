@@ -26,8 +26,14 @@ export const PLAYER_ROLES: PlayerRole[] = ['TOP', 'JG', 'MID', 'ADC', 'SUP']
 
 export const ELO_TIERS: EloTier[] = [
   'IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM',
-  'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER',
+  'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER', 'DEMON',
 ]
+
+/**
+ * Demon no es un rango de Riot: lo pone el host a quien ha llegado a rank 1 o
+ * es demasiado bueno, y obliga a repartirlos 1:1 entre los dos equipos.
+ */
+export const DEMON: EloTier = 'DEMON'
 
 /** Etiquetas cortas para la interfaz del host. */
 export const ELO_LABEL: Record<EloTier, string> = {
@@ -41,4 +47,5 @@ export const ELO_LABEL: Record<EloTier, string> = {
   MASTER: 'Master',
   GRANDMASTER: 'Grandmaster',
   CHALLENGER: 'Challenger',
+  DEMON: 'Demon',
 }

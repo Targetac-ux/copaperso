@@ -149,6 +149,50 @@ test.describe.serial('CCTM · banca, draft y swap', () => {
     expect(data).toHaveLength(2)
   })
 
+  test('el segundo Demon en el mismo equipo avisa, y el recuento se ve', async ({ page }) => {
+    await gotoHydrated(page, '/host')
+    const campo = page.getByLabel('Registrar participante')
+    await campo.waitFor()
+
+    const demons = [`DemonA${sello}`, `DemonB${sello}`]
+    for (const nombre of demons) {
+      await campo.fill(`${nombre} JG Demon`)
+      await campo.press('Enter')
+      await expect(page.locator('.banca li').filter({ hasText: nombre })).toBeVisible()
+    }
+
+    const acc = page.locator('.acc')
+
+    // El primero al Team 1: 1-0 es un paso normal, no avisa.
+    await page.locator('.banca li').filter({ hasText: demons[0]! }).click()
+    await acc.getByRole('button', { name: 'JG', exact: true }).click()
+    await acc.getByRole('button', { name: 'Team 1' }).click()
+    await acc.getByRole('button', { name: 'Asignar', exact: true }).click()
+    await expect(page.locator('.team.is-t1')).toContainText(demons[0]!)
+    await expect(page.locator('.team.is-t1 .demons')).toContainText('1 Demon')
+
+    // El segundo al mismo equipo dejaría 2-0: ahí sí avisa.
+    await page.locator('.banca li').filter({ hasText: demons[1]! }).click()
+    await acc.getByRole('button', { name: 'TOP', exact: true }).click()
+    await acc.getByRole('button', { name: 'Team 1' }).click()
+    await acc.getByRole('button', { name: 'Asignar', exact: true }).click()
+
+    const aviso = page.getByRole('alertdialog')
+    await expect(aviso).toContainText('Demon')
+    await expect(aviso).toContainText('1:1')
+
+    // Avisa, no prohíbe.
+    await aviso.getByRole('button', { name: 'Hacerlo igual' }).click()
+    await expect(page.locator('.team.is-t1 .demons')).toContainText('2 Demon')
+
+    // Limpiar para no estorbar a los tests siguientes.
+    for (const nombre of demons) {
+      await page.locator('.team.is-t1 li').filter({ hasText: nombre }).click()
+      await acc.getByRole('button', { name: 'A la banca' }).click()
+      await expect(page.locator('.banca li').filter({ hasText: nombre })).toBeVisible()
+    }
+  })
+
   test('el swap intercambia equipo y conserva el rol', async ({ page }) => {
     await gotoHydrated(page, '/host')
     await expect(page.getByText(/Sesión #\d+/)).toBeVisible()

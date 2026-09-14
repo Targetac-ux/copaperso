@@ -107,11 +107,18 @@ La tentación sería reescribir `action_catalog` con los precios nuevos. Sería 
 además pisaría el histórico. El multiplicador vive en la **sesión**:
 
 ```text
-SESSION  + prices_tripled     boolean, false por defecto
-         + tripled_at         timestamptz, cuándo se activó
-         + timer_ends_at      timestamptz, cuándo salta el próximo aviso
-         + timer_seconds      integer, la duración que escribió el host
+SESSION  + prices_tripled           boolean, false por defecto
+         + tripled_at               timestamptz, cuándo se activó
+         + timer_ends_at            timestamptz, cuándo salta el próximo aviso
+         + timer_seconds            integer, la duración que escribió el host
+         + timer_remaining_seconds  integer, lo que quedaba al pausar
 ```
+
+`timer_remaining_seconds` se añadió al arreglar la pausa: antes, pausar solo marcaba el cronómetro
+como parado pero dejaba intacta la hora de fin, y como los segundos restantes se calculan desde ella,
+el número seguía bajando en pantalla. Ahora al pausar se congela aquí lo que quedaba y se borra la
+hora de fin, así que `timer_seconds` vuelve a significar una sola cosa —la duración configurada—,
+que es a lo que vuelve «Reiniciar».
 
 Se guarda un **booleano**, no un número: como el ×3 es fijo y se aplica una sola vez, un
 `price_multiplier` numérico invitaría a estados que no existen (×6, ×9) y a preguntarse si es
@@ -135,6 +142,22 @@ Ojo con una limitación del navegador: el audio no puede sonar si el espectador 
 antes con la página. La vista pública llevará un control de sonido visible (activado/silenciado) que
 recuerde la elección, y si el navegador bloquea la reproducción el aviso será solo visual: nunca se
 queda a medias sin que se note.
+
+### A8. El elo «Demon» y la regla del 1:1
+
+Añadido en septiembre de 2026, tras la primera prueba del CCTM. No es un rango de Riot: lo pone el
+host a quien ha llegado a rank 1 o es demasiado bueno, y **obliga a repartirlos 1:1 entre los dos
+equipos**.
+
+- Se añade `DEMON` al enum `elo_tier`, al final (el elo no ordena nada hoy; queda ahí por si algún
+  día la Copa Tryhard filtra por él).
+- La regla vive en `shared/draft.ts`, junto al resto de comprobaciones del draft.
+- **Avisa cuando la asignación deja dos de diferencia**, no antes. Un 1-0 es un paso normal a mitad
+  del draft: el primer Demon asignado siempre desbalancea hasta que llega su pareja. Avisar ahí sería
+  ruido constante.
+- Es un aviso con «Hacerlo igual», no una prohibición, como el rol repetido y el off-role (§1: el
+  host manda).
+- La cabecera de cada equipo lleva el recuento, en verde si están igualados y en ámbar si no.
 
 ### A6. Banco de bits/subs: cuenta unificada
 

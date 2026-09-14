@@ -13,7 +13,7 @@ export type AppRole = 'host' | 'moderator'
 export type PlayerRoleDb = 'TOP' | 'JG' | 'MID' | 'ADC' | 'SUP'
 export type EloTierDb =
   | 'IRON' | 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM'
-  | 'EMERALD' | 'DIAMOND' | 'MASTER' | 'GRANDMASTER' | 'CHALLENGER'
+  | 'EMERALD' | 'DIAMOND' | 'MASTER' | 'GRANDMASTER' | 'CHALLENGER' | 'DEMON'
 export type PeriodStatus = 'draft' | 'active' | 'closed'
 
 type PlayerRow = {
@@ -71,6 +71,7 @@ type SessionRow = {
   timer_ends_at: string | null
   timer_seconds: number
   timer_running: boolean
+  timer_remaining_seconds: number | null
 }
 
 export type PaidWithDb = 'bits' | 'sub_na' | 'sub_latam'
@@ -304,6 +305,7 @@ export type Database = {
           timer_ends_at?: string | null
           timer_seconds?: number
           timer_running?: boolean
+          timer_remaining_seconds?: number | null
         }
         Relationships: []
       }

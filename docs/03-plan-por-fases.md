@@ -244,6 +244,42 @@ cuál es en ese instante. Los ↶ individuales sí mandan id, porque ahí no hay
 
 ---
 
+### 3D — Ajustes tras la primera prueba  ·  🟡 construida, pendiente de migraciones
+
+Salidos de usar el CCTM de punta a punta por primera vez.
+
+**Entregables**
+
+- ✅ Elo **Demon** con su regla de balance 1:1, aviso al llegar a dos de diferencia y recuento en la
+  cabecera de cada equipo.
+- ✅ El sorteo baja debajo de la banca; los **Canjeos en bits** (antes «Recompensas») pasan a la
+  columna derecha, en su propio panel.
+- ✅ Roles de los equipos más grandes y con un color por rol, según la convención de LoL.
+- ✅ **Pausar el cronómetro para de verdad.** Antes solo se marcaba como parado y el número seguía
+  bajando; ahora se congela lo que quedaba y reanudar sigue desde ahí.
+- ✅ El cronómetro acepta **tiempos cortos** (`10s`): el mínimo baja de 30 a 5 segundos.
+- ✅ **Tic-tac** mientras corre, generado con la Web Audio API —sin archivos de sonido—, más rápido
+  en el último minuto y silenciable con memoria entre recargas.
+
+**Pruebas**
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | El balance de Demons avisa a 2 de diferencia y no antes | ✅ 8 unitarias |
+| 2 | `Target MID Demon` se lee como elo Demon | ✅ |
+| 3 | Pausado, el cronómetro no sigue bajando | ✅ unitaria + e2e |
+| 4 | Reanudar sigue desde donde se quedó; reiniciar vuelve a la duración configurada | ✅ |
+| 5 | `10s` da 00:10, no 00:30 | ✅ |
+| 6 | El segundo Demon en el mismo equipo avisa, y «Hacerlo igual» lo aplica | ✅ e2e |
+
+Total acumulado: **100 unitarias** + los e2e de las fases anteriores, actualizados a la nueva
+disposición.
+
+**Pendiente:** aplicar en Supabase `20260914000001_elo_demon.sql` y `20260914000002_timer_pausa.sql`.
+Van separadas porque Postgres no deja usar un valor de enum recién creado en la misma transacción.
+
+---
+
 ## Fase 4 — Partidas, resultados y LP  *(1.5 semanas)*
 
 **Entregables**

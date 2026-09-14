@@ -20,6 +20,8 @@ const emit = defineEmits<{
   expired: []
 }>()
 
+const { enabled: sonido, play: tic, toggle: alternarSonido } = useTicTac()
+
 const restante = ref(remainingSeconds(props.timer))
 const editando = ref(false)
 const duracion = ref('')
@@ -28,7 +30,16 @@ let tick: ReturnType<typeof setInterval> | undefined
 let yaAvisado = false
 
 function refrescar() {
+  const antes = restante.value
   restante.value = remainingSeconds(props.timer)
+
+  // Un tic por segundo mientras corre. En el último minuto va doble, para que
+  // se note sin mirar la pantalla.
+  if (props.timer.running && restante.value > 0 && restante.value !== antes) {
+    tic(restante.value <= 60)
+    if (restante.value <= 60) setTimeout(() => tic(true), 500)
+  }
+
   if (props.timer.running && restante.value === 0 && !yaAvisado) {
     yaAvisado = true
     emit('expired')
@@ -84,6 +95,7 @@ function abrirEdicion() {
       type="text"
       aria-label="Duración en minutos"
       placeholder="15"
+      title="Minutos (15), segundos (90s) o minutos:segundos (12:30)"
       @keydown.enter="aplicarDuracion"
       @blur="aplicarDuracion"
     >
@@ -106,6 +118,14 @@ function abrirEdicion() {
     </button>
     <button class="btn btn--ghost mini" :disabled="busy" @click="emit('action', { action: 'reset' })">
       Reiniciar
+    </button>
+    <button
+      class="sonido"
+      :title="sonido ? 'Silenciar el tic-tac' : 'Activar el tic-tac'"
+      :aria-label="sonido ? 'Silenciar el tic-tac' : 'Activar el tic-tac'"
+      @click="alternarSonido"
+    >
+      {{ sonido ? '🔊' : '🔇' }}
     </button>
 
     <span v-if="tripled" class="x3">Precios ×3</span>
@@ -167,6 +187,19 @@ function abrirEdicion() {
 .mini {
   font-size: 10.5px;
   padding: 3px 8px;
+}
+
+.sonido {
+  background: none;
+  border: 0;
+  font-size: 12px;
+  padding: 2px 3px;
+  line-height: 1;
+  opacity: 0.75;
+}
+
+.sonido:hover {
+  opacity: 1;
 }
 
 .x3 {

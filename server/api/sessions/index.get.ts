@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   let request = db
     .from('session')
-    .select('id, period_id, number, mode, status, started_at, closed_at, prices_tripled, tripled_at, timer_ends_at, timer_seconds, timer_running')
+    .select('id, period_id, number, mode, status, started_at, closed_at, prices_tripled, tripled_at, timer_ends_at, timer_seconds, timer_running, timer_remaining_seconds')
     .order('number', { ascending: false })
 
   if (period_id) request = request.eq('period_id', period_id)

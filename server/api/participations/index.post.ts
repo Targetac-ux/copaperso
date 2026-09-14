@@ -7,7 +7,7 @@ import type { Database } from '#shared/types/database.types'
 const ROLES = ['TOP', 'JG', 'MID', 'ADC', 'SUP'] as const
 const ELOS = [
   'IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM',
-  'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER',
+  'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER', 'DEMON',
 ] as const
 
 const body = z.object({

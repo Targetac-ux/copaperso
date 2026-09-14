@@ -34,7 +34,7 @@ const emit = defineEmits<{ triple: []; close: [] }>()
         </div>
         <p class="nota">
           El ×3 se aplica una sola vez y se queda toda la sesión. Se puede deshacer desde el panel
-          de recompensas. El catálogo del mes no se toca.
+          de canjeos. El catálogo del mes no se toca.
         </p>
       </template>
 

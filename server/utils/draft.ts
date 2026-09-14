@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { DraftState, DraftTeam, BenchPlayer, DraftMember } from '#shared/draft'
-import type { Database, PlayerRoleDb } from '#shared/types/database.types'
+import type { Database, PlayerRoleDb, EloTierDb } from '#shared/types/database.types'
 
 /**
  * Carga la mesa de control entera de una sesión: quién está en la banca y cómo
@@ -32,6 +32,7 @@ export async function loadDraftState(event: H3Event, sessionId: string): Promise
   type ParticipacionAnidada = {
     id: string
     roles: PlayerRoleDb[]
+    elo: EloTierDb | null
     player: { id: string; display_name: string; photo_url: string | null } | null
   }
 
@@ -45,6 +46,7 @@ export async function loadDraftState(event: H3Event, sessionId: string): Promise
       participationId: sp.participation_id,
       displayName: nombre,
       roles: part?.roles ?? [],
+      elo: part?.elo ?? null,
       state: sp.state,
     }
   })

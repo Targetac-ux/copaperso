@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { demonBalance } from '#shared/draft'
 import type { BenchPlayer } from '#shared/draft'
 import type { PlayerRole, Player, PlayerRole as Rol } from '#shared/types/models'
 
@@ -42,6 +43,16 @@ const {
 } = cctm
 
 // --- estado de la pantalla -------------------------------------------------
+/** Recuento de Demons, para la cabecera de cada equipo. */
+const demons = computed(() => (draft.value ? demonBalance(draft.value) : null))
+
+function demonsDe(teamNumber: 1 | 2) {
+  if (!demons.value?.any) return undefined
+  const own = teamNumber === 1 ? demons.value.t1 : demons.value.t2
+  const other = teamNumber === 1 ? demons.value.t2 : demons.value.t1
+  return { own, other, any: true }
+}
+
 const seleccionado = ref<string | null>(null)
 const swapDesde = ref<string | null>(null)
 const sorteado = ref<BenchPlayer | null>(null)
@@ -70,6 +81,7 @@ const tiempoAgotado = ref(false)
 const cronometro = computed(() => ({
   endsAt: activa.value?.timer_ends_at ?? null,
   seconds: activa.value?.timer_seconds ?? 900,
+  remaining: activa.value?.timer_remaining_seconds ?? null,
   running: activa.value?.timer_running ?? false,
 }))
 
@@ -325,6 +337,15 @@ const hora = (iso: string) =>
           </template>
         </CctmBench>
 
+        <CctmRandom
+          v-model:picked="sorteado"
+          class="sorteo"
+          :available="available.length"
+          :busy="busy"
+          @roll="sortear"
+          @assign="(p) => tras(assign(p.id, p.team, p.role)).then(() => (sorteado = null))"
+        />
+
         <div class="centro">
           <div class="equipos">
             <CctmTeam
@@ -333,6 +354,7 @@ const hora = (iso: string) =>
               :team="t"
               :selected="seleccionado"
               :swap-from="swapDesde"
+              :demons="demonsDe(t.teamNumber)"
               @drop="(p) => alSoltar(p, t.teamNumber)"
               @select="alSeleccionar"
             />
@@ -354,12 +376,13 @@ const hora = (iso: string) =>
         </div>
 
         <div class="derecha">
-          <CctmRandom
-            v-model:picked="sorteado"
-            :available="available.length"
+          <CctmCanjeos
+            :prices="precios"
+            :tripled="activa.prices_tripled"
+            :claims="reclamos"
             :busy="busy"
-            @roll="sortear"
-            @assign="(p) => tras(assign(p.id, p.team, p.role)).then(() => (sorteado = null))"
+            @claim="registrarReclamo"
+            @restore-prices="triplicar(false)"
           />
 
           <CctmPlayerActions
@@ -381,11 +404,8 @@ const hora = (iso: string) =>
 
       <CctmEconomy
         class="eco-panel"
-        :prices="precios"
-        :tripled="activa.prices_tripled"
         :accounts="cuentas"
         :loans="prestamos"
-        :claims="reclamos"
         :jailed="jailed"
         :graveyard="graveyard"
         :notes="notas"
@@ -393,12 +413,10 @@ const hora = (iso: string) =>
         :restrictions="restricciones"
         :players="draft?.bench ?? []"
         :busy="busy"
-        @claim="registrarReclamo"
         @entry="movimientoBanco"
         @open-account="abrirCuenta"
         @new-loan="nuevoPrestamo"
         @settle-loan="saldarPrestamo"
-        @restore-prices="triplicar(false)"
         @free-player="(id) => tras(setState(id, 'bench'))"
         @add-note="anotar"
         @add-restriction="restringir"
@@ -517,6 +535,7 @@ h1 {
 .mesa {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1.05fr);
+  grid-template-rows: auto auto;
   gap: 12px;
   /* Las tres columnas a la misma altura: si no, la de la derecha se estira
      sola y las otras dos dejan un hueco muerto debajo. */
@@ -529,6 +548,13 @@ h1 {
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+  grid-row: span 2;
+}
+
+/* El sorteo, justo debajo de la banca: se tira el dado mirando a quién queda. */
+.sorteo {
+  grid-column: 1;
+  align-self: start;
 }
 
 .equipos > * {
@@ -546,6 +572,7 @@ h1 {
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+  grid-row: span 2;
 }
 
 .sumar,

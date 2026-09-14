@@ -103,13 +103,57 @@ test.describe.serial('economía y timer', () => {
       .toBe(true)
   })
 
+  test('pausar detiene la cuenta de verdad', async ({ page }) => {
+    const c = db()
+    await c
+      .from('session')
+      .update({ timer_seconds: 600, timer_ends_at: null, timer_running: false, timer_remaining_seconds: null })
+      .eq('id', sessionId!)
+
+    await gotoHydrated(page, '/host')
+    const reloj = page.locator('.timer .reloj')
+
+    await page.locator('.timer').getByRole('button', { name: 'Iniciar', exact: true }).click()
+    await expect(page.locator('.timer').getByRole('button', { name: 'Pausar' })).toBeVisible()
+
+    // Dejar correr y pausar.
+    await page.waitForTimeout(2200)
+    await page.locator('.timer').getByRole('button', { name: 'Pausar' }).click()
+    await expect(page.locator('.timer').getByRole('button', { name: 'Iniciar', exact: true })).toBeVisible()
+
+    const congelado = await reloj.innerText()
+
+    // Este es el fallo que había: el número seguía bajando aunque estuviera pausado.
+    await page.waitForTimeout(3200)
+    expect(await reloj.innerText(), 'pausado no puede seguir bajando').toBe(congelado)
+
+    // Y al reanudar sigue desde donde se quedó, no desde el principio.
+    await page.locator('.timer').getByRole('button', { name: 'Iniciar', exact: true }).click()
+    await page.waitForTimeout(1200)
+    const [min, seg] = congelado.split(':').map(Number)
+    const trasReanudar = (await reloj.innerText()).split(':').map(Number)
+    expect(trasReanudar[0]! * 60 + trasReanudar[1]!).toBeLessThan(min! * 60 + seg!)
+    expect(trasReanudar[0]! * 60 + trasReanudar[1]!).toBeGreaterThan(min! * 60 + seg! - 10)
+
+    await page.locator('.timer').getByRole('button', { name: 'Pausar' }).click()
+  })
+
+  test('acepta tiempos cortos para probar', async ({ page }) => {
+    await gotoHydrated(page, '/host')
+    await page.locator('.timer .reloj').click()
+    await page.locator('.timer .dur').fill('10s')
+    await page.locator('.timer .dur').press('Enter')
+    // Antes el mínimo era 30 s y "10s" se convertía en 00:30.
+    await expect(page.locator('.timer .reloj')).toHaveText('00:10')
+  })
+
   test('triplicar sube los precios de esta sesión y solo de esta', async ({ page }) => {
     await gotoHydrated(page, '/host')
     const c = db()
 
     // Antes: Blue Shell a 500. ("Blue Shell" aparece también en el desplegable,
-    // así que se busca dentro de la lista de precios.)
-    const blueShell = page.locator('.eco .precios li').filter({ hasText: 'Blue Shell' })
+    // así que se busca dentro de la lista de precios del panel de canjeos.)
+    const blueShell = page.locator('.canj .precios li').filter({ hasText: 'Blue Shell' })
     await expect(blueShell).toBeVisible()
     await expect(blueShell).toContainText('500')
 
@@ -125,8 +169,8 @@ test.describe.serial('economía y timer', () => {
     await page.reload()
     await page.waitForSelector('html[data-hydrated]')
 
-    await expect(page.locator('.eco .precios li').filter({ hasText: 'Blue Shell' })).toContainText('1500')
-    await expect(page.locator('.eco .precios li').filter({ hasText: 'Cupo' })).toContainText('600')
+    await expect(page.locator('.canj .precios li').filter({ hasText: 'Blue Shell' })).toContainText('1500')
+    await expect(page.locator('.canj .precios li').filter({ hasText: 'Cupo' })).toContainText('600')
 
     // El catálogo del periodo sigue intacto: el mes que viene no hereda el ×3.
     const { data: catalogo } = await c
@@ -152,11 +196,10 @@ test.describe.serial('economía y timer', () => {
     const { data: equiposAntes } = await c.from('team_member').select('id, team_id, role')
 
     await gotoHydrated(page, '/host')
-    await page.getByRole('button', { name: /^Recompensas/ }).click()
-    await page.locator('.eco select').first().selectOption('BLUE_SHELL')
-    await page.locator('.eco').getByRole('button', { name: 'Registrar', exact: true }).click()
+    await page.locator('.canj select').selectOption('BLUE_SHELL')
+    await page.locator('.canj').getByRole('button', { name: 'Registrar canjeo' }).click()
 
-    await expect(page.locator('.eco .lista li').first()).toContainText('BLUE_SHELL')
+    await expect(page.locator('.canj .hechos li').first()).toContainText('BLUE_SHELL')
 
     // Nada se movió y ningún saldo cambió.
     const { data: equiposDespues } = await c.from('team_member').select('id, team_id, role')
@@ -183,10 +226,9 @@ test.describe.serial('economía y timer', () => {
 
   test('deshacer el ×3 devuelve los precios sin tocar lo ya registrado', async ({ page }) => {
     await gotoHydrated(page, '/host')
-    await page.getByRole('button', { name: /^Recompensas/ }).click()
-    await page.locator('.eco').getByRole('button', { name: 'Deshacer el ×3' }).click()
+    await page.locator('.canj').getByRole('button', { name: 'Deshacer el ×3' }).click()
 
-    await expect(page.locator('.eco .precios li').filter({ hasText: 'Blue Shell' })).toContainText('500')
+    await expect(page.locator('.canj .precios li').filter({ hasText: 'Blue Shell' })).toContainText('500')
 
     // Lo cobrado en ×3 sigue diciendo 1500: no se reescribe la historia.
     const c = db()
@@ -249,7 +291,7 @@ test.describe.serial('economía y timer', () => {
     await page.waitForSelector('html[data-hydrated]')
     await page.getByRole('alertdialog').getByRole('button', { name: 'Triplicar precios' }).click()
 
-    await expect(page.locator('.eco .precios li').filter({ hasText: 'Blue Shell' })).toContainText('1500')
+    await expect(page.locator('.canj .precios li').filter({ hasText: 'Blue Shell' })).toContainText('1500')
     await expect(page.locator('.timer')).toContainText('×3')
   })
 

@@ -8,6 +8,8 @@ const props = defineProps<{
   team: DraftTeam
   selected: string | null
   swapFrom: string | null
+  /** Demons de este equipo y del otro: la regla del torneo es repartirlos 1:1. */
+  demons?: { own: number; other: number; any: boolean }
 }>()
 
 const emit = defineEmits<{
@@ -44,6 +46,14 @@ function onDrop(event: DragEvent, role: PlayerRole) {
     <header>
       <h2>Team {{ team.teamNumber }}</h2>
       <span class="cnt num">{{ team.members.length }}/{{ TEAM_SIZE }}</span>
+      <span
+        v-if="demons?.any"
+        class="demons"
+        :class="{ 'is-ok': demons.own === demons.other }"
+        :title="`Los Demon deberían ir 1:1 entre los dos equipos`"
+      >
+        {{ demons.own }} Demon
+      </span>
     </header>
 
     <ul>
@@ -62,7 +72,7 @@ function onDrop(event: DragEvent, role: PlayerRole) {
         @drop.prevent="onDrop($event, slot.role)"
         @click="slot.member && emit('select', slot.member.sessionParticipantId)"
       >
-        <span class="rol">{{ slot.role }}</span>
+        <span class="rol" :class="`rol--${slot.role.toLowerCase()}`">{{ slot.role }}</span>
 
         <template v-if="slot.member">
           <span class="nm">{{ slot.member.displayName }}</span>
@@ -72,7 +82,7 @@ function onDrop(event: DragEvent, role: PlayerRole) {
       </li>
 
       <li v-for="m in extras" :key="m.sessionParticipantId" class="is-filled is-extra">
-        <span class="rol">{{ m.role }}</span>
+        <span class="rol" :class="`rol--${m.role.toLowerCase()}`">{{ m.role }}</span>
         <span class="nm">{{ m.displayName }}</span>
       </li>
     </ul>
@@ -124,6 +134,22 @@ h2 {
 
 .is-t2 h2 {
   color: var(--team-2);
+}
+
+.demons {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 196, 77, 0.4);
+  border-radius: 20px;
+  padding: 1px 7px;
+  color: var(--warn);
+}
+
+.demons.is-ok {
+  border-color: rgba(63, 214, 154, 0.4);
+  color: var(--ok);
 }
 
 .cnt {
@@ -184,11 +210,36 @@ li.is-swap {
 
 .rol {
   font-family: var(--f-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.08em;
-  color: var(--dim);
-  width: 30px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  width: 38px;
   flex: none;
+}
+
+.rol--top {
+  color: var(--rol-top);
+}
+
+.rol--jg {
+  color: var(--rol-jg);
+}
+
+.rol--mid {
+  color: var(--rol-mid);
+}
+
+.rol--adc {
+  color: var(--rol-adc);
+}
+
+.rol--sup {
+  color: var(--rol-sup);
+}
+
+/* En un puesto vacío el rol es una etiqueta, no un dato: baja de tono. */
+li:not(.is-filled) .rol {
+  opacity: 0.45;
 }
 
 .nm {

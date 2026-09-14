@@ -26,6 +26,15 @@
   --violet-dim: #4a38a8;
   --gold: #f3b94d;
 
+  /* roles, según la convención de la comunidad de LoL. Van desaturados
+     respecto al azul y el rojo de los equipos: son la segunda lectura, no
+     la primera. */
+  --rol-top: #ff9457;
+  --rol-jg: #5ed39b;
+  --rol-mid: #74b6ff;
+  --rol-adc: #f3b94d;
+  --rol-sup: #ff8ec4;
+
   /* equipos y estados */
   --team-1: #4c8dff;
   --team-2: #ff5a6e;

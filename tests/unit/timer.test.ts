@@ -45,11 +45,45 @@ describe('cronómetro', () => {
     expect(hasExpired({ endsAt: enFuturo(30), seconds: 900, running: true })).toBe(false)
   })
 
-  it('acota duraciones absurdas', () => {
-    expect(clampSeconds(5)).toBe(30)
+  it('acota duraciones absurdas, pero deja probar con tiempos cortos', () => {
+    // Cinco segundos es el mínimo: lo justo para probar el aviso.
+    expect(clampSeconds(5)).toBe(5)
+    expect(clampSeconds(1)).toBe(5)
     expect(clampSeconds(99999)).toBe(7200)
     expect(clampSeconds(900)).toBe(900)
     expect(clampSeconds(Number.NaN)).toBe(DEFAULT_SECONDS)
+  })
+
+  it('acepta los tiempos cortos que el host teclea para probar', () => {
+    expect(parseDuration('5s')).toBe(5)
+    expect(parseDuration('10s')).toBe(10)
+    // "5" a secas siguen siendo cinco minutos: es lo que espera quien organiza.
+    expect(parseDuration('5')).toBe(300)
+  })
+
+  describe('pausa', () => {
+    it('pausado enseña lo que quedaba, no sigue bajando', () => {
+      // Al pausar, el servidor borra endsAt y guarda el resto en remaining.
+      const pausado = { endsAt: null, seconds: 900, remaining: 137, running: false }
+      expect(remainingSeconds(pausado)).toBe(137)
+      // Y pase el tiempo que pase, sigue diciendo lo mismo.
+      const dentroDeUnRato = new Date(Date.now() + 60_000)
+      expect(remainingSeconds(pausado, dentroDeUnRato)).toBe(137)
+    })
+
+    it('sin nada congelado, enseña la duración configurada', () => {
+      expect(remainingSeconds({ endsAt: null, seconds: 600, remaining: null, running: false })).toBe(600)
+    })
+
+    it('corriendo manda la hora de fin, no lo congelado', () => {
+      const corriendo = { endsAt: enFuturo(45), seconds: 900, remaining: 137, running: true }
+      expect(remainingSeconds(corriendo)).toBeLessThanOrEqual(45)
+      expect(remainingSeconds(corriendo)).toBeGreaterThan(43)
+    })
+
+    it('un cronómetro pausado no dispara el aviso', () => {
+      expect(hasExpired({ endsAt: null, seconds: 900, remaining: 0, running: false })).toBe(false)
+    })
   })
 
   it('entiende lo que teclea el host', () => {

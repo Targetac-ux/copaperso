@@ -125,6 +125,20 @@ describe('parsePlayerLine', () => {
     })
   })
 
+  it('reconoce el elo Demon', () => {
+    expect(parsePlayerLine('Target MID Demon')).toEqual({
+      name: 'Target',
+      roles: ['MID'],
+      elo: 'DEMON',
+    })
+    expect(parsePlayerLine('Zenix top rank1')).toEqual({
+      name: 'Zenix',
+      roles: ['TOP'],
+      elo: 'DEMON',
+    })
+    expect(parsePlayerLine('Candy ADC demonio')?.elo).toBe('DEMON')
+  })
+
   it('cadena vacía o basura devuelve null', () => {
     expect(parsePlayerLine('')).toBeNull()
     expect(parsePlayerLine('   ')).toBeNull()

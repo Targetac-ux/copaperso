@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: sesion } = await db
     .from('session')
-    .select('id, timer_seconds, timer_ends_at, timer_running')
+    .select('id, timer_seconds, timer_ends_at, timer_running, timer_remaining_seconds')
     .eq('id', sessionId)
     .maybeSingle()
 
@@ -35,29 +35,43 @@ export default defineEventHandler(async (event) => {
     timer_seconds?: number
     timer_ends_at?: string | null
     timer_running?: boolean
+    timer_remaining_seconds?: number | null
   }
   let patch: PatchTimer
 
+  /** Lo que queda ahora mismo, corriendo o pausado. */
+  const restantesAhora = sesion.timer_ends_at
+    ? Math.max(0, Math.ceil((new Date(sesion.timer_ends_at).getTime() - Date.now()) / 1000))
+    : (sesion.timer_remaining_seconds ?? 0)
+
   switch (input.action) {
     case 'start': {
-      // Si estaba pausado a mitad, sigue desde donde quedó.
-      const restantes =
-        !sesion.timer_running && sesion.timer_ends_at
-          ? Math.max(0, Math.ceil((new Date(sesion.timer_ends_at).getTime() - Date.now()) / 1000))
-          : 0
-      const cuenta = restantes > 0 ? restantes : segundos
+      // Si venía pausado a mitad, sigue desde donde se quedó.
+      const cuenta = restantesAhora > 0 ? restantesAhora : segundos
       patch = {
         timer_seconds: segundos,
         timer_ends_at: new Date(Date.now() + cuenta * 1000).toISOString(),
         timer_running: true,
+        timer_remaining_seconds: null,
       }
       break
     }
     case 'pause':
-      patch = { timer_running: false }
+      // Congelar lo que queda y borrar la hora de fin: si se dejara, el número
+      // seguiría bajando en pantalla aunque el cronómetro esté parado.
+      patch = {
+        timer_running: false,
+        timer_ends_at: null,
+        timer_remaining_seconds: restantesAhora,
+      }
       break
     case 'reset':
-      patch = { timer_seconds: segundos, timer_ends_at: null, timer_running: false }
+      patch = {
+        timer_seconds: segundos,
+        timer_ends_at: null,
+        timer_running: false,
+        timer_remaining_seconds: null,
+      }
       break
     case 'set':
       patch = { timer_seconds: segundos }
@@ -68,7 +82,7 @@ export default defineEventHandler(async (event) => {
     .from('session')
     .update(patch)
     .eq('id', sessionId)
-    .select('timer_seconds, timer_ends_at, timer_running')
+    .select('timer_seconds, timer_ends_at, timer_running, timer_remaining_seconds')
     .single()
 
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })

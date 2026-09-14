@@ -7,20 +7,28 @@
  */
 
 export const DEFAULT_SECONDS = 15 * 60
-export const MIN_SECONDS = 30
+/** Cinco segundos: lo justo para probar el aviso sin que un resbalón lo deje en uno. */
+export const MIN_SECONDS = 5
 export const MAX_SECONDS = 2 * 60 * 60
 
 export interface TimerState {
-  /** Cuándo termina, en ISO. Null si no está corriendo. */
+  /** Cuándo termina, en ISO. Null si está pausado o parado. */
   endsAt: string | null
-  /** La duración que escribió el host, para poder reiniciarlo igual. */
+  /** La duración que escribió el host. Es a lo que vuelve «Reiniciar». */
   seconds: number
+  /** Lo que quedaba al pausar. Null si corre o está a cero. */
+  remaining?: number | null
   running: boolean
 }
 
-/** Segundos que faltan. Nunca baja de cero. */
+/**
+ * Segundos que faltan. Nunca baja de cero.
+ *
+ * Con hora de fin, se cuenta desde ella. Sin ella —pausado o parado— se enseña
+ * lo que quedó congelado, y si no hay nada congelado, la duración configurada.
+ */
 export function remainingSeconds(timer: TimerState, now: Date = new Date()): number {
-  if (!timer.endsAt) return timer.seconds
+  if (!timer.endsAt) return timer.remaining ?? timer.seconds
   const ms = new Date(timer.endsAt).getTime() - now.getTime()
   return Math.max(0, Math.ceil(ms / 1000))
 }

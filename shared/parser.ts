@@ -40,6 +40,7 @@ const ELO_ALIASES: Record<string, EloTierDb> = {
   master: 'MASTER', maestro: 'MASTER',
   grandmaster: 'GRANDMASTER', granmaster: 'GRANDMASTER', gm: 'GRANDMASTER',
   challenger: 'CHALLENGER', challenguer: 'CHALLENGER', chall: 'CHALLENGER', challe: 'CHALLENGER',
+  demon: 'DEMON', dem: 'DEMON', rank1: 'DEMON', demonio: 'DEMON',
 }
 
 /** Baja a minúsculas y quita acentos y símbolos, para comparar alias sin sorpresas. */

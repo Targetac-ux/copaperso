@@ -7,6 +7,8 @@ import {
   findMember,
   isOffRole,
   remainingSlots,
+  demonBalance,
+  isDemon,
   type DraftState,
   type BenchPlayer,
 } from '../../shared/draft'
@@ -16,8 +18,16 @@ function banca(
   nombre: string,
   roles: BenchPlayer['roles'] = ['MID'],
   state: BenchPlayer['state'] = 'bench',
+  elo: BenchPlayer['elo'] = 'CHALLENGER',
 ): BenchPlayer {
-  return { sessionParticipantId: id, participationId: `p-${id}`, displayName: nombre, roles, state }
+  return {
+    sessionParticipantId: id,
+    participationId: `p-${id}`,
+    displayName: nombre,
+    roles,
+    elo,
+    state,
+  }
 }
 
 function estado(overrides: Partial<DraftState> = {}): DraftState {
@@ -225,5 +235,75 @@ describe('utilidades', () => {
       ],
     })
     expect(remainingSlots(s)).toBe(8)
+  })
+})
+
+describe('balance de Demons', () => {
+  // Dos Demon en la banca, listos para repartir.
+  const conDemons = () =>
+    estado({
+      bench: [
+        banca('d1', 'Demon Uno', ['MID'], 'bench', 'DEMON'),
+        banca('d2', 'Demon Dos', ['TOP'], 'bench', 'DEMON'),
+        banca('n1', 'Normal Uno', ['ADC'], 'bench', 'CHALLENGER'),
+      ],
+      teams: [
+        { teamNumber: 1, members: [] },
+        { teamNumber: 2, members: [] },
+      ],
+    })
+
+  const conUnDemonEnT1 = () => {
+    const s = conDemons()
+    s.teams[0].members.push(miembro('d1', 'Demon Uno', 'MID'))
+    return s
+  }
+
+  it('el primer Demon no dice nada: 1-0 es un paso normal del draft', () => {
+    const r = checkAssignment(conDemons(), 'd1', 1, 'MID')
+    expect(r.warnings.map((w) => w.code)).not.toContain('demon_balance')
+  })
+
+  it('el segundo Demon al otro equipo tampoco: queda 1-1', () => {
+    const r = checkAssignment(conUnDemonEnT1(), 'd2', 2, 'TOP')
+    expect(r.warnings.map((w) => w.code)).not.toContain('demon_balance')
+  })
+
+  it('el segundo Demon al MISMO equipo avisa: quedaría 2-0', () => {
+    const r = checkAssignment(conUnDemonEnT1(), 'd2', 1, 'TOP')
+    const aviso = r.warnings.find((w) => w.code === 'demon_balance')
+    expect(aviso).toBeDefined()
+    expect(aviso!.message).toContain('2 Demon')
+    expect(aviso!.message).toContain('ninguno')
+    // Avisa, no prohíbe: el host manda.
+    expect(r.errors).toEqual([])
+  })
+
+  it('un jugador normal nunca dispara el aviso', () => {
+    const r = checkAssignment(conUnDemonEnT1(), 'n1', 1, 'ADC')
+    expect(r.warnings.map((w) => w.code)).not.toContain('demon_balance')
+  })
+
+  it('mover un Demon del equipo lleno al vacío no avisa: arregla el balance', () => {
+    const s = conUnDemonEnT1()
+    s.teams[0].members.push(miembro('d2', 'Demon Dos', 'TOP'))
+    // Con 2-0, llevarse uno al Team 2 deja 1-1.
+    const r = checkAssignment(s, 'd2', 2, 'TOP')
+    expect(r.warnings.map((w) => w.code)).not.toContain('demon_balance')
+  })
+
+  it('demonBalance cuenta lo que hay en cada equipo', () => {
+    expect(demonBalance(conDemons())).toEqual({ t1: 0, t2: 0, diff: 0, any: true })
+    expect(demonBalance(conUnDemonEnT1())).toEqual({ t1: 1, t2: 0, diff: 1, any: true })
+  })
+
+  it('sin ningún Demon, el recuento no se enseña', () => {
+    expect(demonBalance(estado()).any).toBe(false)
+  })
+
+  it('isDemon solo reconoce el elo exacto', () => {
+    expect(isDemon('DEMON')).toBe(true)
+    expect(isDemon('CHALLENGER')).toBe(false)
+    expect(isDemon(null)).toBe(false)
   })
 })

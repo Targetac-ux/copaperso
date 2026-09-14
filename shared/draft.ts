@@ -1,4 +1,4 @@
-import type { PlayerRoleDb } from './types/database.types'
+import type { PlayerRoleDb, EloTierDb } from './types/database.types'
 
 /**
  * Reglas del draft (§9, §10, §11).
@@ -30,6 +30,7 @@ export interface BenchPlayer {
   participationId: string
   displayName: string
   roles: PlayerRoleDb[]
+  elo: EloTierDb | null
   state: 'bench' | 'team' | 'jail' | 'graveyard' | 'removed'
 }
 
@@ -46,7 +47,7 @@ export interface DraftError {
 
 /** Algo raro que el host puede querer de todas formas. */
 export interface DraftWarning {
-  code: 'duplicate_role' | 'off_role' | 'not_available'
+  code: 'duplicate_role' | 'off_role' | 'not_available' | 'demon_balance'
   message: string
 }
 
@@ -73,6 +74,73 @@ export function findMember(
     if (member) return { team, member }
   }
   return null
+}
+
+/**
+ * Balance de Demons (§ añadido en septiembre de 2026).
+ *
+ * El elo Demon lo pone el host a quien ha llegado a rank 1 o es demasiado
+ * bueno, y la regla del torneo es repartirlos **1:1** entre los dos equipos.
+ *
+ * Durante el draft se pasa por estados desbalanceados sin remedio: el primer
+ * Demon que se asigna deja un 1-0 hasta que llega su pareja. Por eso no se
+ * mira si están igualados, sino **cuánto se separan**: dos de diferencia ya no
+ * es un paso intermedio, es un desequilibrio.
+ */
+export function isDemon(elo: EloTierDb | null | undefined): boolean {
+  return elo === 'DEMON'
+}
+
+/** Cuántos Demon tiene un equipo ahora mismo. */
+export function demonCount(state: DraftState, teamNumber: 1 | 2): number {
+  const team = state.teams.find((t) => t.teamNumber === teamNumber)
+  if (!team) return 0
+  return team.members.filter((m) => {
+    const jugador = state.bench.find((b) => b.sessionParticipantId === m.sessionParticipantId)
+    return isDemon(jugador?.elo)
+  }).length
+}
+
+export interface DemonBalance {
+  t1: number
+  t2: number
+  diff: number
+  /** Si hay algún Demon en la sesión; si no, el recuento no se enseña. */
+  any: boolean
+}
+
+export function demonBalance(state: DraftState): DemonBalance {
+  const t1 = demonCount(state, 1)
+  const t2 = demonCount(state, 2)
+  const enBanca = state.bench.some((b) => isDemon(b.elo))
+  return { t1, t2, diff: Math.abs(t1 - t2), any: t1 + t2 > 0 || enBanca }
+}
+
+/** Cuánto se separarían los equipos si se asigna a alguien a `teamNumber`. */
+function demonDiffTrasAsignar(
+  state: DraftState,
+  sessionParticipantId: string,
+  teamNumber: 1 | 2,
+): { diff: number; destino: number; otro: number } {
+  const jugador = state.bench.find((b) => b.sessionParticipantId === sessionParticipantId)
+  const actual = findMember(state, sessionParticipantId)
+
+  let t1 = demonCount(state, 1)
+  let t2 = demonCount(state, 2)
+
+  if (isDemon(jugador?.elo)) {
+    // Si ya estaba en un equipo, primero sale de ahí.
+    if (actual?.team.teamNumber === 1) t1--
+    if (actual?.team.teamNumber === 2) t2--
+    if (teamNumber === 1) t1++
+    else t2++
+  }
+
+  return {
+    diff: Math.abs(t1 - t2),
+    destino: teamNumber === 1 ? t1 : t2,
+    otro: teamNumber === 1 ? t2 : t1,
+  }
 }
 
 /**
@@ -123,6 +191,18 @@ export function checkAssignment(
   const roles = bench?.roles ?? []
   if (roles.length && !roles.includes(role)) {
     warnings.push({ code: 'off_role', message: `${role} no es rol suyo: cuenta como off-role.` })
+  }
+
+  // Los Demon van 1:1. Un 1-0 es un paso normal del draft; dos de diferencia no.
+  const demons = demonDiffTrasAsignar(state, sessionParticipantId, teamNumber)
+  if (demons.diff >= 2) {
+    const otroEquipo = teamNumber === 1 ? 2 : 1
+    warnings.push({
+      code: 'demon_balance',
+      message:
+        `El Team ${teamNumber} tendría ${demons.destino} Demon y el Team ${otroEquipo} ` +
+        `${demons.otro === 0 ? 'ninguno' : demons.otro}. Deberían ir 1:1.`,
+    })
   }
 
   return { errors, warnings }
