@@ -543,17 +543,29 @@ h1 {
   min-height: 62vh;
 }
 
+/* La colocación va explícita a propósito. Dejándola al flujo automático, el
+   sorteo (anclado a la columna 1) empujaba el cursor a la fila 2, y los equipos
+   —que ocupan dos filas— acababan colocados *debajo* de toda la banca en vez de
+   a su lado: con la banca llena se salían de la pantalla y no se podía arrastrar
+   a nadie sin hacer scroll. */
+.banca {
+  grid-column: 1;
+  grid-row: 1;
+}
+
 .centro {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-  grid-row: span 2;
+  grid-column: 2;
+  grid-row: 1 / span 2;
 }
 
 /* El sorteo, justo debajo de la banca: se tira el dado mirando a quién queda. */
 .sorteo {
   grid-column: 1;
+  grid-row: 2;
   align-self: start;
 }
 
@@ -572,7 +584,8 @@ h1 {
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-  grid-row: span 2;
+  grid-column: 3;
+  grid-row: 1 / span 2;
 }
 
 .sumar,
@@ -696,6 +709,7 @@ h1 {
 
   .derecha {
     grid-column: 1 / -1;
+    grid-row: 3;
     flex-direction: row;
     flex-wrap: wrap;
   }
@@ -708,6 +722,15 @@ h1 {
 @media (max-width: 900px) {
   .mesa {
     grid-template-columns: 1fr;
+  }
+
+  /* En una sola columna manda el orden del DOM: banca, sorteo, equipos, canjeos. */
+  .banca,
+  .sorteo,
+  .centro,
+  .derecha {
+    grid-column: auto;
+    grid-row: auto;
   }
 
   .equipos {

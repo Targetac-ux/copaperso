@@ -244,7 +244,7 @@ cuál es en ese instante. Los ↶ individuales sí mandan id, porque ahí no hay
 
 ---
 
-### 3D — Ajustes tras la primera prueba  ·  🟡 construida, pendiente de migraciones
+### 3D — Ajustes tras la primera prueba  ·  ✅ CERRADA
 
 Salidos de usar el CCTM de punta a punta por primera vez.
 
@@ -271,12 +271,25 @@ Salidos de usar el CCTM de punta a punta por primera vez.
 | 4 | Reanudar sigue desde donde se quedó; reiniciar vuelve a la duración configurada | ✅ |
 | 5 | `10s` da 00:10, no 00:30 | ✅ |
 | 6 | El segundo Demon en el mismo equipo avisa, y «Hacerlo igual» lo aplica | ✅ e2e |
+| 7 | Diez jugadores a dos equipos completos, arrastrando | ✅ e2e · 58 s |
 
-Total acumulado: **100 unitarias** + los e2e de las fases anteriores, actualizados a la nueva
-disposición.
+Total acumulado: **100 unitarias** y **40 e2e**, todas en verde con las dos migraciones aplicadas.
 
-**Pendiente:** aplicar en Supabase `20260914000001_elo_demon.sql` y `20260914000002_timer_pausa.sql`.
-Van separadas porque Postgres no deja usar un valor de enum recién creado en la misma transacción.
+**Dos cosas que salieron al correr los e2e de cierre, y que no venían en el plan:**
+
+- **Los equipos se colocaban debajo de toda la banca.** Al anclar el sorteo a la columna 1, el flujo
+  automático del grid empujaba el cursor a la fila 2, y los equipos —que ocupan dos filas— se
+  colocaban ahí en vez de al lado de la banca. Con la banca llena quedaban fuera de la pantalla y no
+  se podía arrastrar a nadie sin hacer scroll. La colocación pasa a ser explícita (`grid-column` y
+  `grid-row` en las cuatro zonas, y vuelta a `auto` en una sola columna).
+- **Los e2e corrían en cinco procesos a la vez.** `fullyParallel: false` solo ordena los tests
+  *dentro* de cada fichero: los ficheros seguían en paralelo, y todos trabajan sobre la misma sesión
+  abierta del host. De ahí los fallos intermitentes de las fases anteriores, que nunca se
+  reproducían al lanzar un spec suelto. Ahora `workers: 1`.
+
+**Migraciones de esta fase** (aplicadas): `20260914000001_elo_demon.sql` y
+`20260914000002_timer_pausa.sql`. Van separadas porque Postgres no deja usar un valor de enum recién
+creado en la misma transacción.
 
 ---
 

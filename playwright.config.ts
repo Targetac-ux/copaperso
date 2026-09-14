@@ -7,6 +7,13 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
+  /**
+   * Un solo worker, a propósito. `fullyParallel: false` solo ordena los tests
+   * *dentro* de cada fichero: los ficheros seguían corriendo en paralelo, y
+   * todos trabajan sobre la misma sesión abierta del host. De ahí los fallos
+   * intermitentes que nunca se reproducían al lanzar un spec suelto.
+   */
+  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',

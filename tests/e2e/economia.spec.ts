@@ -129,11 +129,25 @@ test.describe.serial('economía y timer', () => {
 
     // Y al reanudar sigue desde donde se quedó, no desde el principio.
     await page.locator('.timer').getByRole('button', { name: 'Iniciar', exact: true }).click()
-    await page.waitForTimeout(1200)
     const [min, seg] = congelado.split(':').map(Number)
+    const congeladoSeg = min! * 60 + seg!
+
+    // El reloj solo cambia al cruzar un borde de segundo, así que se espera al
+    // primer descenso en vez de leer en un instante fijo: con una espera seca
+    // de 1,2 s la lectura caía justo en el borde y el test fallaba sin motivo.
+    await expect
+      .poll(
+        async () => {
+          const [m, s] = (await reloj.innerText()).split(':').map(Number)
+          return m! * 60 + s!
+        },
+        { timeout: 5000, message: 'al reanudar tiene que volver a bajar' },
+      )
+      .toBeLessThan(congeladoSeg)
+
+    // Y sigue desde donde se quedó: no ha vuelto a la duración configurada.
     const trasReanudar = (await reloj.innerText()).split(':').map(Number)
-    expect(trasReanudar[0]! * 60 + trasReanudar[1]!).toBeLessThan(min! * 60 + seg!)
-    expect(trasReanudar[0]! * 60 + trasReanudar[1]!).toBeGreaterThan(min! * 60 + seg! - 10)
+    expect(trasReanudar[0]! * 60 + trasReanudar[1]!).toBeGreaterThan(congeladoSeg - 10)
 
     await page.locator('.timer').getByRole('button', { name: 'Pausar' }).click()
   })
