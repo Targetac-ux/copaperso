@@ -337,15 +337,6 @@ const hora = (iso: string) =>
           </template>
         </CctmBench>
 
-        <CctmRandom
-          v-model:picked="sorteado"
-          class="sorteo"
-          :available="available.length"
-          :busy="busy"
-          @roll="sortear"
-          @assign="(p) => tras(assign(p.id, p.team, p.role)).then(() => (sorteado = null))"
-        />
-
         <div class="centro">
           <div class="equipos">
             <CctmTeam
@@ -359,6 +350,15 @@ const hora = (iso: string) =>
               @select="alSeleccionar"
             />
           </div>
+
+          <CctmRandom
+            v-model:picked="sorteado"
+            class="sorteo"
+            :available="available.length"
+            :busy="busy"
+            @roll="sortear"
+            @assign="(p) => tras(assign(p.id, p.team, p.role)).then(() => (sorteado = null))"
+          />
 
           <section v-if="fuera.length" class="sumar">
             <h2>Registrados este mes que no están en la sesión</h2>
@@ -535,7 +535,6 @@ h1 {
 .mesa {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1.05fr);
-  grid-template-rows: auto auto;
   gap: 12px;
   /* Las tres columnas a la misma altura: si no, la de la derecha se estira
      sola y las otras dos dejan un hueco muerto debajo. */
@@ -543,30 +542,14 @@ h1 {
   min-height: 62vh;
 }
 
-/* La colocación va explícita a propósito. Dejándola al flujo automático, el
-   sorteo (anclado a la columna 1) empujaba el cursor a la fila 2, y los equipos
-   —que ocupan dos filas— acababan colocados *debajo* de toda la banca en vez de
-   a su lado: con la banca llena se salían de la pantalla y no se podía arrastrar
-   a nadie sin hacer scroll. */
-.banca {
-  grid-column: 1;
-  grid-row: 1;
-}
-
+/* Tres zonas en una sola fila, en el orden del DOM: banca, equipos, canjeos.
+   El sorteo va dentro de la columna central, debajo de los equipos, que es
+   donde sobraba sitio. */
 .centro {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-  grid-column: 2;
-  grid-row: 1 / span 2;
-}
-
-/* El sorteo, justo debajo de la banca: se tira el dado mirando a quién queda. */
-.sorteo {
-  grid-column: 1;
-  grid-row: 2;
-  align-self: start;
 }
 
 .equipos > * {
@@ -584,8 +567,6 @@ h1 {
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-  grid-column: 3;
-  grid-row: 1 / span 2;
 }
 
 .sumar,
@@ -709,7 +690,6 @@ h1 {
 
   .derecha {
     grid-column: 1 / -1;
-    grid-row: 3;
     flex-direction: row;
     flex-wrap: wrap;
   }
@@ -722,15 +702,6 @@ h1 {
 @media (max-width: 900px) {
   .mesa {
     grid-template-columns: 1fr;
-  }
-
-  /* En una sola columna manda el orden del DOM: banca, sorteo, equipos, canjeos. */
-  .banca,
-  .sorteo,
-  .centro,
-  .derecha {
-    grid-column: auto;
-    grid-row: auto;
   }
 
   .equipos {

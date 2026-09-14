@@ -252,8 +252,8 @@ Salidos de usar el CCTM de punta a punta por primera vez.
 
 - ✅ Elo **Demon** con su regla de balance 1:1, aviso al llegar a dos de diferencia y recuento en la
   cabecera de cada equipo.
-- ✅ El sorteo baja debajo de la banca; los **Canjeos en bits** (antes «Recompensas») pasan a la
-  columna derecha, en su propio panel.
+- ✅ El sorteo pasa a la columna central, **justo debajo de Team 1 y Team 2**, que es donde sobraba
+  sitio; los **Canjeos en bits** (antes «Recompensas») pasan a la columna derecha, en su propio panel.
 - ✅ Roles de los equipos más grandes y con un color por rol, según la convención de LoL.
 - ✅ **Pausar el cronómetro para de verdad.** Antes solo se marcaba como parado y el número seguía
   bajando; ahora se congela lo que quedaba y reanudar sigue desde ahí.
@@ -277,11 +277,11 @@ Total acumulado: **100 unitarias** y **40 e2e**, todas en verde con las dos migr
 
 **Dos cosas que salieron al correr los e2e de cierre, y que no venían en el plan:**
 
-- **Los equipos se colocaban debajo de toda la banca.** Al anclar el sorteo a la columna 1, el flujo
-  automático del grid empujaba el cursor a la fila 2, y los equipos —que ocupan dos filas— se
-  colocaban ahí en vez de al lado de la banca. Con la banca llena quedaban fuera de la pantalla y no
-  se podía arrastrar a nadie sin hacer scroll. La colocación pasa a ser explícita (`grid-column` y
-  `grid-row` en las cuatro zonas, y vuelta a `auto` en una sola columna).
+- **Los equipos se colocaban debajo de toda la banca.** Mientras el sorteo estuvo anclado a la
+  columna 1, el flujo automático del grid empujaba el cursor a la fila 2 y los equipos —que ocupaban
+  dos filas— se colocaban ahí en vez de al lado de la banca: con la banca llena quedaban fuera de la
+  pantalla y no se podía arrastrar a nadie sin hacer scroll. Al mudar el sorteo a la columna central
+  la mesa vuelve a ser de una sola fila y el problema desaparece de raíz.
 - **Los e2e corrían en cinco procesos a la vez.** `fullyParallel: false` solo ordena los tests
   *dentro* de cada fichero: los ficheros seguían en paralelo, y todos trabajan sobre la misma sesión
   abierta del host. De ahí los fallos intermitentes de las fases anteriores, que nunca se
