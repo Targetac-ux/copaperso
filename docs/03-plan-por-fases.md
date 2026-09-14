@@ -11,7 +11,7 @@ Herramientas de prueba:
 
 ---
 
-## Fase 0 — Especificación y wireframes  *(1 semana)*
+## Fase 0 — Especificación y wireframes  ·  ✅ CERRADA
 
 **Entregables**
 - Wireframes validados de: CCTM Manager, registro/autocomplete, panel aleatorio, swap, negociación,
@@ -107,7 +107,7 @@ Total acumulado: **44 unitarias + 15 de punta a punta**.
 
 ---
 
-## Fase 3 — CCTM Manager  *(3–3.5 semanas, la fase más grande)*
+## Fase 3 — CCTM Manager  ·  ✅ CERRADA (3A, 3B, 3C y 3D)
 
 ### 3A — Banca, equipos y asignación  ·  ✅ CERRADA (10 de septiembre de 2026)
 
@@ -193,7 +193,8 @@ Total acumulado: **86 unitarias + 30 de punta a punta**.
   espectadores verán lo mismo en la Fase 4B aunque sus relojes no coincidan.
 - **El precio se congela al registrar la recompensa.** Subir el catálogo después no reescribe lo cobrado.
 
-**Pendiente para la vista pública (Fase 4B):** el cronómetro con aviso sonoro sutil y control de silencio.
+**Lo que quedaba para la vista pública** —cronómetro visible, aviso sonoro sutil y control de
+silencio— se entregó en la Fase 4B.
 
 ---
 
@@ -463,6 +464,9 @@ segunda fila ya arranca por debajo de la más alta y el banco queda alineado sol
 **Entregables**
 - Hero, qué es CopaPerso, modos de juego, cómo participar, reglas, premios, Tier Ranking público,
   enlace a la vista en vivo, Twitch, redes, clips, patrocinadores. Responsive y SEO.
+- **Apartado de donaciones de PayPal** (pedido por el host). El enlace lo da él al empezar la fase;
+  falta decidir qué dice el apartado y si va también en el pie. El formulario de pago **nunca** vive
+  dentro de CopaPerso: es un enlace que abre en pestaña nueva.
 
 **Pruebas de cierre**
 1. Lighthouse en móvil: Performance ≥ 90, Accesibilidad ≥ 95, SEO ≥ 95.
@@ -490,19 +494,21 @@ segunda fila ya arranca por debajo de la más alta y el banco queda alineado sol
 
 ## Resumen de tiempos
 
-| Fase | Duración estimada |
-|---|---|
-| 0 · Especificación | 1 sem |
-| 1 · Fundaciones (incluye Realtime) | 1 sem |
-| 2 · Jugadores y sesiones | 1 sem |
-| 3 · CCTM Manager (3A/3B/3C) | 3–3.5 sem |
-| 4 · Partidas y LP | 1.5 sem |
-| 4B · Vista pública en vivo | 1 sem |
-| 5 · Roster | 1 sem |
-| 6 · Tier Manager | 1 sem |
-| 7 · Home pública | 1.5 sem |
-| 8 · Prueba real | 1 sesión + 1 sem |
-| **Total** | **≈ 11.5–13.5 semanas** |
+| Fase | Estimado | Estado |
+|---|---|---|
+| 0 · Especificación | 1 sem | ✅ cerrada |
+| 1 · Fundaciones (incluye Realtime) | 1 sem | ✅ cerrada |
+| 2 · Jugadores y sesiones | 1 sem | ✅ cerrada |
+| 3 · CCTM Manager (3A/3B/3C/3D) | 3–3.5 sem | ✅ cerrada |
+| 4 · Partidas y LP | 1.5 sem | ✅ cerrada |
+| 4B · Vista pública en vivo | 1 sem | ✅ cerrada |
+| 5 · Roster | 1 sem | pendiente |
+| 6 · Tier Manager | 1 sem | pendiente · **bloqueada** por las 6 insignias de tier y por decidir si el tier es manual o calculado |
+| 7 · Home pública | 1.5 sem | pendiente · falta el enlace de PayPal y las 3 medallas de premios |
+| 8 · Prueba real | 1 sesión + 1 sem | pendiente |
+| **Total** | **≈ 11.5–13.5 semanas** | |
+
+**Lo construido hasta hoy:** 147 pruebas unitarias y 57 de punta a punta, todas en verde.
 
 **Camino corto si hay prisa por usarlo en la próxima CopaPerso:** Fases 1 → 2 → 3A → 4 (unas 6 semanas)
 ya permiten operar el torneo en vivo; economía (3B), vista pública, roster, tier y home pueden seguir en

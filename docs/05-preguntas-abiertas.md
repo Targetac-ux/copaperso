@@ -41,18 +41,30 @@
 El host dará el enlace cuando toque implementarlo. Falta también decidir qué dice el apartado
 (a qué van las donaciones) y si va además en el pie de página.
 
-## 🟡 Importantes
+## 🔵 Decididas por defecto al construir — **confirma o cámbialas**
+
+Estas cuatro hacían falta para poder seguir, así que las resolví con el criterio de la casa («el host
+manda», §1) y **ya están construidas**. No son decisiones tuyas todavía: si alguna no te cuadra,
+dilo y se cambia.
+
+| # | Pregunta | Lo que hace hoy | Dónde se cambia |
+|---|---|---|---|
+| 9 | **Equipos incompletos** | Se puede empezar y cerrar un 4v5. Al cerrar avisa de con cuántos jugó cada lado, pero no bloquea | `shared/lp.ts` (`avisosDeCierre`) |
+| 10 | **Rol duplicado** | Dos MID en el mismo equipo se permiten **con aviso**, igual que el off-role | `shared/draft.ts` (`duplicate_role`) |
+| 12 | **ACE** | A mano como el MVP, uno por partida, sin restricción de equipo, y acumula: victoria + MVP + ACE son +30 | `shared/lp.ts` |
+| 14 | **Blue Shell** | Los cuatro resultados al 25 % | `shared/blueshell.ts` (`girar`) |
+
+## 🟡 Importantes — siguen abiertas
 
 8. **Tier Ranking: ¿manual o calculado?** §30 lo describe administrativo, pero el wireframe muestra una
    columna de "Puntos". ¿Lo decides a mano, o se propone desde el LP del periodo y tú ajustas?
-9. **Equipos incompletos.** ¿Se puede iniciar una partida 4v5, o el sistema debe bloquearlo hasta tener 5v5?
-10. **Rol duplicado.** ¿Puede haber dos MID en el mismo equipo, o debe impedirse?
-12. **ACE.** ¿Lo asignas a criterio, o hay una definición fija?
+   **Bloquea la Fase 6**, que es la siguiente después del roster.
 13. **Modos de juego.** ¿Cambian las reglas de LP, o son solo etiquetas de la sesión? En ARAM AFK con una
-    sola vida, ¿el LP funciona igual?
-14. **Blue Shell.** ¿Los cuatro resultados tienen la misma probabilidad? ¿Quieres editar la lista y sus pesos?
+    sola vida, ¿el LP funciona igual? **Construido asumiendo que el LP es el mismo en todos los modos.**
+    Si cambia, hay que volver sobre la Fase 4, que ya está cerrada.
 15. **Al usar el cupo, ¿el desplazado recibe algo?** ¿Vuelve a la banca sin más, o se le compensa
-    (prioridad en el siguiente draft, bits, etc.)?
+    (prioridad en el siguiente draft, bits, etc.)? Hoy vuelve a la banca sin más. Toca la Fase 3B,
+    ya cerrada.
 
 ## 🟢 Menores
 
@@ -60,4 +72,5 @@ El host dará el enlace cuando toque implementarlo. Falta también decidir qué 
 17. **Dominio.** ¿Ya tienes uno reservado (copaperso.gg / .com)?
 18. **Idioma.** Todo en español, ¿incluida la interfaz del host?
 19. **Datos históricos.** Tienes `CCTM Manager.xlsm` y `CCPR Roster.xlsm` en Descargas. ¿Importamos ese
-    historial, o CopaPerso arranca limpio en un periodo nuevo? Importar son ~media semana extra en la Fase 2.
+    historial, o CopaPerso arranca limpio en un periodo nuevo? **La Fase 2 ya está cerrada sin importar
+    nada**, así que a estas alturas sería trabajo aparte, no parte de una fase.
