@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { demonBalance } from '#shared/draft'
+import { partidaEnCurso } from '#shared/match'
 import type { BenchPlayer } from '#shared/draft'
+import type { CierreDePartida } from '#shared/lp'
+import type { PartidaCargada } from '#shared/match'
 import type { PlayerRole, Player, PlayerRole as Rol } from '#shared/types/models'
 
 definePageMeta({ layout: 'host' })
@@ -65,6 +68,7 @@ interface Cuenta { id: string; display_name: string; kind: 'player' | 'supporter
 interface Prestamo { id: string; person_name: string; principal_bits: number; lent_at: string; status: 'open' | 'settled' | 'forgiven'; amount_due: number; interest: number }
 interface Reclamo { id: string; action_code: string; cost_bits: number; tripled: boolean; paid_with: 'bits' | 'sub_na' | 'sub_latam'; created_at: string }
 
+interface Tirada { id: string; participationId: string; matchId: string | null; outcome: string; displayName: string; spunAt: string }
 interface Nota { id: string; body: string }
 interface Extra { id: string; kind: string; body: string }
 interface Restriccion { id: string; player_name: string; kind: string; value: string | null; note: string | null }
@@ -77,6 +81,93 @@ const cuentas = ref<Cuenta[]>([])
 const prestamos = ref<Prestamo[]>([])
 const reclamos = ref<Reclamo[]>([])
 const tiempoAgotado = ref(false)
+
+// --- partidas y LP (Fase 4) -----------------------------------------------
+const partidas = ref<PartidaCargada[]>([])
+const tiradas = ref<Tirada[]>([])
+const cerrando = ref(false)
+const girando = ref(false)
+
+const enCurso = computed(() => partidaEnCurso(partidas.value))
+
+/** Solo se puede tirar el Blue Shell a quien está en un equipo. */
+const candidatosBlueShell = computed(() =>
+  (draft.value?.teams ?? []).flatMap((t) =>
+    t.members.map((m) => ({
+      participationId: m.participationId,
+      displayName: m.displayName,
+      teamNumber: t.teamNumber,
+    })),
+  ),
+)
+
+/** Las tiradas de la partida en curso: las que llevan su id o ninguno. */
+const tiradasDeAhora = computed(() =>
+  tiradas.value.filter((t) => !t.matchId || t.matchId === enCurso.value?.id),
+)
+
+async function cargarPartidas() {
+  if (!sessionId.value) return
+  const [lista, bs] = await Promise.all([
+    $fetch<PartidaCargada[]>(`/api/sessions/${sessionId.value}/matches`),
+    $fetch<Tirada[]>(`/api/sessions/${sessionId.value}/blue-shell`),
+  ])
+  partidas.value = lista
+  tiradas.value = bs
+}
+
+async function iniciarPartida() {
+  if (!sessionId.value) return
+  errorPartida.value = ''
+  try {
+    await $fetch(`/api/sessions/${sessionId.value}/matches`, { method: 'POST' })
+    await Promise.all([cargarPartidas(), recargar()])
+  } catch (e) {
+    errorPartida.value = (e as { statusMessage?: string }).statusMessage ?? 'No se pudo empezar.'
+  }
+}
+
+async function finalizarPartida(cierre: CierreDePartida) {
+  if (!enCurso.value || cierre.winnerTeam === null) return
+  cerrando.value = true
+  errorPartida.value = ''
+  try {
+    await $fetch(`/api/matches/${enCurso.value.id}/finish`, {
+      method: 'POST',
+      body: {
+        winner_team: cierre.winnerTeam,
+        mvp: cierre.mvp,
+        ace: cierre.ace,
+        double_losses: cierre.doubleLosses,
+      },
+    })
+    cerrandoAbierto.value = false
+    await Promise.all([cargarPartidas(), recargar()])
+  } catch (e) {
+    errorPartida.value = (e as { statusMessage?: string }).statusMessage ?? 'No se pudo cerrar.'
+  } finally {
+    cerrando.value = false
+  }
+}
+
+async function guardarBlueShell(payload: { participation_id: string; outcome: string }) {
+  if (!sessionId.value) return
+  girando.value = true
+  try {
+    await $fetch(`/api/sessions/${sessionId.value}/blue-shell`, {
+      method: 'POST',
+      body: { ...payload, match_id: enCurso.value?.id ?? null },
+    })
+    blueShellAbierto.value = false
+    await Promise.all([cargarPartidas(), recargar()])
+  } finally {
+    girando.value = false
+  }
+}
+
+const cerrandoAbierto = ref(false)
+const blueShellAbierto = ref(false)
+const errorPartida = ref('')
 
 const cronometro = computed(() => ({
   endsAt: activa.value?.timer_ends_at ?? null,
@@ -195,7 +286,7 @@ async function deshacerUltimo() {
   errorUndo.value = ''
   try {
     await $fetch(`/api/sessions/${sessionId.value}/undo-last`, { method: 'POST' })
-    await Promise.all([recargar(), cargarEconomia()])
+    await Promise.all([recargar(), cargarEconomia(), cargarPartidas()])
   } catch (e) {
     errorUndo.value = (e as { statusMessage?: string }).statusMessage ?? 'No se pudo deshacer.'
   } finally {
@@ -220,7 +311,7 @@ watch(
   sessionId,
   async () => {
     await recargar()
-    await cargarEconomia()
+    await Promise.all([cargarEconomia(), cargarPartidas()])
   },
   { immediate: true },
 )
@@ -318,12 +409,20 @@ const hora = (iso: string) =>
           @action="accionCronometro"
           @expired="tiempoAgotado = true"
         />
+        <CctmMatchBar
+          :matches="partidas"
+          :busy="busy || cerrando"
+          @start="iniciarPartida"
+          @finish="cerrandoAbierto = true"
+          @blue-shell="blueShellAbierto = true"
+        />
         <button class="btn btn--ghost" :disabled="busy" @click="tras(benchAll())">
           Devolver equipos a banca
         </button>
       </div>
 
       <p v-if="error" class="alert alert--error">{{ error }}</p>
+      <p v-if="errorPartida" class="alert alert--error">{{ errorPartida }}</p>
 
       <div class="mesa">
         <CctmBench
@@ -359,6 +458,8 @@ const hora = (iso: string) =>
             @roll="sortear"
             @assign="(p) => tras(assign(p.id, p.team, p.role)).then(() => (sorteado = null))"
           />
+
+          <CctmMatchList :matches="partidas" />
 
           <section v-if="fuera.length" class="sumar">
             <h2>Registrados este mes que no están en la sesión</h2>
@@ -456,6 +557,23 @@ const hora = (iso: string) =>
         <p v-else class="log__vacio">Todavía no ha pasado nada en esta sesión.</p>
       </section>
     </template>
+
+    <CctmMatchFinish
+      :open="cerrandoAbierto"
+      :match="enCurso"
+      :busy="cerrando"
+      :blue-shells="tiradasDeAhora"
+      @finish="finalizarPartida"
+      @close="cerrandoAbierto = false"
+    />
+
+    <CctmBlueShell
+      :open="blueShellAbierto"
+      :busy="girando"
+      :candidates="candidatosBlueShell"
+      @save="guardarBlueShell"
+      @close="blueShellAbierto = false"
+    />
 
     <CctmTimeUp
       :open="tiempoAgotado"

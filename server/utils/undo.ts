@@ -99,6 +99,60 @@ export async function runUndo(event: H3Event, payload: Payload, sessionId: strin
       return
     }
 
+    // -------------------------------------------------------- partidas ----
+    case 'match_start': {
+      // Borrar la partida se lleva por delante su alineación y sus lp_event:
+      // ambos cuelgan de ella con `on delete cascade`.
+      const id = str(payload, 'match_id')
+      if (!id) return
+
+      const { data: tocadas } = await db
+        .from('match_player')
+        .select('participation_id')
+        .eq('match_id', id)
+
+      await db.from('match').delete().eq('id', id)
+      await recalcularLp(event, (tocadas ?? []).map((f) => f.participation_id))
+      return
+    }
+
+    case 'match_finish': {
+      // El LP no se resta a mano: se marcan los eventos como revertidos y se
+      // vuelve a sumar (A3). Así deshacer dos veces no descuenta dos veces.
+      const id = str(payload, 'match_id')
+      if (!id) return
+
+      const { data: tocadas } = await db
+        .from('match_player')
+        .select('participation_id')
+        .eq('match_id', id)
+
+      await db
+        .from('lp_event')
+        .update({ reverted_at: new Date().toISOString() })
+        .eq('match_id', id)
+        .is('reverted_at', null)
+
+      await db
+        .from('match_player')
+        .update({ result: null, is_mvp: false, is_ace: false })
+        .eq('match_id', id)
+
+      await db
+        .from('match')
+        .update({ status: 'live', winner_team_id: null, finished_at: null })
+        .eq('id', id)
+
+      await recalcularLp(event, (tocadas ?? []).map((f) => f.participation_id))
+      return
+    }
+
+    case 'delete_blue_shell': {
+      const id = str(payload, 'blue_shell_id')
+      if (id) await db.from('blue_shell_result').delete().eq('id', id)
+      return
+    }
+
     // -------------------------------------------------------- economía ----
     case 'triple': {
       if (!sessionId) return

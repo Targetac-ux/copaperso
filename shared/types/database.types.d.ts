@@ -197,6 +197,68 @@ type TeamMemberRow = {
   created_at: string
 }
 
+export type MatchStatus = 'draft' | 'live' | 'finished' | 'void'
+export type MatchResultDb = 'win' | 'loss' | 'double_loss'
+export type LpEventType = 'WIN' | 'LOSS' | 'MVP' | 'ACE' | 'OFF_ROLE' | 'DOUBLE_LOSS' | 'MANUAL'
+export type MatchEventType =
+  | 'VICTORY' | 'DEFEAT' | 'MVP' | 'ACE' | 'OFF_ROLE' | 'DOUBLE_LOSS' | 'BLUE_SHELL'
+export type BlueShellOutcomeDb =
+  | 'NO_FLASH' | 'DOUBLE_LOSS' | 'RANDOM_CHAMPION' | 'SPECIFIC_BUILD'
+
+type MatchRow = {
+  id: string
+  session_id: string
+  match_number: number
+  status: MatchStatus
+  winner_team_id: string | null
+  started_at: string | null
+  finished_at: string | null
+  created_at: string
+}
+
+type MatchPlayerRow = {
+  id: string
+  match_id: string
+  participation_id: string
+  team_number: number
+  role: PlayerRoleDb
+  is_off_role: boolean
+  result: MatchResultDb | null
+  is_mvp: boolean
+  is_ace: boolean
+}
+
+type MatchEventRow = {
+  id: string
+  match_id: string
+  match_player_id: string | null
+  type: MatchEventType
+  value: Record<string, unknown>
+  created_at: string
+}
+
+type LpEventRow = {
+  id: string
+  participation_id: string
+  match_id: string | null
+  type: LpEventType
+  delta: number
+  note: string | null
+  reverted_at: string | null
+  created_by: string | null
+  created_at: string
+}
+
+type BlueShellResultRow = {
+  id: string
+  session_id: string
+  match_id: string | null
+  participation_id: string
+  outcome: BlueShellOutcomeDb
+  spun_at: string
+  created_by: string | null
+}
+
 type TeamRow = {
   id: string
   session_id: string
@@ -338,6 +400,86 @@ export type Database = {
           created_at?: string
         }
         Update: { team_id?: string; role?: PlayerRoleDb; is_off_role?: boolean }
+        Relationships: []
+      }
+      match: {
+        Row: MatchRow
+        Insert: {
+          id?: string
+          session_id: string
+          match_number: number
+          status?: MatchStatus
+          winner_team_id?: string | null
+          started_at?: string | null
+          finished_at?: string | null
+        }
+        Update: {
+          status?: MatchStatus
+          winner_team_id?: string | null
+          started_at?: string | null
+          finished_at?: string | null
+        }
+        Relationships: []
+      }
+      match_player: {
+        Row: MatchPlayerRow
+        Insert: {
+          id?: string
+          match_id: string
+          participation_id: string
+          team_number: number
+          role: PlayerRoleDb
+          is_off_role?: boolean
+          result?: MatchResultDb | null
+          is_mvp?: boolean
+          is_ace?: boolean
+        }
+        Update: {
+          result?: MatchResultDb | null
+          is_mvp?: boolean
+          is_ace?: boolean
+        }
+        Relationships: []
+      }
+      match_event: {
+        Row: MatchEventRow
+        Insert: {
+          id?: string
+          match_id: string
+          match_player_id?: string | null
+          type: MatchEventType
+          value?: Record<string, unknown>
+        }
+        Update: { value?: Record<string, unknown> }
+        Relationships: []
+      }
+      lp_event: {
+        Row: LpEventRow
+        Insert: {
+          id?: string
+          participation_id: string
+          match_id?: string | null
+          type: LpEventType
+          delta: number
+          note?: string | null
+          reverted_at?: string | null
+          created_by?: string | null
+        }
+        Update: { reverted_at?: string | null; note?: string | null }
+        Relationships: []
+      }
+      blue_shell_result: {
+        Row: BlueShellResultRow
+        Insert: {
+          id?: string
+          session_id: string
+          match_id?: string | null
+          participation_id: string
+          outcome: BlueShellOutcomeDb
+          spun_at?: string
+          created_by?: string | null
+        }
+        Update: { outcome?: BlueShellOutcomeDb }
         Relationships: []
       }
       state_record: {

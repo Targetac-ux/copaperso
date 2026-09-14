@@ -293,25 +293,51 @@ creado en la misma transacción.
 
 ---
 
-## Fase 4 — Partidas, resultados y LP  *(1.5 semanas)*
+## Fase 4 — Partidas, resultados y LP  ·  ✅ CERRADA
 
 **Entregables**
-- Iniciar partida (snapshot de equipos), finalizar con ganador, asignar MVP / ACE / Off Role,
-  Blue Shell con ruleta, cálculo de LP, volver a jugar, devolver equipos a banca, varias partidas por sesión.
+- ✅ Iniciar partida congelando la alineación (§28), finalizar con ganador, MVP, ACE, off role y doble
+  derrota, cálculo de LP por eventos, varias partidas por sesión y deshacer el resultado entero.
+- ✅ Ruleta del Blue Shell: gira en pantalla y solo guarda si el host guarda.
+- ✅ Control de partida en la barra de la sesión, con el marcador, y lista de partidas jugadas en la
+  columna central.
 
-**Pruebas de cierre**
-1. Unit de LP, tabla completa: victoria +15, derrota −15, MVP +5, ACE +10, off-role +2, doble derrota −30
-   con 2 derrotas; y el combinado victoria + MVP + off-role = +22.
-2. Integración del snapshot (§28): iniciar partida → mover a un jugador de equipo → finalizar. El resultado
-   se aplica a la composición **congelada al inicio**, no a la actual.
-3. Integración: jugador en la banca al iniciar la partida no recibe LP ni aparece en el roster de esa partida.
-4. Integración: doble derrota de un jugador del equipo ganador → el equipo gana, ese jugador registra
-   derrota y −30 LP.
-5. Unit de la ruleta del Blue Shell: los 4 resultados salen en 400 tiradas; "girar de nuevo" no guarda nada;
-   "cancelar" no deja rastro; "guardar" crea el evento.
-6. E2E: sesión con 3 partidas, negociación entre la 1 y la 2, "devolver equipos a banca" antes de la 3 →
-   el LP acumulado de un jugador que jugó las 3 es correcto y los saldos de bits no cambiaron (§26).
-7. Integración: deshacer el resultado de la partida 2 recalcula el LP de los 10 jugadores.
+**Pruebas**
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | La tabla de LP entera, incluido victoria + MVP + off role = +22 | ✅ 21 unitarias |
+| 2 | El resultado se aplica a la alineación congelada, no a los equipos de ahora | ✅ e2e |
+| 3 | Quien se queda en la banca no entra en la alineación ni cobra LP | ✅ e2e |
+| 4 | Doble derrota a alguien del equipo ganador: el equipo gana, él registra −30 | ✅ e2e |
+| 5 | La ruleta saca los 4 resultados; girar y cancelar no dejan rastro | ✅ 6 unitarias + e2e |
+| 6 | Tres partidas en una sesión; los saldos de bits no se tocan (§26) | ✅ e2e |
+| 7 | Deshacer el resultado revierte el LP de los diez, sin borrar los eventos | ✅ e2e |
+| 8 | Cerrar la partida no puede volverse lento | ✅ e2e · 1,8 s |
+
+Total acumulado: **127 unitarias** y **51 e2e**.
+
+**Lo que se decidió sobre la marcha**, porque el plan no lo fijaba:
+
+- **El ACE** se asigna a mano como el MVP, uno por partida, y puede recaer en el mismo jugador
+  (victoria + MVP + ACE son +30). No hay regla automática que lo deduzca.
+- **La ruleta reparte los cuatro resultados por igual** (25 % cada uno). El plan no da pesos; el
+  reparto está en un solo sitio (`shared/blueshell.ts`) por si algún día hay que torcerlo.
+- **Se puede empezar y cerrar con equipos incompletos.** Manda el host (§1): al cerrar se avisa de
+  con cuántos se jugó, y ya está.
+- **Las reglas de LP son las mismas en todos los modos.** Cuando la Copa Tryhard o la Random tengan
+  las suyas, entran en `shared/lp.ts`.
+- **Guardar el Blue Shell no ejecuta el castigo**, igual que los canjeos (A6-bis): si sale doble
+  derrota, viene marcada al cerrar la partida y el host decide.
+
+**Un arreglo que salió de las pruebas:** cerrar una partida tardaba **4,4 s** porque escribía jugador
+a jugador —diez idas y vueltas para la alineación y otras diez para recalcular el LP—. Agrupando las
+escrituras por resultado y lanzando los recálculos a la vez baja a **1,8 s**. Es la acción más
+apurada de la noche, así que hay un test que falla si vuelve a pasar de 6 s.
+
+**Queda para 4B:** `session.status` nunca pasa a `live`, y la vista pública `public_session_live`
+filtra justo por eso, así que hoy sale vacía. La tabla `match_event` tampoco se escribe: `match_player`
+ya es la fuente de verdad de las estadísticas (§28) y duplicarlo solo daba dos sitios que mantener.
 
 ---
 

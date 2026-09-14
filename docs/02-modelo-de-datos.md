@@ -159,6 +159,25 @@ equipos**.
   host manda).
 - La cabecera de cada equipo lleva el recuento, en verde si están igualados y en ámbar si no.
 
+### A9. Lo que la Fase 4 tuvo que decidir
+
+El plan fija la tabla de LP (§23) y el snapshot (§28), pero deja huecos que había que llenar para
+poder construir. Quedan aquí escritos para que se puedan cambiar a sabiendas:
+
+- **ACE.** Se asigna a mano, uno por partida, sin restricción de equipo, y acumula con el MVP: un
+  jugador puede terminar con victoria + MVP + ACE (+30).
+- **Blue Shell.** Los cuatro resultados salen con la misma probabilidad. El reparto vive en
+  `shared/blueshell.ts`; es el único sitio que lo decide.
+- **Equipos incompletos.** Se puede empezar y cerrar una partida con menos de cinco por lado. Al
+  cerrar se avisa de con cuántos se jugó. Manda el host (§1).
+- **Modos de juego.** Por ahora todos reparten el mismo LP.
+- **`match_event` no se escribe.** `match_player` ya guarda resultado, MVP, ACE y off role, y es de
+  donde leen `public_roster` y el cálculo de derrotas. Escribir además un evento por concepto daba
+  dos fuentes para el mismo dato, que es justo lo que A3 evita.
+- **`session.status` sigue en `open`** aunque haya una partida en juego. La vista
+  `public_session_live` filtra por `status = 'live'`, así que hoy no devuelve nada; quien lo encienda
+  es la Fase 4B, que es la que necesita esa vista.
+
 ### A6. Banco de bits/subs: cuenta unificada
 
 §14–§15 piden que un *supporter* que no juega tenga saldo. Se modela como `ledger_account` que apunta
