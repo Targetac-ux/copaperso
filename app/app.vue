@@ -2,7 +2,7 @@
 /**
  * Marca el documento cuando Vue ha hidratado. Los tests de punta a punta lo
  * esperan antes de hacer clic: sin esto, Playwright pulsa botones que todavía
- * no tienen manejador y el test falla sin que haya nada roto.
+ * no tienen manejador y el test falla sin que haya nada roto. c:
  */
 onMounted(() => {
   document.documentElement.dataset.hydrated = 'true'
