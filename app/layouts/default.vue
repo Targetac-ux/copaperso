@@ -103,8 +103,6 @@ onMounted(() => {
             </a>
           </li>
         </ul>
-
-        <NuxtLink to="/host" class="site__hostlink">Acceso host</NuxtLink>
       </div>
     </footer>
   </div>
@@ -214,6 +212,11 @@ main {
   font-size: 14px;
 }
 
+/* El canal y las redes se van al extremo opuesto del logo: el pie es
+   marca a un lado, dónde encontrarnos al otro. Antes empujaba el enlace
+   «Acceso host», que ya no está —al espectador no le decía nada, y
+   esconderlo no protege nada: las rutas del panel viajan igualmente en el
+   JavaScript. Lo que protege el panel es la sesión y el RLS. */
 .site__canal {
   display: inline-flex;
   align-items: center;
@@ -247,15 +250,6 @@ main {
   background: var(--panel);
 }
 
-.site__hostlink {
-  font-family: var(--f-mono);
-  font-size: 12px;
-  color: var(--dim);
-}
-
-.site__hostlink:hover {
-  color: var(--violet-txt);
-}
 
 /* El botón de la hamburguesa solo existe en móvil; en escritorio manda la
    fila de enlaces. */
