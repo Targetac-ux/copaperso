@@ -77,7 +77,7 @@ const modes = [
         <h2>¿Te sirve CopaPerso?</h2>
         <p class="dona__txt">
           Esta página la desarrollé sin esperar compensación alguna, y así va a seguir. Si te apetece
-          aportar algo para irla mejorando, se agradece de verdad.
+          donar algo para irla mejorando, se agradece de verdad. c:
         </p>
         <a class="btn btn--primary" href="https://paypal.me/Targetac" target="_blank" rel="noopener">
           Donar con PayPal

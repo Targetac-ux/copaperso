@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
-import { ESPERA_REGISTRO, gotoHydrated, registrarLinea } from './helpers'
+import { ESPERA_REGISTRO, arrastrarJugador, gotoHydrated, registrarLinea } from './helpers'
 
 /**
  * Pruebas de cierre de la Fase 3A: la mesa de control.
@@ -107,8 +107,7 @@ test.describe.serial('CCTM · banca, draft y swap', () => {
     // 4. Arrastrar de la banca al puesto de MID del Team 1.
     const enBanca = page.locator('.banca li').filter({ hasText: NOMBRES[0]! })
     const slotMid = page.locator('.team.is-t1 li').filter({ hasText: 'MID' })
-    await enBanca.dragTo(slotMid)
-    await expect(slotMid).toContainText(NOMBRES[0]!)
+    await arrastrarJugador(enBanca, slotMid, NOMBRES[0]!)
 
     // 5. Y sigue ahí después de recargar: se guardó de verdad.
     await page.reload()

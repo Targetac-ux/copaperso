@@ -143,6 +143,15 @@ export async function runUndo(event: H3Event, payload: Payload, sessionId: strin
         .update({ status: 'live', winner_team_id: null, finished_at: null })
         .eq('id', id)
 
+      // Cerrar la partida devuelve los precios a normal; deshacerla los vuelve
+      // a poner en ×3 si es de donde venían.
+      if (payload.prices_tripled === true && sessionId) {
+        await db
+          .from('session')
+          .update({ prices_tripled: true, tripled_at: new Date().toISOString() })
+          .eq('id', sessionId)
+      }
+
       await recalcularLp(event, (tocadas ?? []).map((f) => f.participation_id))
       return
     }

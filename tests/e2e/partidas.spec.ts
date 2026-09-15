@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
-import { ESPERA_REGISTRO, gotoHydrated, registrarLinea } from './helpers'
+import { ESPERA_REGISTRO, arrastrarJugador, gotoHydrated, registrarLinea } from './helpers'
 
 /**
  * Pruebas de cierre de la Fase 4: partidas, resultados y LP.
@@ -153,8 +153,7 @@ test.describe.serial('partidas y LP', () => {
       const equipo = i < 5 ? 1 : 2
       const origen = page.locator('.banca li').filter({ hasText: nombre })
       const destino = page.locator(`.team.is-t${equipo} li`).filter({ hasText: rol })
-      await origen.dragTo(destino)
-      await expect(destino).toContainText(nombre)
+      await arrastrarJugador(origen, destino, nombre)
     }
 
     await expect(page.locator('.team.is-t1')).toContainText('Equipo completo')
@@ -243,11 +242,11 @@ test.describe.serial('partidas y LP', () => {
     await gotoHydrated(page, '/host')
     // Se devuelve a su hueco al que se sacó, para volver a un 5v5 limpio.
     const mudado = NOMBRES[0]![0]
-    await page
-      .locator('.banca li')
-      .filter({ hasText: mudado })
-      .dragTo(page.locator('.team.is-t1 li').filter({ hasText: 'TOP' }))
-    await expect(page.locator('.team.is-t1 li').filter({ hasText: mudado })).toBeVisible()
+    await arrastrarJugador(
+      page.locator('.banca li').filter({ hasText: mudado }),
+      page.locator('.team.is-t1 li').filter({ hasText: 'TOP' }),
+      mudado,
+    )
 
     await page.locator('.pbar').getByRole('button', { name: /Iniciar partida 2/ }).click()
     await expect(page.locator('.pbar')).toContainText('Partida 2 en juego')
@@ -384,6 +383,57 @@ test.describe.serial('partidas y LP', () => {
     await expect(
       page.locator('.pbar').getByRole('button', { name: /Iniciar partida/ }),
     ).toHaveCount(0)
+  })
+
+  test('cerrar una partida devuelve los precios a la normalidad', async ({ page }) => {
+    const c = db()
+    // Aquí la partida 3 sigue viva: la reabrió el test de deshacer.
+    await gotoHydrated(page, '/host')
+    await expect(page.locator('.pbar')).toContainText('en juego')
+
+    // Se triplican los precios, como en la negociación previa a jugar.
+    await page.evaluate(
+      (id) =>
+        fetch(`/api/sessions/${id}/triple`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ tripled: true }),
+        }),
+      sessionId!,
+    )
+    const { data: antes } = await c.from('session').select('prices_tripled').eq('id', sessionId!).single()
+    expect(antes!.prices_tripled).toBe(true)
+
+    await page.reload()
+    await page.waitForSelector('html[data-hydrated]')
+    await page.locator('.pbar').getByRole('button', { name: 'Finalizar' }).click()
+    await page.locator('.fin .ganador').getByRole('button', { name: 'Team 1' }).click()
+    await page.locator('.fin').getByRole('button', { name: /Guardar y repartir LP/ }).click()
+    await expect(page.locator('.pbar')).toContainText('Iniciar partida')
+
+    // Cada partida negocia a precio normal: al cerrar, el ×3 se cae.
+    const { data: tras } = await c.from('session').select('prices_tripled').eq('id', sessionId!).single()
+    expect(tras!.prices_tripled, 'cada partida negocia a precio normal').toBe(false)
+
+    // Y la lista de precios lo enseña sin recargar.
+    await expect(page.locator('.canj .precios li').filter({ hasText: 'Blue Shell' })).toContainText('500')
+
+    // Deshacer la partida devuelve el ×3: si no, se perdería sin querer.
+    await page.locator('.log').getByRole('button', { name: /Deshacer lo último/ }).click()
+    await expect(page.locator('.pbar')).toContainText('en juego')
+
+    const { data: deshecho } = await c.from('session').select('prices_tripled').eq('id', sessionId!).single()
+    expect(deshecho!.prices_tripled, 'deshacer la partida devuelve el ×3').toBe(true)
+
+    await page.evaluate(
+      (id) =>
+        fetch(`/api/sessions/${id}/triple`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ tripled: false }),
+        }),
+      sessionId!,
+    )
   })
 
   test('los saldos de bits no se tocan al jugar (§26)', async () => {

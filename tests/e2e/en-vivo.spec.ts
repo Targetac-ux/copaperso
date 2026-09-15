@@ -115,7 +115,9 @@ test.describe.serial('vista pública en vivo', () => {
   test('asignar a alguien se ve en la pantalla pública sin recargar', async ({ page, browser }) => {
     const publico = await browser.newPage()
     await gotoHydrated(publico, '/en-vivo')
-    await expect(publico.locator('.conexion')).toContainText('En directo')
+    // Abrir el canal es un handshake de websocket: con la suite entera en marcha
+    // tarda más de los cinco segundos que Playwright espera por omisión.
+    await expect(publico.locator('.conexion')).toContainText('En directo', { timeout: 20_000 })
     await expect(publico.locator('.equipos .t1')).not.toContainText(JUGADOR)
 
     // El host lo manda al Team 1.

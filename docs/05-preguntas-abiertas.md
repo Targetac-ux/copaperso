@@ -34,10 +34,9 @@
 - **Hay botón para deshacerlo** y volver a precio normal.
 - **Se ve en la vista pública en vivo**, con aviso sonoro sutil.
 
-> Queda un matiz menor sin cerrar, que no bloquea nada: si una sesión tiene varias partidas y entre
-> ellas hay otra ronda de negociación, asumo que **los precios siguen en ×3** (una vez triplicados, se
-> quedan así toda la sesión). Si prefieres que vuelvan a precio normal al empezar cada partida, dilo
-> y se cambia en una línea.
+- **El ×3 dura una partida, no la sesión** (14 de septiembre de 2026). Cada partida tiene su propia
+  negociación y empieza a precio normal, así que al cerrar una partida los precios vuelven solos.
+  Deshacer la partida devuelve el ×3, para no perderlo sin querer.
 
 ## ✅ Donaciones de PayPal — cerrado (14 de septiembre de 2026)
 
@@ -52,33 +51,40 @@
 > Ojo: el blueprint publicado todavía dice «Las donaciones van a los premios y al servidor», que era
 > la idea vieja. Hay que corregirlo cuando se actualice.
 
-## 🔵 Decididas por defecto al construir — **confirma o cámbialas**
+## ✅ Confirmadas por el host (14 de septiembre de 2026)
 
-Estas cuatro hacían falta para poder seguir, así que las resolví con el criterio de la casa («el host
-manda», §1) y **ya están construidas**. No son decisiones tuyas todavía: si alguna no te cuadra,
-dilo y se cambia.
+Estas cuatro las había resuelto yo por defecto para poder seguir construyendo. El host las revisó y
+**se quedan como estaban**:
 
-| # | Pregunta | Lo que hace hoy | Dónde se cambia |
-|---|---|---|---|
-| 9 | **Equipos incompletos** | Se puede empezar y cerrar un 4v5. Al cerrar avisa de con cuántos jugó cada lado, pero no bloquea | `shared/lp.ts` (`avisosDeCierre`) |
-| 10 | **Rol duplicado** | Dos MID en el mismo equipo se permiten **con aviso**, igual que el off-role | `shared/draft.ts` (`duplicate_role`) |
-| 12 | **ACE** | A mano como el MVP, uno por partida, sin restricción de equipo, y acumula: victoria + MVP + ACE son +30 | `shared/lp.ts` |
-| 14 | **Blue Shell** | Los cuatro resultados al 25 % | `shared/blueshell.ts` (`girar`) |
+| Pregunta | Queda así | Dónde vive |
+|---|---|---|
+| **Equipos incompletos** | Se puede jugar y cerrar un 4v5: avisa, no bloquea | `shared/lp.ts` |
+| **Rol duplicado** | Dos MID en el mismo equipo: avisa, no bloquea | `shared/draft.ts` |
+| **ACE** | A mano como el MVP, uno por partida, acumula (+30 con victoria y MVP) | `shared/lp.ts` |
+| **Blue Shell** | Los cuatro resultados al 25 % | `shared/blueshell.ts` |
 
-## 🟡 Importantes — siguen abiertas
+Y estas tres las contestó el host:
 
-13. **Modos de juego.** ¿Cambian las reglas de LP, o son solo etiquetas de la sesión? En ARAM AFK con una
-    sola vida, ¿el LP funciona igual? **Construido asumiendo que el LP es el mismo en todos los modos.**
-    Si cambia, hay que volver sobre la Fase 4, que ya está cerrada.
-15. **Al usar el cupo, ¿el desplazado recibe algo?** ¿Vuelve a la banca sin más, o se le compensa
-    (prioridad en el siguiente draft, bits, etc.)? Hoy vuelve a la banca sin más. Toca la Fase 3B,
-    ya cerrada.
+- **Todos los modos dan y quitan el mismo LP.** No hay reglas por modo; el modo es una etiqueta de la
+  sesión. Confirma lo que ya estaba construido en la Fase 4.
+- **Al usar el cupo, el desplazado no recibe nada:** vuelve a la banca y ya. Confirma el
+  comportamiento actual.
+- **Todo en español**, interfaz del host incluida.
 
-## 🟢 Menores
+## 🕓 Pendientes de fecha, no de decisión
 
-16. **Fotos de jugadores.** ¿Las subes tú, o se toman del avatar de Twitch?
-17. **Dominio.** ¿Ya tienes uno reservado (copaperso.gg / .com)?
-18. **Idioma.** Todo en español, ¿incluida la interfaz del host?
-19. **Datos históricos.** Tienes `CCTM Manager.xlsm` y `CCPR Roster.xlsm` en Descargas. ¿Importamos ese
-    historial, o CopaPerso arranca limpio en un periodo nuevo? **La Fase 2 ya está cerrada sin importar
-    nada**, así que a estas alturas sería trabajo aparte, no parte de una fase.
+- **Fotos de jugadores** (14 de septiembre de 2026): **las sube el host**, que las descarga de
+  Discord, y tiene que poder **ajustarlas** —encuadre— desde la aplicación. Hoy la subida existe y
+  recorta al centro automáticamente; el ajuste manual entra en la Fase 5, con la ficha del jugador.
+- **Datos históricos:** el host pasará el Excel al día **cuando el desarrollo esté terminado**; el
+  que hay ahora está desactualizado en banco y puntos. La importación va después de la Fase 7, no
+  dentro de ninguna fase.
+- **Dominio:** no hay todavía. Se despliega en Vercel y se usa esa URL. Cuando haya dominio, basta
+  con cambiar `NUXT_PUBLIC_SITE_URL` para que las og:image y los enlaces absolutos apunten bien.
+
+## 📅 Fecha objetivo
+
+**Empezar a usarlo en octubre de 2026.** Lo que hace falta para operar una CopaPerso —registro,
+banca, sorteo, equipos, negociación, economía, partidas, LP e historial— **ya está construido y
+probado**. El roster, el tier manager y la Home terminada son lo que queda, y ninguno hace falta
+para dirigir el torneo en vivo.

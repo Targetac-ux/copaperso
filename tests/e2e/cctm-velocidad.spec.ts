@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
-import { ESPERA_REGISTRO, gotoHydrated, registrarLinea } from './helpers'
+import { ESPERA_REGISTRO, arrastrarJugador, gotoHydrated, registrarLinea } from './helpers'
 
 /**
  * Prueba de cierre 6 de la Fase 3A: diez jugadores desde cero a dos equipos
@@ -107,8 +107,7 @@ test.describe('velocidad del draft', () => {
       const equipo = i < 5 ? 1 : 2
       const origen = page.locator('.banca li').filter({ hasText: nombre })
       const destino = page.locator(`.team.is-t${equipo} li`).filter({ hasText: rol })
-      await origen.dragTo(destino)
-      await expect(destino).toContainText(nombre)
+      await arrastrarJugador(origen, destino, nombre)
     }
 
     const total = Date.now() - arranque

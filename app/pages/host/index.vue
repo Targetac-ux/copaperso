@@ -142,7 +142,9 @@ async function finalizarPartida(cierre: CierreDePartida) {
       },
     })
     cerrandoAbierto.value = false
-    await Promise.all([cargarPartidas(), recargar()])
+    // Cerrar la partida devuelve los precios a normal, así que hay que releer
+    // el catálogo y la sesión: si no, la lista y el aviso «×3» se quedan viejos.
+    await Promise.all([cargarPartidas(), recargar(), cargarEconomia(), refrescarSesiones()])
   } catch (e) {
     errorPartida.value = (e as { statusMessage?: string }).statusMessage ?? 'No se pudo cerrar.'
   } finally {

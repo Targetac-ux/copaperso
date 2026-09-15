@@ -97,8 +97,11 @@ empieza un tiempo extra.
 
 - Los **tramos son libres**: el streamer reinicia el cronómetro con la duración que quiera, tantas
   veces como quiera. El cronómetro no manda sobre los precios; solo avisa.
-- El multiplicador se aplica **una sola vez por sesión** y se queda en ×3 desde ahí. Si el cronómetro
-  vuelve a agotarse estando ya en ×3, el aviso lo dice y no ofrece volver a multiplicar.
+- El multiplicador se aplica **una sola vez por negociación**. Si el cronómetro vuelve a agotarse
+  estando ya en ×3, el aviso lo dice y no ofrece volver a multiplicar.
+- **Dura una partida, no la sesión** (corregido el 14 de septiembre de 2026): cada partida tiene su
+  propia fase de negociación y empieza a precio normal, así que **al cerrar una partida el ×3 se
+  cae solo**. Deshacer esa partida lo devuelve, para no perderlo por accidente.
 - El ×3 es **fijo**, no configurable. Es una constante del dominio, no un ajuste.
 - Existe un **botón para deshacerlo** y volver a precio normal.
 

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
-import { ESPERA_REGISTRO, gotoHydrated, registrarLinea } from './helpers'
+import { ESPERA_REGISTRO, arrastrarJugador, gotoHydrated, registrarLinea } from './helpers'
 
 /**
  * Pruebas de cierre de la Fase 3C: el historial y el deshacer.
@@ -133,8 +133,7 @@ test.describe.serial('historial y deshacer', () => {
     // Asignar al primero a MID del Team 1.
     const origen = page.locator('.banca li').filter({ hasText: NOMBRES[0]! })
     const destino = page.locator('.team.is-t1 li').filter({ hasText: 'MID' })
-    await origen.dragTo(destino)
-    await expect(destino).toContainText(NOMBRES[0]!)
+    await arrastrarJugador(origen, destino, NOMBRES[0]!)
     expect(await retrato(sessionId), 'la asignación cambió algo').not.toBe(antes)
 
     // Deshacer desde el historial.
@@ -151,8 +150,7 @@ test.describe.serial('historial y deshacer', () => {
     // Asignar y quedarse con el id de esa entrada del historial.
     const origen = page.locator('.banca li').filter({ hasText: NOMBRES[1]! })
     const destino = page.locator('.team.is-t2 li').filter({ hasText: 'MID' })
-    await origen.dragTo(destino)
-    await expect(destino).toContainText(NOMBRES[1]!)
+    await arrastrarJugador(origen, destino, NOMBRES[1]!)
 
     const { data: entrada } = await c
       .from('action_log')

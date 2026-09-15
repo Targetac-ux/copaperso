@@ -187,6 +187,8 @@ Total acumulado: **86 unitarias + 30 de punta a punta**.
 
 **Decisiones que se tomaron construyendo**
 
+- **El ×3 dura una partida, no la sesión** (corregido el 14 de septiembre de 2026, a petición del
+  host): cada partida negocia a precio normal, así que cerrar una partida devuelve los precios.
 - **La sesión guarda un booleano, no un multiplicador.** Como el ×3 es fijo y se aplica una sola vez,
   un número invitaría a estados que no existen (×6, ×9) y a dudar si es acumulable.
 - **La hora de fin del cronómetro vive en el servidor**, no en el navegador: así el host y los
@@ -315,6 +317,7 @@ creado en la misma transacción.
 | 6 | Tres partidas en una sesión; los saldos de bits no se tocan (§26) | ✅ e2e |
 | 7 | Deshacer el resultado revierte el LP de los diez, sin borrar los eventos | ✅ e2e |
 | 8 | Cerrar la partida no puede volverse lento | ✅ e2e · 1,8 s |
+| 9 | Cerrar una partida devuelve los precios a normal, y deshacerla los vuelve a subir | ✅ e2e |
 
 Total acumulado: **127 unitarias** y **51 e2e**.
 

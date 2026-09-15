@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: partida } = await db
     .from('match')
-    .select('id, session_id, match_number, status')
+    .select('id, session_id, match_number, status, session(prices_tripled)')
     .eq('id', matchId)
     .maybeSingle()
 
@@ -146,6 +146,18 @@ export default defineEventHandler(async (event) => {
     })
     .eq('id', matchId)
 
+  // Cada partida tiene su propia negociación, y empieza a precio normal: al
+  // cerrar una, el ×3 de la anterior se cae. Decisión del host (14-09-2026).
+  const estabaTriplicado =
+    (partida.session as unknown as { prices_tripled: boolean } | null)?.prices_tripled ?? false
+
+  if (estabaTriplicado) {
+    await db
+      .from('session')
+      .update({ prices_tripled: false, tripled_at: null })
+      .eq('id', partida.session_id)
+  }
+
   // El recálculo va después de escribir los eventos: suma lo que acaba de quedar.
   await recalcularLp(
     event,
@@ -159,9 +171,15 @@ export default defineEventHandler(async (event) => {
     actionType: 'match.finish',
     summary:
       `Partida ${partida.match_number}: gana el Team ${input.winner_team}` +
-      (mvp ? `, MVP ${mvp.displayName}` : ''),
+      (mvp ? `, MVP ${mvp.displayName}` : '') +
+      (estabaTriplicado ? ' · los precios vuelven a la normalidad' : ''),
     payload: { match_id: matchId, winner_team: input.winner_team, lp_events: eventos.length },
-    inversePayload: { op: 'match_finish', match_id: matchId },
+    inversePayload: {
+      op: 'match_finish',
+      match_id: matchId,
+      // Si al cerrar se cayó el ×3, deshacer la partida lo devuelve.
+      prices_tripled: estabaTriplicado,
+    },
   })
 
   return await cargarPartidas(event, partida.session_id)
