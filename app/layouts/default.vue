@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { CANAL_TWITCH, CANAL_TWITCH_NOMBRE } from '#shared/enlaces'
+
 const nav = [
   { to: '/', label: 'Inicio' },
   { to: '/en-vivo', label: 'En vivo' },
@@ -19,7 +21,8 @@ const nav = [
         <nav class="site__nav">
           <NuxtLink v-for="item in nav" :key="item.to" :to="item.to">{{ item.label }}</NuxtLink>
         </nav>
-        <a class="btn btn--primary" href="https://twitch.tv" target="_blank" rel="noopener">
+        <a class="btn btn--primary" :href="CANAL_TWITCH" target="_blank" rel="noopener">
+          <AppBrandIcon name="twitch" />
           Ver en Twitch
         </a>
       </div>
@@ -33,6 +36,10 @@ const nav = [
       <div class="wrap site__footer-inner">
         <AppLogo :size="28" />
         <p>La copa de la comunidad, hecha por la comunidad.</p>
+        <a class="site__canal" :href="CANAL_TWITCH" target="_blank" rel="noopener">
+          <AppBrandIcon name="twitch" :size="18" />
+          <span>{{ CANAL_TWITCH_NOMBRE }}</span>
+        </a>
         <NuxtLink to="/host" class="site__hostlink">Acceso host</NuxtLink>
       </div>
     </footer>
@@ -107,8 +114,20 @@ main {
   font-size: 14px;
 }
 
-.site__hostlink {
+.site__canal {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   margin-left: auto;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.site__canal:hover {
+  color: #a970ff;
+}
+
+.site__hostlink {
   font-family: var(--f-mono);
   font-size: 12px;
   color: var(--dim);

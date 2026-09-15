@@ -161,10 +161,20 @@ test.describe.serial('clips de la Home', () => {
     await expect(page.locator('.lista li').first().locator('.datos__slug')).toHaveText(OTRO, {
       timeout: 15_000,
     })
+    await expect(page.locator('.alert--error')).toHaveCount(0)
 
-    const publico = await page.request.get('/api/public/clips')
-    const lista = (await publico.json()) as { slug: string }[]
-    expect(lista.map((c) => c.slug)).toEqual([OTRO, SLUG])
+    // La pantalla se pinta antes de que el servidor conteste —mover con un
+    // parpadeo de espera en cada clic sería insoportable—, así que aquí se
+    // espera a que el cambio llegue de verdad en vez de darlo por hecho.
+    await expect
+      .poll(
+        async () => {
+          const r = await page.request.get('/api/public/clips')
+          return ((await r.json()) as { slug: string }[]).map((c) => c.slug)
+        },
+        { timeout: 15_000 },
+      )
+      .toEqual([OTRO, SLUG])
   })
 
   test('quitar un clip lo borra de verdad', async ({ page }) => {

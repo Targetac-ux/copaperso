@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { CANAL_TWITCH, CANAL_TWITCH_NOMBRE, PAYPAL } from '#shared/enlaces'
+
 useSeoMeta({
   title: 'La copa de la comunidad',
   ogTitle: 'CopaPerso · La copa de la comunidad',
@@ -38,11 +40,16 @@ const modes = [
           Twitch: no hay formularios, solo estar ahí cuando empieza.
         </p>
         <div class="hero__cta">
-          <a class="btn btn--primary" href="https://twitch.tv" target="_blank" rel="noopener">
+          <a class="btn btn--primary" :href="CANAL_TWITCH" target="_blank" rel="noopener">
+            <AppBrandIcon name="twitch" />
             Ver en Twitch
           </a>
           <NuxtLink class="btn btn--ghost" to="/tier-ranking">Ver el Tier Ranking</NuxtLink>
         </div>
+        <p class="hero__canal">
+          <AppBrandIcon name="twitch" :size="14" />
+          <span>twitch.tv/<b>{{ CANAL_TWITCH_NOMBRE }}</b></span>
+        </p>
       </div>
 
       <div class="hero__art">
@@ -88,7 +95,8 @@ const modes = [
           Esta página la desarrollé sin esperar compensación alguna, y así va a seguir. Si te apetece
           donar algo para irla mejorando, se agradece de verdad. c:
         </p>
-        <a class="btn btn--primary" href="https://paypal.me/Targetac" target="_blank" rel="noopener">
+        <a class="btn btn--primary" :href="PAYPAL" target="_blank" rel="noopener">
+          <AppBrandIcon name="paypal" :size="17" />
           Donar con PayPal
         </a>
         <p class="dona__nota">
@@ -210,6 +218,21 @@ h1 span {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.hero__canal {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 16px 0 0;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.hero__canal b {
+  color: var(--muted);
+  font-weight: 600;
 }
 
 .modes {

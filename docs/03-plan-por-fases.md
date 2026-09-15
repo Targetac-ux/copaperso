@@ -555,6 +555,13 @@ el propio reproductor. El precio de esa decisión es que el apartado no puede tr
 vistos del mes»; a cambio, no hay secretos que rotar ni un servicio externo del que dependa que la
 Home cargue.
 
+**Los logotipos de Twitch y PayPal** van en línea (`AppBrandIcon.vue`), no como `<img>`: así heredan
+el color del texto con `currentColor` y el mismo icono sirve sobre el morado del botón principal y
+sobre el gris del pie. Los trazos son los oficiales, copiados de `simple-icons` (v16.31.0) y anotados
+en el componente; el paquete no queda como dependencia porque son miles de iconos para usar dos.
+El canal (`twitch.tv/madhusito`) vive en `shared/enlaces.ts`, en un sitio y no repartido por cinco
+plantillas: ya estuvo apuntando a `twitch.tv` a secas en la cabecera y en el hero a la vez.
+
 > **Pendiente de la primera prueba en el despliegue:** que Twitch acepte el `parent` del dominio de
 > Vercel. Desde esta máquina no hay red hacia Twitch, así que está comprobado todo lo que es
 > responsabilidad de la aplicación —qué enlaces se aceptan, que el iframe lleve el dominio correcto,
