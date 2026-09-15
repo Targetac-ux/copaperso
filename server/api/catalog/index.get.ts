@@ -3,7 +3,11 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import { priceList } from '#shared/economy'
 import type { Database } from '#shared/types/database.types'
 
-const query = z.object({ session_id: z.string().uuid().optional() })
+const query = z.object({
+  session_id: z.string().uuid().optional(),
+  /** Ajustes las necesita todas; la mesa solo las que están puestas. */
+  incluir_quitadas: z.coerce.boolean().optional(),
+})
 
 /**
  * La lista de precios de las recompensas (§13).
@@ -13,7 +17,7 @@ const query = z.object({ session_id: z.string().uuid().optional() })
  */
 export default defineEventHandler(async (event) => {
   await requireStaff(event)
-  const { session_id } = query.parse(getQuery(event))
+  const { session_id, incluir_quitadas } = query.parse(getQuery(event))
   const db = serverSupabaseServiceRole<Database>(event)
 
   let periodId: string | null = null
@@ -42,12 +46,15 @@ export default defineEventHandler(async (event) => {
 
   if (!periodId) return { tripled: false, actions: [] }
 
-  const { data, error } = await db
+  let consulta = db
     .from('action_catalog')
     .select('id, code, label, cost_bits, sort_order, active')
     .eq('period_id', periodId)
-    .eq('active', true)
     .order('sort_order')
+
+  if (!incluir_quitadas) consulta = consulta.eq('active', true)
+
+  const { data, error } = await consulta
 
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 
@@ -60,6 +67,7 @@ export default defineEventHandler(async (event) => {
       label: a.label,
       cost_bits: a.costBits,
       effective: a.effective,
+      active: (a as unknown as { active: boolean }).active,
     })),
   }
 })

@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import {
-  effectiveCost, priceList, loanAmountDue, loanInterest, daysBetween, balanceAfter, TRIPLE,
+  TRIPLE,
+  balanceAfter,
+  codigoDeRecompensa,
+  codigoLibre,
+  daysBetween,
+  effectiveCost,
+  loanAmountDue,
+  loanInterest,
+  priceList,
 } from '../../shared/economy'
 
 const CATALOGO = [
@@ -97,5 +105,31 @@ describe('banco de bits/subs', () => {
 
   it('permite saldo negativo: el host sabrá por qué', () => {
     expect(balanceAfter({ bits: 100, subs: 0 }, [{ deltaBits: -500, deltaSubs: 0 }]).bits).toBe(-400)
+  })
+})
+
+describe('el código de una recompensa nueva', () => {
+  it('se parece a los de siempre', () => {
+    expect(codigoDeRecompensa('Cambio de Team')).toBe('CAMBIO_DE_TEAM')
+    expect(codigoDeRecompensa('Blue Shell')).toBe('BLUE_SHELL')
+  })
+
+  it('quita acentos y símbolos, que no valen como identificador', () => {
+    expect(codigoDeRecompensa('Sacar del cementerio ✦')).toBe('SACAR_DEL_CEMENTERIO')
+    expect(codigoDeRecompensa('  Cambio  de   rol  ')).toBe('CAMBIO_DE_ROL')
+  })
+
+  it('un nombre que no deja nada utilizable no devuelve vacío', () => {
+    expect(codigoDeRecompensa('🎁🎁')).toMatch(/^RECOMPENSA_/)
+    expect(codigoDeRecompensa('')).toMatch(/^RECOMPENSA_/)
+  })
+
+  it('no choca con uno que ya existe', () => {
+    expect(codigoLibre('Blue Shell', ['BLUE_SHELL'])).toBe('BLUE_SHELL_2')
+    expect(codigoLibre('Blue Shell', ['BLUE_SHELL', 'BLUE_SHELL_2'])).toBe('BLUE_SHELL_3')
+  })
+
+  it('si está libre, se queda tal cual', () => {
+    expect(codigoLibre('Otra cosa', ['BLUE_SHELL'])).toBe('OTRA_COSA')
   })
 })

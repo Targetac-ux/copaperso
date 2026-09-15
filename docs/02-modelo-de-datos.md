@@ -246,6 +246,7 @@ MATCH_PLAYER      id, match_id, participation_id, team_number, role, result, is_
 MATCH_EVENT       id, match_id, match_player_id, type, value, created_at
 LP_EVENT          id, participation_id, match_id?, type, delta, reverted_at, created_by
 ACTION_CATALOG    id, period_id, code, label, cost_bits, cost_subs_na, cost_subs_latam, active
+                  -- se hereda del mes anterior al abrir periodo; solo se siembra la 1.ª vez
 REWARD_CLAIM      id, session_id, action_code, beneficiary_participation_id, payer_account_id,
                   cost_bits, paid_with(bits|sub_na|sub_latam), note, created_by, created_at
                   -- bitácora: NO mueve jugadores ni descuenta saldos

@@ -23,6 +23,7 @@ interface Precio {
   label: string
   cost_bits: number
   effective: number
+  active: boolean
 }
 interface Ajustes {
   enlaces: EnlaceDeSitio[]
@@ -32,10 +33,24 @@ interface Ajustes {
 const { data: ajustes, refresh: refrescarAjustes } = await useFetch<Ajustes>('/api/settings', {
   default: () => ({ enlaces: [], cronometro: 900 }),
 })
+// `incluir_quitadas`: aquí se administran todas, también las que no están
+// puestas. La mesa sigue pidiendo solo las activas.
 const { data: catalogo, refresh: refrescarCatalogo } = await useFetch<{
   tripled: boolean
   actions: Precio[]
-}>('/api/catalog', { default: () => ({ tripled: false, actions: [] }) })
+}>('/api/catalog', {
+  query: { incluir_quitadas: true },
+  default: () => ({ tripled: false, actions: [] }),
+})
+
+const puestas = computed(() => catalogo.value.actions.filter((p) => p.active))
+const quitadas = computed(() => catalogo.value.actions.filter((p) => !p.active))
+
+const nuevaRecompensa = reactive({ label: '', bits: '' })
+const bitsNuevos = computed(() => Number(nuevaRecompensa.bits))
+const puedeCrear = computed(
+  () => !!nuevaRecompensa.label.trim() && Number.isFinite(bitsNuevos.value) && bitsNuevos.value >= 0,
+)
 
 const ocupado = ref(false)
 const error = ref('')
@@ -79,6 +94,33 @@ async function guardarPrecio(p: Precio, valor: string) {
     await $fetch(`/api/catalog/${p.id}`, { method: 'PATCH', body: { cost_bits: Math.round(bits) } })
     await refrescarCatalogo()
   }, `${p.label}: ${Math.round(bits)} bits`)
+}
+
+async function crearRecompensa() {
+  if (!puedeCrear.value) return
+  await llamar(async () => {
+    await $fetch('/api/catalog', {
+      method: 'POST',
+      body: { label: nuevaRecompensa.label, cost_bits: Math.round(bitsNuevos.value) },
+    })
+    await refrescarCatalogo()
+  }, `«${nuevaRecompensa.label}» añadida`)
+  if (!error.value) {
+    nuevaRecompensa.label = ''
+    nuevaRecompensa.bits = ''
+  }
+}
+
+/**
+ * Quitar una recompensa **no la borra**: la deja fuera de la mesa y de las
+ * reglas, y aquí abajo con un botón para volver a ponerla. Un canjeo viejo de
+ * esa recompensa sigue explicándose solo en el historial.
+ */
+async function alternarRecompensa(p: Precio) {
+  await llamar(async () => {
+    await $fetch(`/api/catalog/${p.id}`, { method: 'PATCH', body: { active: !p.active } })
+    await refrescarCatalogo()
+  }, p.active ? `«${p.label}» quitada` : `«${p.label}» de vuelta`)
 }
 
 async function guardarEnlace(red: Red) {
@@ -134,8 +176,8 @@ async function guardarCronometro() {
         estos números, no lo que escribas aquí.
       </p>
 
-      <ul v-if="catalogo.actions.length" class="precios">
-        <li v-for="p in catalogo.actions" :key="p.id">
+      <ul v-if="puestas.length" class="precios">
+        <li v-for="p in puestas" :key="p.id">
           <span class="precios__nom">{{ p.label }}</span>
           <input
             type="number"
@@ -147,11 +189,69 @@ async function guardarCronometro() {
             @change="guardarPrecio(p, ($event.target as HTMLInputElement).value)"
           >
           <span class="precios__u">bits</span>
+          <button
+            class="btn btn--ghost mini es-peligro"
+            :disabled="ocupado"
+            @click="alternarRecompensa(p)"
+          >
+            Quitar
+          </button>
         </li>
       </ul>
-      <p v-else class="estado">
+      <p v-else-if="!catalogo.actions.length" class="estado">
         No hay catálogo: abre un periodo en <NuxtLink to="/host/periodos">Periodos</NuxtLink> y se
         siembra solo.
+      </p>
+      <p v-else class="estado">Están todas quitadas.</p>
+
+      <!-- Quitadas: siguen aquí, apagadas, con la vuelta a un clic. -->
+      <template v-if="quitadas.length">
+        <p class="etq">Quitadas</p>
+        <ul class="precios es-quitadas">
+          <li v-for="p in quitadas" :key="p.id">
+            <span class="precios__nom">{{ p.label }}</span>
+            <span class="precios__fijo num">{{ p.cost_bits }}</span>
+            <span class="precios__u">bits</span>
+            <button class="btn btn--ghost mini" :disabled="ocupado" @click="alternarRecompensa(p)">
+              Volver a poner
+            </button>
+          </li>
+        </ul>
+      </template>
+
+      <div class="nueva">
+        <label>
+          Recompensa nueva
+          <input
+            v-model="nuevaRecompensa.label"
+            type="text"
+            maxlength="80"
+            placeholder="Elegir el campeón de alguien"
+            :disabled="ocupado"
+            @keyup.enter="crearRecompensa"
+          >
+        </label>
+        <label class="es-corto">
+          Bits
+          <input
+            v-model="nuevaRecompensa.bits"
+            type="number"
+            min="0"
+            step="10"
+            placeholder="250"
+            :disabled="ocupado"
+            @keyup.enter="crearRecompensa"
+          >
+        </label>
+        <button class="btn btn--primary" :disabled="ocupado || !puedeCrear" @click="crearRecompensa">
+          Añadir
+        </button>
+      </div>
+
+      <p class="pista">
+        Quitar una recompensa <strong>no la borra</strong>: deja de salir en la mesa y en las reglas,
+        y vuelve desde aquí. Y el catálogo <strong>se hereda al abrir mes</strong>, así que lo que
+        cambies aquí sigue puesto en la copa siguiente.
       </p>
     </section>
 
@@ -346,6 +446,47 @@ input {
   font-size: 11px;
   color: var(--dim);
   width: 3ch;
+}
+
+.precios__fijo {
+  width: 100px;
+  text-align: right;
+  font-size: 13.5px;
+}
+
+/* Apagadas, pero legibles: siguen en la lista a propósito. */
+.es-quitadas {
+  opacity: 0.55;
+}
+
+.etq {
+  margin: 14px 0 6px;
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.mini {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.nueva {
+  display: grid;
+  grid-template-columns: 1fr 140px auto;
+  gap: 10px;
+  align-items: end;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+
+@media (max-width: 700px) {
+  .nueva {
+    grid-template-columns: 1fr;
+  }
 }
 
 .enlaces li {

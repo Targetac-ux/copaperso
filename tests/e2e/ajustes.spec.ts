@@ -19,6 +19,7 @@ const sello = Date.now()
 const db = () => createClient(url!, secret!, { auth: { persistSession: false } })
 
 const INSTAGRAM = `https://instagram.com/copaperso${sello}`
+const RECOMPENSA = `Elegir campeón ${sello}`
 /** Las redes que este spec escribe y borra: se apuntan antes y se devuelven. */
 const REDES_TOCADAS = ['instagram', 'youtube']
 /** Desde cuándo son nuestras las entradas del historial, para limpiar solo esas. */
@@ -32,6 +33,11 @@ test.describe.serial('ajustes', () => {
   let precioPrevio: { id: string; cost_bits: number } | null = null
   let cronoPrevio: string | null = null
   let sesionNueva: string | null = null
+  /** La copa que abre este spec si no había ninguna, para poder ver la mesa. */
+  let sesionDePrueba: string | null = null
+  let recompensa: string | null = null
+  let periodoPrevio: string | null = null
+  let periodoNuevo: string | null = null
   /**
    * Los enlaces que el host tuviera puestos en las redes que toca este spec.
    * Sin esto, correr las pruebas le borraba su Instagram y su YouTube de la
@@ -57,12 +63,22 @@ test.describe.serial('ajustes', () => {
     if (cronoPrevio === null) await c.from('setting').delete().eq('key', 'timer_seconds')
     else await c.from('setting').update({ value: cronoPrevio }).eq('key', 'timer_seconds')
     if (sesionNueva) await c.from('session').delete().eq('id', sesionNueva)
+    if (sesionDePrueba) await c.from('session').delete().eq('id', sesionDePrueba)
+    if (periodoNuevo) await c.from('period').delete().eq('id', periodoNuevo)
+    if (periodoPrevio) await c.from('period').update({ status: 'active' }).eq('id', periodoPrevio)
+    if (recompensa) await c.from('action_catalog').delete().eq('id', recompensa)
     // Por fecha y no por sesión: los cambios de precio se cuelgan de la copa
     // abierta, que es la del host, y no hay que llevarse su historial por delante.
     await c
       .from('action_log')
       .delete()
-      .in('action_type', ['settings.link', 'settings.timer', 'catalog.update'])
+      .in('action_type', [
+        'settings.link',
+        'settings.timer',
+        'catalog.update',
+        'catalog.add',
+        'period.create',
+      ])
       .gte('created_at', DESDE)
   })
 
@@ -70,6 +86,32 @@ test.describe.serial('ajustes', () => {
     const c = db()
     const { data: crono } = await c.from('setting').select('value').eq('key', 'timer_seconds').maybeSingle()
     cronoPrevio = crono?.value ?? null
+
+    /**
+     * Los canjeos solo se ven con una copa abierta, así que si no hay ninguna
+     * se abre aquí y se borra al terminar. Depender de que el host se haya
+     * dejado una abierta es justo lo que hacía fallar este spec con la base
+     * recién limpia.
+     */
+    const { data: abierta } = await c
+      .from('session')
+      .select('id')
+      .neq('status', 'closed')
+      .maybeSingle()
+
+    if (!abierta) {
+      const { data: periodo } = await c.from('period').select('id').eq('status', 'active').single()
+      const { data: nueva } = await c
+        .from('session')
+        .insert({ period_id: periodo!.id, number: 1, mode: 'perso', status: 'open' })
+        .select('id')
+        .single()
+      sesionDePrueba = nueva!.id
+      await c.from('team').insert([
+        { session_id: sesionDePrueba, team_number: 1, name: 'Team 1' },
+        { session_id: sesionDePrueba, team_number: 2, name: 'Team 2' },
+      ])
+    }
 
     const { data: enlaces } = await c
       .from('site_link')
@@ -125,6 +167,95 @@ test.describe.serial('ajustes', () => {
         { timeout: 15_000 },
       )
       .toBe(precioPrevio!.cost_bits)
+  })
+
+  // Añadir y quitar recompensas, que es lo que el catálogo no dejaba hacer.
+  test('añadir una recompensa la pone en la mesa', async ({ page }) => {
+    await gotoHydrated(page, '/host/ajustes')
+
+    await page.getByLabel('Recompensa nueva').fill(RECOMPENSA)
+    await page.getByLabel('Bits', { exact: true }).fill('250')
+    await page.getByRole('button', { name: 'Añadir' }).click()
+    await expect(page.locator('.ok')).toBeVisible({ timeout: 15_000 })
+
+    // El código se deriva del nombre y no cambia nunca: es lo que guarda cada
+    // canjeo en la bitácora.
+    const { data } = await db()
+      .from('action_catalog')
+      .select('id, code, cost_bits, active')
+      .eq('label', RECOMPENSA)
+      .single()
+    recompensa = data!.id
+    expect(data!.code).toMatch(/^[A-Z0-9_]+$/)
+    expect(data!.cost_bits).toBe(250)
+
+    // Y sale en los canjeos del CCTM.
+    await gotoHydrated(page, '/host')
+    await expect(page.locator('.canj .precios')).toContainText(RECOMPENSA, { timeout: 15_000 })
+  })
+
+  test('quitarla la saca de la mesa pero no la borra', async ({ page }) => {
+    await gotoHydrated(page, '/host/ajustes')
+
+    const fila = page.locator('.precios li').filter({ hasText: RECOMPENSA })
+    await fila.getByRole('button', { name: 'Quitar' }).click()
+    await expect(page.locator('.es-quitadas')).toContainText(RECOMPENSA, { timeout: 15_000 })
+
+    // Sigue en la base, solo que apagada.
+    const { data } = await db().from('action_catalog').select('active').eq('id', recompensa!).single()
+    expect(data!.active, 'no se borra, se apaga').toBe(false)
+
+    // Y ya no está en la mesa.
+    await gotoHydrated(page, '/host')
+    await expect(page.locator('.canj .precios')).not.toContainText(RECOMPENSA)
+  })
+
+  test('y vuelve de donde se fue', async ({ page }) => {
+    await gotoHydrated(page, '/host/ajustes')
+    await page
+      .locator('.es-quitadas li')
+      .filter({ hasText: RECOMPENSA })
+      .getByRole('button', { name: 'Volver a poner' })
+      .click()
+
+    await expect
+      .poll(
+        async () =>
+          (await db().from('action_catalog').select('active').eq('id', recompensa!).single()).data
+            ?.active,
+        { timeout: 15_000 },
+      )
+      .toBe(true)
+  })
+
+  /**
+   * La prueba que hace útil lo anterior: sin esto, cada recompensa nueva y cada
+   * precio ajustado se perdían al abrir el mes siguiente, que volvía a sembrar
+   * los seis de siempre. Y el host lo descubriría en mitad de una copa.
+   */
+  test('el catálogo se hereda al abrir el mes siguiente', async ({ page }) => {
+    const c = db()
+    const { data: antes } = await c
+      .from('period')
+      .select('id, name')
+      .eq('status', 'active')
+      .single()
+    periodoPrevio = antes!.id
+
+    const res = await page.request.post('/api/periods', { data: { starts_at: '2026-12-01' } })
+    expect(res.status()).toBe(201)
+    periodoNuevo = ((await res.json()) as { id: string }).id
+
+    const { data: heredado } = await c
+      .from('action_catalog')
+      .select('code, label, cost_bits')
+      .eq('period_id', periodoNuevo!)
+
+    expect(
+      heredado!.some((a) => a.label === RECOMPENSA),
+      'la recompensa que añadió el host sigue ahí el mes siguiente',
+    ).toBe(true)
+    expect(heredado!.length, 'y también los seis de siempre').toBe(7)
   })
 
   // Prueba 3: un enlace guardado aparece en la Home; quitado, desaparece.

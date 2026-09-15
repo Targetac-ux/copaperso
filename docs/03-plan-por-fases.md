@@ -644,6 +644,28 @@ ancho. Ahora:
 - En móvil se apilan y **el texto va siempre primero**, también en las volteadas: si no, la volteada
   empujaba su encabezado media pantalla hacia abajo.
 
+**Añadir y quitar recompensas** desde Ajustes (15 de septiembre de 2026). El catálogo solo se podía
+editar en el precio; ahora se crean recompensas nuevas y se quitan las que no se usan.
+
+- **Quitar no borra.** Pone `active: false`: la recompensa desaparece de la mesa y de las reglas, y
+  se queda en Ajustes apagada con un botón para volver a ponerla. Un canjeo viejo de esa recompensa
+  sigue explicándose solo en el historial, que guardó su código y su precio.
+- **El código se deriva del nombre una sola vez** (`codigoDeRecompensa`, en `shared/economy.ts`) y no
+  cambia aunque luego se le cambie el nombre: es lo que guarda cada canjeo, y si cambiara, los
+  canjeos viejos dejarían de saber a qué se referían. Si choca con uno que ya existe, se le añade un
+  sufijo.
+- **Y el catálogo se hereda al abrir mes.** Esto es lo que hace útil lo anterior: `action_catalog`
+  cuelga del periodo, y hasta ahora cada mes nuevo volvía a sembrar los seis de siempre, así que
+  cualquier precio ajustado o recompensa añadida se perdía en silencio — y el host lo habría
+  descubierto en mitad de una copa. Ahora se copia el catálogo del mes anterior entero, y
+  `seed_action_catalog` solo actúa cuando no hay mes anterior.
+
+**Limpieza de la base** (`scripts/limpiar-datos.mjs`). Para arrancar de verdad antes de importar el
+histórico. Borra todo lo del torneo —jugadores, participaciones, sesiones, partidas, economía,
+bitácora, periodos y su catálogo— y **nunca toca `app_user` ni las cuentas de acceso**, que son lo
+único que no se recupera. Sin `--hazlo` solo enseña lo que borraría, y con él pide escribir `BORRAR`
+a mano: un flag se teclea sin pensar y esto no.
+
 **Página de error propia** (`app/error.vue`). Un enlace roto enseñaba la pantalla gris de Nuxt: sin
 marca, sin menú y sin forma de volver. Ahora sale el escudo, el código, una explicación y dos
 salidas. **No usa el layout público** a propósito: el layout carga los enlaces del sitio desde la

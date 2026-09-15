@@ -14,6 +14,41 @@ export interface CatalogAction {
   costBits: number
 }
 
+/**
+ * El código de una recompensa nueva, a partir de su nombre.
+ *
+ * El código es el identificador: es lo que se guarda en cada canjeo de la
+ * bitácora, y **no cambia aunque luego se le cambie el nombre**. Por eso se
+ * deriva una vez, al crearla, y no se recalcula nunca.
+ *
+ * Se parece al de los seis de siempre —`BLUE_SHELL`, `TEAM_CHANGE`— porque son
+ * la misma clase de cosa y se leen juntos en la bitácora.
+ */
+export function codigoDeRecompensa(label: string): string {
+  const base = (label ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 40)
+
+  // Sin nombre utilizable —solo símbolos o emoji— se usa algo que al menos no
+  // choque con otro.
+  return base || `RECOMPENSA_${Date.now().toString(36).toUpperCase()}`
+}
+
+/** Un código libre en el catálogo, añadiendo un sufijo si hiciera falta. */
+export function codigoLibre(label: string, usados: readonly string[]): string {
+  const base = codigoDeRecompensa(label)
+  if (!usados.includes(base)) return base
+  for (let i = 2; i < 100; i++) {
+    const otro = `${base}_${i}`
+    if (!usados.includes(otro)) return otro
+  }
+  return `${base}_${Date.now().toString(36).toUpperCase()}`
+}
+
 /** Lo que cuesta ahora mismo una recompensa en una sesión concreta. */
 export function effectiveCost(costBits: number, tripled: boolean): number {
   return tripled ? costBits * TRIPLE : costBits

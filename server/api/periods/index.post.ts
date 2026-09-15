@@ -42,11 +42,46 @@ export default defineEventHandler(async (event) => {
 
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 
+  // El mes anterior, antes de cerrarlo: de ahí sale el catálogo.
+  const { data: anterior } = await db
+    .from('period')
+    .select('id')
+    .eq('status', 'active')
+    .neq('id', data.id)
+    .order('starts_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
   // Cerrar los demás: solo hay un periodo activo a la vez.
   await db.from('period').update({ status: 'closed' }).eq('status', 'active').neq('id', data.id)
 
-  // Y sembrar su catálogo de recompensas con los costos vigentes.
-  await db.rpc('seed_action_catalog', { p_period_id: data.id })
+  /**
+   * El catálogo **se hereda del mes anterior**, no se siembra de cero.
+   *
+   * Los precios los ajusta el host y desde la Fase 7 también puede añadir y
+   * quitar recompensas; volver a sembrar los seis de siempre cada mes le
+   * borraría ese trabajo en silencio, y lo descubriría en mitad de una copa.
+   * Se copia todo: nombres, precios, orden y cuáles estaban quitadas.
+   *
+   * Solo se siembra cuando no hay mes anterior —la primera vez—, que es
+   * exactamente para lo que se escribió `seed_action_catalog`.
+   */
+  const heredado = anterior
+    ? (
+        await db
+          .from('action_catalog')
+          .select('code, label, cost_bits, sort_order, active')
+          .eq('period_id', anterior.id)
+      ).data ?? []
+    : []
+
+  if (heredado.length) {
+    await db
+      .from('action_catalog')
+      .insert(heredado.map((a) => ({ ...a, period_id: data.id })))
+  } else {
+    await db.rpc('seed_action_catalog', { p_period_id: data.id })
+  }
 
   await logAction(event, {
     actor: staff.user_id,
