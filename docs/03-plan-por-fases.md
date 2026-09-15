@@ -479,18 +479,48 @@ Supabase remoto y con el servidor de Nuxt en medio, así que en producción qued
 
 ---
 
-## Fase 6 — Tier Ranking Manager  *(1 semana)*
+## Fase 6 — Tier Ranking Manager  ·  ✅ CERRADA
 
 **Entregables**
-- Tiers D/C/B/A/S/S+, drag & drop entre tiers, foto, edición de datos, publicar edición, histórico de ediciones.
-- **El tier es manual** (decidido el 14 de septiembre de 2026): lo coloca el host y los «Puntos» se
-  escriben a mano. El LP del periodo no lo calcula ni lo propone.
+- ✅ Los seis tiers (D a S+) con arrastre entre filas, foto y rol.
+- ✅ **El tier lo pone el host a mano.** No hay nada que lo calcule ni que lo proponga desde el LP.
+- ✅ Ediciones: se prepara un borrador, se publica, y queda congelado. Histórico de ediciones.
+- ✅ Página pública `/tier-ranking` con la edición vigente.
+- ✅ Analytics de Vercel, solo en el sitio público.
 
-**Pruebas de cierre**
-1. E2E: mover un jugador de A a S+, publicar, y verlo reflejado en la Home pública.
-2. Integración: publicar una edición nueva no modifica las anteriores; la Home siempre muestra `is_current`.
-3. Integración: un jugador sin foto usa el avatar por defecto sin romper el layout.
-4. Manual: ordenar 40 jugadores en 6 tiers sin lag perceptible.
+**Pruebas**
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | Mover de A a S+, publicar, y verlo en la Home | ✅ e2e |
+| 2 | Publicar una edición nueva no modifica las anteriores | ✅ e2e |
+| 3 | Sin foto, avatar por defecto y sin descuadrar | ✅ e2e |
+| 4 | Una edición publicada no se puede mover, ni desde la API | ✅ e2e |
+| 5 | No se pueden preparar dos ediciones a la vez | ✅ e2e |
+| 6 | Mover a alguien renumera sin huecos y no pierde a nadie | ✅ 17 unitarias |
+| 7 | El panel del host no se mide en analytics | ✅ 5 unitarias |
+
+Total acumulado: **196 unitarias** y **77 e2e**.
+
+**Decisiones**
+
+- **Una edición es una foto.** Mientras el host prepara la siguiente, la Home sigue enseñando la
+  anterior: así se pueden reordenar cuarenta personas sin que la página pública parpadee a media
+  faena. Al publicar, la anterior no se toca —sus filas se quedan donde están—, solo deja de ser la
+  vigente. Eso es lo que hace que el histórico signifique algo.
+- **Lo publicado no se edita.** Para cambiar algo se empieza otra edición. Lo impide la pantalla y
+  también el servidor, porque una garantía que solo vive en la interfaz no es una garantía.
+- **Se guarda al soltar, sin esperar.** La tabla se pinta al instante y el guardado va detrás: con un
+  parpadeo de espera en cada movimiento, ordenar cuarenta personas sería insoportable. Si el guardado
+  falla, se avisa y se recarga lo que hay en la base.
+- **Mover no se registra en el historial.** Es un gesto continuo y llenaría la bitácora de ruido. Lo
+  que sí queda registrado —y se puede deshacer— es publicar, que es la acción que sale a la calle.
+
+**Analytics.** Se monta a mano en vez de con el módulo de Vercel, porque el módulo mide todas las
+rutas: las visitas al panel del host las hace una sola persona, no dicen nada de la audiencia y
+ensucian lo que sí importa. `beforeSend` las descarta antes de que salgan del navegador, y la regla
+vive en `shared/analytics.ts` con sus propias pruebas, porque algo que decide qué datos se envían
+fuera no debería vivir sin test.
 
 ---
 
@@ -538,12 +568,12 @@ Supabase remoto y con el servidor de Nuxt en medio, así que en producción qued
 | 4 · Partidas y LP | 1.5 sem | ✅ cerrada |
 | 4B · Vista pública en vivo | 1 sem | ✅ cerrada |
 | 5 · Roster | 1 sem | ✅ cerrada |
-| 6 · Tier Manager | 1 sem | pendiente · desbloqueada: insignias recibidas y el tier es **manual** |
+| 6 · Tier Manager | 1 sem | ✅ cerrada |
 | 7 · Home pública | 1.5 sem | pendiente · donaciones y medallas ya resueltas |
 | 8 · Prueba real | 1 sesión + 1 sem | pendiente |
 | **Total** | **≈ 11.5–13.5 semanas** | |
 
-**Lo construido hasta hoy:** 174 pruebas unitarias y 69 de punta a punta, todas en verde.
+**Lo construido hasta hoy:** 196 pruebas unitarias y 77 de punta a punta, todas en verde.
 
 **Camino corto si hay prisa por usarlo en la próxima CopaPerso:** Fases 1 → 2 → 3A → 4 (unas 6 semanas)
 ya permiten operar el torneo en vivo; economía (3B), vista pública, roster, tier y home pueden seguir en

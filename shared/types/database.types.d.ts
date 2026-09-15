@@ -197,6 +197,28 @@ type TeamMemberRow = {
   created_at: string
 }
 
+export type TierName = 'D' | 'C' | 'B' | 'A' | 'S' | 'S_PLUS'
+
+type TierListRow = {
+  id: string
+  period_id: string | null
+  title: string | null
+  published_at: string | null
+  is_current: boolean
+  created_at: string
+}
+
+type TierEntryRow = {
+  id: string
+  tier_list_id: string
+  player_id: string
+  tier: TierName
+  points: number | null
+  main_role: PlayerRoleDb | null
+  elo: EloTierDb | null
+  rank_order: number
+}
+
 export type MatchStatus = 'draft' | 'live' | 'finished' | 'void'
 export type MatchResultDb = 'win' | 'loss' | 'double_loss'
 export type LpEventType = 'WIN' | 'LOSS' | 'MVP' | 'ACE' | 'OFF_ROLE' | 'DOUBLE_LOSS' | 'MANUAL'
@@ -400,6 +422,43 @@ export type Database = {
           created_at?: string
         }
         Update: { team_id?: string; role?: PlayerRoleDb; is_off_role?: boolean }
+        Relationships: []
+      }
+      tier_list: {
+        Row: TierListRow
+        Insert: {
+          id?: string
+          period_id?: string | null
+          title?: string | null
+          published_at?: string | null
+          is_current?: boolean
+        }
+        Update: {
+          title?: string | null
+          published_at?: string | null
+          is_current?: boolean
+        }
+        Relationships: []
+      }
+      tier_entry: {
+        Row: TierEntryRow
+        Insert: {
+          id?: string
+          tier_list_id: string
+          player_id: string
+          tier: TierName
+          points?: number | null
+          main_role?: PlayerRoleDb | null
+          elo?: EloTierDb | null
+          rank_order?: number
+        }
+        Update: {
+          tier?: TierName
+          points?: number | null
+          main_role?: PlayerRoleDb | null
+          elo?: EloTierDb | null
+          rank_order?: number
+        }
         Relationships: []
       }
       match: {

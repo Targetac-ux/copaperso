@@ -162,6 +162,32 @@ export async function runUndo(event: H3Event, payload: Payload, sessionId: strin
       return
     }
 
+    // ---------------------------------------------------- tier ranking ----
+    case 'delete_tier_list': {
+      const id = str(payload, 'tier_list_id')
+      // Las entradas cuelgan de la lista con `on delete cascade`.
+      if (id) await db.from('tier_list').delete().eq('id', id)
+      return
+    }
+
+    case 'unpublish_tier_list': {
+      // Se despublica la nueva y vuelve a mandar la de antes. El índice único
+      // sobre `is_current` obliga a bajar una antes de subir la otra.
+      const id = str(payload, 'tier_list_id')
+      const anterior = str(payload, 'anterior')
+      if (!id) return
+
+      await db
+        .from('tier_list')
+        .update({ is_current: false, published_at: null })
+        .eq('id', id)
+
+      if (anterior) {
+        await db.from('tier_list').update({ is_current: true }).eq('id', anterior)
+      }
+      return
+    }
+
     // -------------------------------------------------------- economía ----
     case 'triple': {
       if (!sessionId) return
