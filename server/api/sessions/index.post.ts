@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { CLAVES, leerSegundos } from '#shared/ajustes'
 import type { Database } from '#shared/types/database.types'
 
 const body = z.object({
@@ -62,9 +63,23 @@ export default defineEventHandler(async (event) => {
 
   const number = (previas?.[0]?.number ?? 0) + 1
 
+  // La duración por defecto del cronómetro sale de Ajustes. Si no hay nada
+  // guardado, `leerSegundos` devuelve los 15 min de siempre.
+  const { data: ajuste } = await db
+    .from('setting')
+    .select('value')
+    .eq('key', CLAVES.CRONOMETRO)
+    .maybeSingle()
+
   const { data, error } = await db
     .from('session')
-    .insert({ period_id: periodId, number, mode: input.mode, status: 'open' })
+    .insert({
+      period_id: periodId,
+      number,
+      mode: input.mode,
+      status: 'open',
+      timer_seconds: leerSegundos(ajuste?.value ?? null),
+    })
     .select('id, period_id, number, mode, status, started_at, closed_at, prices_tripled, tripled_at, timer_ends_at, timer_seconds, timer_running, timer_remaining_seconds')
     .single()
 

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { CANAL_TWITCH, CANAL_TWITCH_NOMBRE } from '#shared/enlaces'
+import { CANAL_TWITCH_NOMBRE } from '#shared/enlaces'
+
+const { twitch, sociales } = useEnlaces()
 
 const nav = [
   { to: '/', label: 'Inicio' },
@@ -43,7 +45,7 @@ onMounted(() => {
         <nav class="site__nav">
           <NuxtLink v-for="item in nav" :key="item.to" :to="item.to">{{ item.label }}</NuxtLink>
         </nav>
-        <a class="btn btn--primary site__twitch" :href="CANAL_TWITCH" target="_blank" rel="noopener">
+        <a class="btn btn--primary site__twitch" :href="twitch" target="_blank" rel="noopener">
           <AppBrandIcon name="twitch" />
           <span>Ver en Twitch</span>
         </a>
@@ -62,7 +64,7 @@ onMounted(() => {
 
       <nav v-show="abierto" id="menu-movil" class="site__movil">
         <NuxtLink v-for="item in nav" :key="item.to" :to="item.to">{{ item.label }}</NuxtLink>
-        <a class="site__movil-canal" :href="CANAL_TWITCH" target="_blank" rel="noopener">
+        <a class="site__movil-canal" :href="twitch" target="_blank" rel="noopener">
           <AppBrandIcon name="twitch" :size="17" />
           <span>Ver en Twitch</span>
         </a>
@@ -77,10 +79,21 @@ onMounted(() => {
       <div class="wrap site__footer-inner">
         <AppLogo :size="28" />
         <p>La copa de la comunidad, hecha por la comunidad.</p>
-        <a class="site__canal" :href="CANAL_TWITCH" target="_blank" rel="noopener">
+        <a class="site__canal" :href="twitch" target="_blank" rel="noopener">
           <AppBrandIcon name="twitch" :size="18" />
           <span>{{ CANAL_TWITCH_NOMBRE }}</span>
         </a>
+
+        <!-- Solo las redes que tienen enlace puesto en Ajustes: una fila de
+             iconos que no llevan a ningún sitio es peor que no tenerla. -->
+        <ul v-if="sociales.length" class="site__redes">
+          <li v-for="r in sociales" :key="r.red">
+            <a :href="r.url" target="_blank" rel="noopener" :aria-label="r.label">
+              <AppBrandIcon :name="r.red" :size="18" />
+            </a>
+          </li>
+        </ul>
+
         <NuxtLink to="/host" class="site__hostlink">Acceso host</NuxtLink>
       </div>
     </footer>
@@ -166,6 +179,26 @@ main {
 
 .site__canal:hover {
   color: #a970ff;
+}
+
+.site__redes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 4px;
+}
+
+.site__redes a {
+  display: flex;
+  padding: 8px;
+  border-radius: var(--r-sm);
+  color: var(--dim);
+}
+
+.site__redes a:hover {
+  color: var(--text);
+  background: var(--panel);
 }
 
 .site__hostlink {

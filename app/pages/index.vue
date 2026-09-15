@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { CANAL_TWITCH, CANAL_TWITCH_NOMBRE, PAYPAL } from '#shared/enlaces'
+import { CANAL_TWITCH_NOMBRE } from '#shared/enlaces'
+
+// Los administra el host en /host/ajustes; el layout ya los cargó.
+const { twitch, paypal } = useEnlaces()
 
 useSeoMeta({
   title: 'La copa de la comunidad',
@@ -40,7 +43,7 @@ const modes = [
           Twitch: no hay formularios, solo estar ahí cuando empieza.
         </p>
         <div class="hero__cta">
-          <a class="btn btn--primary" :href="CANAL_TWITCH" target="_blank" rel="noopener">
+          <a class="btn btn--primary" :href="twitch" target="_blank" rel="noopener">
             <AppBrandIcon name="twitch" />
             Ver en Twitch
           </a>
@@ -95,7 +98,7 @@ const modes = [
           Esta página la desarrollé sin esperar compensación alguna, y así va a seguir. Si te apetece
           donar algo para irla mejorando, se agradece de verdad. c:
         </p>
-        <a class="btn btn--primary" :href="PAYPAL" target="_blank" rel="noopener">
+        <a class="btn btn--primary" :href="paypal" target="_blank" rel="noopener">
           <AppBrandIcon name="paypal" :size="17" />
           Donar con PayPal
         </a>

@@ -238,6 +238,21 @@ type RulePatchRow = {
   created_at: string
 }
 
+type SettingRow = {
+  key: string
+  value: string
+  updated_at: string
+}
+
+type SiteLinkRow = {
+  id: string
+  network: string
+  url: string
+  sort_order: number
+  visible: boolean
+  created_at: string
+}
+
 export type MatchStatus = 'draft' | 'live' | 'finished' | 'void'
 export type MatchResultDb = 'win' | 'loss' | 'double_loss'
 export type LpEventType = 'WIN' | 'LOSS' | 'MVP' | 'ACE' | 'OFF_ROLE' | 'DOUBLE_LOSS' | 'MANUAL'
@@ -398,6 +413,8 @@ export type Database = {
           status?: SessionStatus
           started_at?: string
           closed_at?: string | null
+          /** Sale de Ajustes al abrir la sesión; la columna trae 900 por defecto. */
+          timer_seconds?: number
         }
         Update: {
           mode?: SessionMode
@@ -478,6 +495,24 @@ export type Database = {
           elo?: EloTierDb | null
           rank_order?: number
         }
+        Relationships: []
+      }
+      setting: {
+        Row: SettingRow
+        Insert: { key: string; value: string }
+        Update: { value?: string }
+        Relationships: []
+      }
+      site_link: {
+        Row: SiteLinkRow
+        Insert: {
+          id?: string
+          network: string
+          url: string
+          sort_order?: number
+          visible?: boolean
+        }
+        Update: { url?: string; sort_order?: number; visible?: boolean }
         Relationships: []
       }
       rule_patch: {
@@ -755,6 +790,14 @@ export type Database = {
           photo_url: string | null
           edition_title: string | null
           published_at: string | null
+        }
+        Relationships: []
+      }
+      public_site_links: {
+        Row: {
+          network: string
+          url: string
+          sort_order: number
         }
         Relationships: []
       }

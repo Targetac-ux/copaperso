@@ -40,6 +40,7 @@ describe('vistas públicas', () => {
     'public_session_live',
     'public_clips',
     'public_patch_notes',
+    'public_site_links',
   ]) {
     it(`${view} no expone datos privados`, () => {
       const body = viewBody(view)
@@ -62,6 +63,7 @@ describe('vistas públicas', () => {
       'public_patch_notes',
       'public_roster',
       'public_session_live',
+      'public_site_links',
       'public_tier_ranking',
     ])
   })

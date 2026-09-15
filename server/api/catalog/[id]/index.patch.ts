@@ -39,8 +39,20 @@ export default defineEventHandler(async (event) => {
   const { error: updateError } = await db.from('action_catalog').update(input).eq('id', id)
   if (updateError) throw createError({ statusCode: 500, statusMessage: updateError.message })
 
+  // Se cuelga de la copa abierta, si la hay. El historial del CCTM es por
+  // sesión: sin este id la entrada no sale en ninguna pantalla y su «deshacer»
+  // —que existe desde la Fase 3C— no se podía pulsar nunca. Cambiar un precio
+  // con la copa en marcha es además lo que más urge poder revertir.
+  const { data: abierta } = await db
+    .from('session')
+    .select('id')
+    .neq('status', 'closed')
+    .limit(1)
+    .maybeSingle()
+
   await logAction(event, {
     actor: staff.user_id,
+    sessionId: abierta?.id ?? null,
     actionType: 'catalog.update',
     summary: `${antes.label}: ${antes.cost_bits} → ${input.cost_bits ?? antes.cost_bits} bits`,
     payload: { id, ...input },
