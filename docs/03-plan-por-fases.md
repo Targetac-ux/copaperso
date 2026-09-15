@@ -627,6 +627,21 @@ una errata se corrige donde está, sin abrir otro.
 de septiembre de 2026). La página lo dice y enseña las tres medallas, que sí existen: los puestos no
 están en duda, solo qué se llevan.
 
+**Las reglas, con las ilustraciones grandes** (15 de septiembre de 2026). Los iconos entraron a
+24 px acompañando al texto; ahí eran una marca, no una ilustración, y la página desaprovechaba el
+ancho. Ahora:
+
+- **Los modos van en dos columnas, 2-2-1.** Con los cinco en una sola columna cada icono tenía que
+  ser diminuto para que la sección no se alargara media pantalla; en dos caben al triple de tamaño
+  en el mismo alto. El quinto ocupa la fila entera en vez de dejar un hueco a su lado.
+- **Las tarjetas con ilustración se parten en dos**, texto en una mitad y el dibujo a 230 px en la
+  otra, y **el lado alterna**: negociación a la derecha, Blue Shell a la izquierda, puntuación a la
+  derecha. Al bajar la página no parece la misma tarjeta repetida.
+- El volteo lo hace `order`, que **cambia el orden visual y no el del documento**: quien la lee con
+  un lector de pantalla oye siempre el texto antes que la ilustración, que es la que no dice nada.
+- En móvil se apilan y **el texto va siempre primero**, también en las volteadas: si no, la volteada
+  empujaba su encabezado media pantalla hacia abajo.
+
 **Menú en móvil.** Por debajo de 760 px la fila de enlaces no cabe junto al logo y al botón de
 Twitch, y antes simplemente se escondía sin que la sustituyera nada: desde un teléfono solo se
 llegaba a la portada. Ahora se pliega detrás de un botón, que se cierra solo al cambiar de página y

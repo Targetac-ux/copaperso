@@ -104,9 +104,12 @@ const LP = [
       <section class="hoja">
         <h2>Los modos</h2>
         <p>Cada copa se juega en uno de estos cinco formatos. El modo se anuncia al abrirla.</p>
+        <!-- Dos, dos y uno: con cinco en una columna los iconos tenían que ser
+             diminutos para que la sección no se alargara. El último ocupa la
+             fila entera en vez de dejar un hueco. -->
         <ul class="modos">
           <li v-for="m in MODOS" :key="m.icon">
-            <img :src="`/modes/${m.icon}.svg`" :alt="''" width="44" height="44" loading="lazy">
+            <img :src="`/modes/${m.icon}.svg`" :alt="''" width="84" height="84" loading="lazy">
             <div>
               <h3>{{ m.name }}</h3>
               <p>{{ m.desc }}</p>
@@ -115,81 +118,103 @@ const LP = [
         </ul>
       </section>
 
-      <section class="hoja">
-        <h2><CopaIcon name="bits" :size="22" />La fase de negociación</h2>
-        <p class="grande">
+      <section class="hoja hoja--parte">
+        <div class="hoja__texto">
+          <h2>La fase de negociación</h2>
+          <p class="grande">
           Antes de cada partida se abre una fase de negociación con el cronómetro corriendo.
           Mientras dura, <strong>tanto quienes juegan como quienes miran</strong> pueden canjear
-          bits o subs por recompensas que cambian los equipos y a los jugadores.
-        </p>
+            bits o subs por recompensas que cambian los equipos y a los jugadores.
+          </p>
 
-        <table class="precios">
-          <caption class="sr">Recompensas y su precio en bits</caption>
-          <thead>
-            <tr><th scope="col">Recompensa</th><th scope="col">Bits</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="c in CANJEOS" :key="c.label">
-              <td>
-                <span class="celda">
-                  <span class="celda__ic"><CopaIcon v-if="c.icono" :name="c.icono" :size="20" /></span>
-                  {{ c.label }}
-                </span>
-              </td>
-              <td class="num">{{ c.bits }}</td>
-            </tr>
-          </tbody>
-        </table>
+          <table class="precios">
+            <caption class="sr">Recompensas y su precio en bits</caption>
+            <thead>
+              <tr><th scope="col">Recompensa</th><th scope="col">Bits</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="c in CANJEOS" :key="c.label">
+                <td>
+                  <span class="celda">
+                    <span class="celda__ic">
+                      <CopaIcon v-if="c.icono" :name="c.icono" :size="20" />
+                    </span>
+                    {{ c.label }}
+                  </span>
+                </td>
+                <td class="num">{{ c.bits }}</td>
+              </tr>
+            </tbody>
+          </table>
 
-        <p class="aviso">
-          Un canjeo <strong>no ejecuta nada por sí solo</strong>: queda registrado y es el host quien
-          lo aplica en la mesa. Y los precios pueden subir a <strong>el triple</strong> durante una
-          partida; al terminar vuelven a la normalidad, así que cada partida empieza su negociación
-          con los precios de esta tabla.
-        </p>
+          <p class="aviso">
+            Un canjeo <strong>no ejecuta nada por sí solo</strong>: queda registrado y es el host
+            quien lo aplica en la mesa. Y los precios pueden subir a <strong>el triple</strong>
+            durante una partida; al terminar vuelven a la normalidad, así que cada partida empieza
+            su negociación con los precios de esta tabla.
+          </p>
+        </div>
+
+        <div class="hoja__arte">
+          <CopaIcon name="bits" :size="220" />
+        </div>
       </section>
 
-      <section class="hoja">
-        <h2><CopaIcon name="blue-shell" :size="24" />El Blue Shell</h2>
-        <p>
-          El canjeo más caro castiga a un jugador. La ruleta tiene cuatro resultados y
-          <strong>los cuatro salen con la misma probabilidad</strong>:
-        </p>
-        <ul class="shell">
-          <li v-for="o in BLUE_SHELL_OUTCOMES" :key="o">
-            <b>{{ BLUE_SHELL_LABEL[o] }}</b>
-            <span>{{ BLUE_SHELL_DESC[o] }}</span>
-          </li>
-        </ul>
+      <section class="hoja hoja--parte es-volteada">
+        <div class="hoja__arte">
+          <CopaIcon name="blue-shell" :size="230" />
+        </div>
+
+        <div class="hoja__texto">
+          <h2>El Blue Shell</h2>
+          <p>
+            El canjeo más caro castiga a un jugador. La ruleta tiene cuatro resultados y
+            <strong>los cuatro salen con la misma probabilidad</strong>:
+          </p>
+          <ul class="shell">
+            <li v-for="o in BLUE_SHELL_OUTCOMES" :key="o">
+              <b>{{ BLUE_SHELL_LABEL[o] }}</b>
+              <span>{{ BLUE_SHELL_DESC[o] }}</span>
+            </li>
+          </ul>
+        </div>
       </section>
 
-      <section class="hoja">
-        <h2>Puntuación</h2>
-        <p>
-          Todo el mundo empieza el mes con <strong>{{ LP_INICIAL }} LP</strong>. Cada partida suma o
-          resta según lo que pase en ella:
-        </p>
-        <table class="precios">
-          <caption class="sr">Puntos por cada cosa que ocurre en una partida</caption>
-          <thead>
-            <tr><th scope="col">Qué pasó</th><th scope="col">LP</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="l in LP" :key="l.que">
-              <td>
-                <span class="celda">
-                  <span class="celda__ic"><CopaIcon v-if="l.icono" :name="l.icono" :size="20" /></span>
-                  {{ l.que }}
-                </span>
-              </td>
-              <td class="num" :class="l.delta.startsWith('+') ? 'sube' : 'baja'">{{ l.delta }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="aviso">
-          <strong>Cada mes empieza de cero.</strong> El roster del mes anterior se queda como quedó y
-          nadie arrastra puntos: quien vuelve, vuelve con {{ LP_INICIAL }}.
-        </p>
+      <section class="hoja hoja--parte">
+        <div class="hoja__texto">
+          <h2>Puntuación</h2>
+          <p>
+            Todo el mundo empieza el mes con <strong>{{ LP_INICIAL }} LP</strong>. Cada partida suma
+            o resta según lo que pase en ella:
+          </p>
+          <table class="precios">
+            <caption class="sr">Puntos por cada cosa que ocurre en una partida</caption>
+            <thead>
+              <tr><th scope="col">Qué pasó</th><th scope="col">LP</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="l in LP" :key="l.que">
+                <td>
+                  <span class="celda">
+                    <span class="celda__ic">
+                      <CopaIcon v-if="l.icono" :name="l.icono" :size="20" />
+                    </span>
+                    {{ l.que }}
+                  </span>
+                </td>
+                <td class="num" :class="l.delta.startsWith('+') ? 'sube' : 'baja'">{{ l.delta }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="aviso">
+            <strong>Cada mes empieza de cero.</strong> El roster del mes anterior se queda como
+            quedó y nadie arrastra puntos: quien vuelve, vuelve con {{ LP_INICIAL }}.
+          </p>
+        </div>
+
+        <div class="hoja__arte">
+          <CopaIcon name="mvp" :size="210" />
+        </div>
       </section>
     </div>
 
@@ -245,6 +270,49 @@ h1 {
   padding: 24px 26px;
 }
 
+/**
+ * Las tarjetas partidas: texto en una mitad, la ilustración en la otra.
+ *
+ * El lado alterna de una a la siguiente —derecha, izquierda, derecha— para que
+ * al bajar la página no parezca la misma tarjeta repetida. Lo decide
+ * `es-volteada`, que **cambia el orden visual y no el del documento**: quien lo
+ * lee con un lector de pantalla oye siempre el texto antes que la ilustración,
+ * que es la que no dice nada.
+ */
+.hoja--parte {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+  gap: 30px;
+  align-items: center;
+}
+
+.hoja--parte.es-volteada {
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+}
+
+.hoja--parte.es-volteada .hoja__texto {
+  order: 2;
+}
+
+.hoja--parte.es-volteada .hoja__arte {
+  order: 1;
+}
+
+.hoja__arte {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Respira dentro de su mitad: pegada al borde de la tarjeta se veía como un
+     recorte y no como una ilustración. */
+  padding: 10px;
+}
+
+.hoja__arte :deep(img) {
+  width: 100%;
+  height: auto;
+  max-width: 230px;
+}
+
 .hoja h2 {
   display: flex;
   align-items: center;
@@ -289,25 +357,40 @@ strong {
   font-weight: 600;
 }
 
+/**
+ * Dos, dos y uno.
+ *
+ * Con los cinco en una columna, cada icono tenía que ser diminuto para que la
+ * sección no se alargara media pantalla. En dos columnas caben al triple de
+ * tamaño en el mismo alto, y el quinto ocupa la fila entera en vez de dejar un
+ * hueco a su lado.
+ */
 .modos {
   list-style: none;
   margin: 4px 0 0;
   padding: 0;
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
 .modos li {
   display: flex;
-  gap: 14px;
-  align-items: flex-start;
+  gap: 18px;
+  align-items: center;
   background: var(--panel-2);
   border-radius: var(--r-sm);
-  padding: 14px 16px;
+  padding: 18px 20px;
+}
+
+.modos li:last-child {
+  grid-column: 1 / -1;
 }
 
 .modos img {
   flex: none;
+  width: 84px;
+  height: 84px;
 }
 
 .modos h3 {
@@ -418,6 +501,56 @@ strong {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+/* Portátil estrecho: la ilustración se encoge antes que el texto, que es el
+   que no se puede apretar más. */
+@media (max-width: 1000px) {
+  .hoja--parte {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 210px);
+    gap: 22px;
+  }
+
+  .hoja--parte.es-volteada {
+    grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
+  }
+}
+
+/* Y en móvil se apilan. La ilustración va **siempre debajo**, tanto en las
+   volteadas como en las otras: arriba empujaría el texto fuera de la primera
+   pantalla en cada sección. */
+@media (max-width: 760px) {
+  .hoja--parte,
+  .hoja--parte.es-volteada {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  /* El texto primero en todas, también en las volteadas: al bajar la página se
+     lee título, texto e ilustración una y otra vez, en vez de que la volteada
+     empuje su encabezado media pantalla hacia abajo. */
+  .hoja--parte .hoja__texto,
+  .hoja--parte.es-volteada .hoja__texto {
+    order: 1;
+  }
+
+  .hoja--parte .hoja__arte,
+  .hoja--parte.es-volteada .hoja__arte {
+    order: 2;
+  }
+
+  .hoja__arte :deep(img) {
+    max-width: 150px;
+  }
+
+  .modos {
+    grid-template-columns: 1fr;
+  }
+
+  .modos img {
+    width: 64px;
+    height: 64px;
+  }
 }
 
 @media (max-width: 560px) {
