@@ -2,7 +2,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-09-01',
   devtools: { enabled: true },
 
-  modules: ['@nuxtjs/supabase', '@nuxt/eslint', '@nuxt/fonts'],
+  modules: ['@nuxtjs/supabase', '@nuxt/eslint', '@nuxt/fonts', '@vercel/analytics'],
 
   css: ['~/assets/css/main.css'],
 
