@@ -19,6 +19,8 @@ const sello = Date.now()
 const db = () => createClient(url!, secret!, { auth: { persistSession: false } })
 
 const INSTAGRAM = `https://instagram.com/copaperso${sello}`
+/** Las redes que este spec escribe y borra: se apuntan antes y se devuelven. */
+const REDES_TOCADAS = ['instagram', 'youtube']
 /** Desde cuándo son nuestras las entradas del historial, para limpiar solo esas. */
 const DESDE = new Date().toISOString()
 
@@ -30,6 +32,12 @@ test.describe.serial('ajustes', () => {
   let precioPrevio: { id: string; cost_bits: number } | null = null
   let cronoPrevio: string | null = null
   let sesionNueva: string | null = null
+  /**
+   * Los enlaces que el host tuviera puestos en las redes que toca este spec.
+   * Sin esto, correr las pruebas le borraba su Instagram y su YouTube de la
+   * web —y no había forma de saber que habían estado ahí—.
+   */
+  let enlacesPrevios: { network: string; url: string; sort_order: number; visible: boolean }[] = []
 
   test.beforeEach(async ({ page }) => {
     await gotoHydrated(page, '/host/login')
@@ -44,7 +52,8 @@ test.describe.serial('ajustes', () => {
     if (precioPrevio) {
       await c.from('action_catalog').update({ cost_bits: precioPrevio.cost_bits }).eq('id', precioPrevio.id)
     }
-    await c.from('site_link').delete().in('network', ['instagram', 'youtube'])
+    await c.from('site_link').delete().in('network', REDES_TOCADAS)
+    if (enlacesPrevios.length) await c.from('site_link').insert(enlacesPrevios)
     if (cronoPrevio === null) await c.from('setting').delete().eq('key', 'timer_seconds')
     else await c.from('setting').update({ value: cronoPrevio }).eq('key', 'timer_seconds')
     if (sesionNueva) await c.from('session').delete().eq('id', sesionNueva)
@@ -61,6 +70,12 @@ test.describe.serial('ajustes', () => {
     const c = db()
     const { data: crono } = await c.from('setting').select('value').eq('key', 'timer_seconds').maybeSingle()
     cronoPrevio = crono?.value ?? null
+
+    const { data: enlaces } = await c
+      .from('site_link')
+      .select('network, url, sort_order, visible')
+      .in('network', REDES_TOCADAS)
+    enlacesPrevios = enlaces ?? []
   })
 
   // Prueba 1: el precio llega a la mesa.

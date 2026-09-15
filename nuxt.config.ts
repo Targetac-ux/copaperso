@@ -48,7 +48,8 @@ export default defineNuxtConfig({
             'CopaPerso: el torneo comunitario 5v5 de League of Legends. Draft en vivo, negociación con bits y puro soloQ.',
         },
         { property: 'og:type', content: 'website' },
-        { property: 'og:image', content: '/brand/og-image.jpg' },
+        // La og:image se pone en app.vue con la dirección entera: una ruta
+        // relativa no la resuelve nadie fuera de este dominio.
         { name: 'twitter:card', content: 'summary_large_image' },
       ],
       link: [

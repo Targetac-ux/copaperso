@@ -45,7 +45,10 @@ const jobs = [
   // --- fondos ------------------------------------------------------------
   { from: 'backgrounds/hero-bg.jpg', to: 'backgrounds/hero-bg.webp', width: 1920, format: 'webp', quality: 70 },
   { from: 'backgrounds/hero-bg.jpg', to: 'backgrounds/hero-bg.jpg', width: 1920, format: 'jpeg', quality: 74 },
-  { from: 'backgrounds/textura.png', to: 'backgrounds/textura.webp', width: 600, format: 'webp', quality: 60 },
+  // La textura se pinta como una sola copia que cubre la pantalla —el mosaico no
+  // casa por los bordes y se le verían las costuras— así que hace falta a su
+  // tamaño de origen y no a 600 px, o se ve borrosa en un monitor grande.
+  { from: 'backgrounds/textura.png', to: 'backgrounds/textura.webp', width: 1254, format: 'webp', quality: 70 },
 
   // Los PNG del torneo llegan a 1254×1254 desde el generador de imágenes, que
   // es muchísimo más de lo que se ve en pantalla. Cada uno sale en webp para

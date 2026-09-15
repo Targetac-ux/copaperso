@@ -112,8 +112,15 @@ const modes = [
 </template>
 
 <style scoped>
+/**
+ * El apartado de donaciones queda **entre** los clips y el pie, no pegado a los
+ * clips. Sin el espacio de arriba se leía como un pie de la sección anterior en
+ * vez de como un bloque propio, y el hueco de abajo —que ya pone el pie— lo
+ * dejaba descentrado.
+ */
 .dona {
-  padding-bottom: 56px;
+  padding-top: 84px;
+  padding-bottom: 12px;
 }
 
 .dona__caja {

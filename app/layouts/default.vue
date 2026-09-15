@@ -102,9 +102,45 @@ onMounted(() => {
 
 <style scoped>
 .site {
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/**
+ * La textura del fondo: el panal, detrás de toda la web pública.
+ *
+ * **Una sola copia que cubre la pantalla, no un mosaico.** La imagen no casa
+ * por los bordes —al repetirla se ve la costura, una retícula de líneas cada
+ * pocos cientos de píxeles— así que se pinta una sola vez.
+ *
+ * El tamaño va en `vmax` y no en `cover`: `cover` encogía el dibujo hasta que
+ * las líneas del panal bajaban de un píxel y se perdían. `100vmax` es el
+ * mínimo que tapa la pantalla entera sea cual sea la proporción —también un
+ * teléfono muy alto— y deja el panal al mayor tamaño posible sin repetirlo.
+ *
+ * Y va en un pseudoelemento **fijo**: así no se desplaza al hacer scroll, la
+ * página entera comparte el mismo fondo, y un teléfono no tiene que repintar el
+ * patrón en cada píxel de scroll.
+ *
+ * El brillo se sube porque la imagen viene casi del mismo color que el fondo y
+ * tal cual no se distingue nada; con esto el panal se insinúa sin tapar lo que
+ * hay encima. `pointer-events: none` y `z-index: -1`: es fondo, no capa.
+ *
+ * Solo en la web pública. El panel del host es una mesa de trabajo, y ahí un
+ * patrón detrás de diez paneles de datos sería ruido.
+ */
+.site::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: url('/backgrounds/textura.webp') center / 100vmax 100vmax no-repeat;
+  /* La imagen viene casi del color del fondo; sin esto el panal no se
+     distingue y queda un cambio de color y nada más. */
+  filter: brightness(1.35);
 }
 
 .site__header {
