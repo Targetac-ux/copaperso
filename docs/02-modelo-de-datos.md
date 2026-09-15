@@ -263,7 +263,29 @@ TIER_LIST         id, period_id, published_at, is_current
 TIER_ENTRY        id, tier_list_id, player_id, tier(D|C|B|A|S|S+), points, rank_order, main_role, elo
 CLIP              id, slug, title, edition, sort_order, visible, created_at
                   -- solo el slug del clip de Twitch; ni título ni portada salen de su API
+RULE_PATCH        id, version, title, body, published_at, created_at
+                  -- una línea por cambio: «+ » entra, «- » sale, el resto es texto
+SETTING           key, value, updated_at
+SITE_LINK         id, network, url, sort_order, visible, created_at
 ```
+
+### A8 quater. Por qué los ajustes son dos tablas y no una
+
+`setting` es clave/valor y `site_link` es una lista. Meter los enlaces en la
+clave/valor obligaría a inventar claves como `social_instagram_orden`, que es un
+array disfrazado de escalares; y meter el cronómetro en la lista le sobraría
+todo menos el valor.
+
+`network` es texto y no un enum a propósito: añadir una red no debería costar
+una migración. La lista de las que se saben pintar —con su etiqueta y su
+icono— vive en `shared/ajustes.ts`, y una fila cuya red no esté ahí
+simplemente no llega a ninguna pantalla.
+
+**Lo que entra en `site_link.url` pasa siempre por `normalizarUrl`**, en el
+servidor y no solo en la pantalla. Ese valor acaba en el `href` de un enlace que
+pulsa cualquiera que entre a la web, así que un `javascript:` ahí sería
+ejecución de código en el navegador del visitante, no una errata. La función
+rechaza cualquier esquema que no sea http o https, y tiene test propio.
 
 ### Reglas de LP (§23) implementadas como `lp_event.type`
 

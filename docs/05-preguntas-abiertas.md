@@ -71,6 +71,17 @@ Y estas tres las contestó el host:
   comportamiento actual.
 - **Todo en español**, interfaz del host incluida.
 
+## ✅ Ajustes y Blue Shell — cerrado (15 de septiembre de 2026)
+
+El módulo `/host/ajustes` **nunca se especificó**: el único rastro era el mapa de navegación del
+blueprint («Ajustes y costos») y la ficha de `action_catalog`. El host decidió su alcance:
+
+- **Entra:** los precios de los canjeos, los enlaces del sitio (Twitch, PayPal, Instagram, X, TikTok,
+  YouTube y Discord) y la duración por defecto del cronómetro.
+- **No entra:** la gestión de accesos al panel. Los hosts se siguen dando de alta a mano en Supabase.
+- **Blue Shell:** los pesos **se quedan fijos al 25 %**, decididos en código. Cierra la pregunta 8
+  del blueprint, que preguntaba si se querían editar la lista y sus pesos desde ajustes.
+
 ## 🕓 Pendientes de fecha, no de decisión
 
 - ✅ **Fotos de jugadores** — hecho en la Fase 5. Las sube el host desde la ficha del jugador y

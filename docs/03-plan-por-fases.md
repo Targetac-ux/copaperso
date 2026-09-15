@@ -555,6 +555,37 @@ el propio reproductor. El precio de esa decisión es que el apartado no puede tr
 vistos del mes»; a cambio, no hay secretos que rotar ni un servicio externo del que dependa que la
 Home cargue.
 
+**Ajustes** (`/host/ajustes`), que llevaba desde la Fase 1 como un cartel de obra que decía «llega
+en la Fase 3». **Esa fase era falsa**: la Fase 3 está cerrada y en ninguno de sus cuatro bloques
+aparecía Ajustes como entregable; fue una etiqueta puesta a ojo para que la navegación no diera 404.
+Y el módulo **nunca se especificó**: el único rastro en la documentación era el mapa de navegación
+del blueprint, que lo llamaba «Ajustes y costos», y la ficha de `action_catalog` («los costos
+editables de la negociación»). El alcance lo decidió el host el 15 de septiembre de 2026.
+
+Tiene tres bloques:
+
+- **Precios de los canjeos.** Los seis del catálogo del mes. El endpoint existía desde la Fase 3B
+  —con registro en la bitácora y reversión— pero **ninguna pantalla lo llamaba**: era el único
+  endpoint de escritura del proyecto sin interfaz.
+- **Enlaces y redes.** Twitch, PayPal, Instagram, X, TikTok, YouTube y Discord.
+- **Duración por defecto del cronómetro.** Solo manda en las copas nuevas; la abierta conserva la suya.
+
+**Lo que no entra:** la gestión de accesos al panel. Los hosts se siguen dando de alta a mano en
+Supabase (decisión del host, 15 de septiembre). Y los pesos del Blue Shell **siguen fijos al 25 %**,
+que cierra la pregunta 8 del blueprint.
+
+**El deshacer de los precios no se podía pulsar.** El endpoint registraba el cambio sin id de sesión
+y el historial del CCTM es por sesión, así que la entrada no salía en ninguna pantalla y su reversión
+—escrita en la Fase 3C— era código muerto. Ahora se cuelga de la copa abierta, si la hay: cambiar un
+precio en directo es justo lo que más urge poder revertir.
+
+**Los enlaces se validan en el servidor, no solo en la pantalla.** Lo que se guarda acaba en el
+`href` de un enlace público, así que `normalizarUrl` rechaza cualquier esquema que no sea http o
+https. Un `javascript:` ahí no es una errata: es ejecución de código en el navegador del visitante.
+En la Home solo se pintan las redes que tengan enlace —una fila de iconos muertos es peor que no
+tenerla— y Twitch y PayPal caen a la constante de `shared/enlaces.ts` si faltan, porque tienen su
+propio botón y uno que no lleva a ningún sitio es peor que uno desactualizado.
+
 **Reglas, en dos mitades.** La página `/reglas` tiene dos pestañas, y la división no es
 decorativa: cada mitad cambia a un ritmo distinto y por eso vive en un sitio distinto.
 
