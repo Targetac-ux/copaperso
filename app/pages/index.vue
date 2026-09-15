@@ -6,6 +6,13 @@ useSeoMeta({
     'Torneo comunitario 5v5 de League of Legends: draft en vivo, negociación con bits y puro soloQ. Todo se decide en el stream.',
 })
 
+// Los clips los administra el host desde /host/clips. Si no hay ninguno, la
+// sección entera no se pinta: un apartado vacío es peor que no tenerlo.
+const { data: clips } = await useFetch<{ slug: string; title: string; edition: string | null }[]>(
+  '/api/public/clips',
+  { default: () => [] },
+)
+
 const modes = [
   { icon: 'copa-perso', name: 'Copa Perso', desc: 'El formato de siempre. Draft aleatorio y a jugar.' },
   { icon: 'copa-tryhard', name: 'Copa Tryhard', desc: 'Prioridad para Master+. Sin piedad.' },
@@ -68,6 +75,8 @@ const modes = [
         </li>
       </ul>
     </section>
+
+    <AppClips :clips="clips" />
 
     <!-- El enlace va al desarrollador, no al torneo: por eso lo dice en voz
          alta. Y el pago lo gestiona PayPal en su propia pestaña: aquí no se

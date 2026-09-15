@@ -9,6 +9,7 @@ const nav = [
   { to: '/host/periodos', label: 'Periodos', icon: '◷' },
   { to: '/host/roster', label: 'Roster', icon: '▤' },
   { to: '/host/tiers', label: 'Tier Manager', icon: '★' },
+  { to: '/host/clips', label: 'Clips', icon: '▶' },
   { to: '/host/ajustes', label: 'Ajustes', icon: '⚙' },
 ]
 

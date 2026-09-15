@@ -219,6 +219,16 @@ type TierEntryRow = {
   rank_order: number
 }
 
+type ClipRow = {
+  id: string
+  slug: string
+  title: string
+  edition: string | null
+  sort_order: number
+  visible: boolean
+  created_at: string
+}
+
 export type MatchStatus = 'draft' | 'live' | 'finished' | 'void'
 export type MatchResultDb = 'win' | 'loss' | 'double_loss'
 export type LpEventType = 'WIN' | 'LOSS' | 'MVP' | 'ACE' | 'OFF_ROLE' | 'DOUBLE_LOSS' | 'MANUAL'
@@ -458,6 +468,24 @@ export type Database = {
           main_role?: PlayerRoleDb | null
           elo?: EloTierDb | null
           rank_order?: number
+        }
+        Relationships: []
+      }
+      clip: {
+        Row: ClipRow
+        Insert: {
+          id?: string
+          slug: string
+          title: string
+          edition?: string | null
+          sort_order?: number
+          visible?: boolean
+        }
+        Update: {
+          title?: string
+          edition?: string | null
+          sort_order?: number
+          visible?: boolean
         }
         Relationships: []
       }
@@ -701,6 +729,15 @@ export type Database = {
           photo_url: string | null
           edition_title: string | null
           published_at: string | null
+        }
+        Relationships: []
+      }
+      public_clips: {
+        Row: {
+          slug: string
+          title: string
+          edition: string | null
+          sort_order: number
         }
         Relationships: []
       }

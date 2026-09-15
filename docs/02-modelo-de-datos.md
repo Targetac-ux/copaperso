@@ -222,6 +222,8 @@ BLUE_SHELL_RESULT id, session_id, match_id?, participation_id, outcome, spun_at,
 ACTION_LOG        id, session_id, actor, action_type, payload, inverse_payload, undone_at, created_at
 TIER_LIST         id, period_id, published_at, is_current
 TIER_ENTRY        id, tier_list_id, player_id, tier(D|C|B|A|S|S+), points, rank_order, main_role, elo
+CLIP              id, slug, title, edition, sort_order, visible, created_at
+                  -- solo el slug del clip de Twitch; ni título ni portada salen de su API
 ```
 
 ### Reglas de LP (§23) implementadas como `lp_event.type`

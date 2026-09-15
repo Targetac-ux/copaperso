@@ -532,6 +532,34 @@ fuera no debería vivir sin test.
 - ✅ **Apartado de donaciones de PayPal**, ya en la Home: <https://paypal.me/Targetac>. Va al
   desarrollador de la página, **no** a los premios del torneo, y el apartado lo dice. Abre en pestaña
   nueva con `rel="noopener"`; ningún formulario de pago vive dentro de CopaPerso.
+- ✅ **Clips de Twitch en la Home**, administrados desde `/host/clips`: el host pega el enlace del
+  clip, le pone título y de qué edición salió, los ordena y los esconde sin borrarlos.
+
+**Cómo se incrustan, y por qué así.** Twitch se niega a reproducir un clip incrustado si el dominio
+de la página no viene declarado en el parámetro `parent` del iframe, y **no admite comodines**:
+`*.vercel.app` no vale. Como todavía no hay dominio propio y cada despliegue de previsualización de
+Vercel estrena subdominio, escribirlo en una constante significaría romperlo en cada despliegue. Se
+lee de `window.location.hostname` al montar, así que funciona igual en local, en una
+previsualización y el día que haya dominio, sin tocar nada.
+
+**Los iframes no se montan hasta que la sección entra en pantalla** (`IntersectionObserver`, con 400
+px de margen para que ya estén cuando se llega). Cada clip carga el reproductor entero de Twitch,
+que es la pieza más pesada de la página; al no existir durante la carga inicial no le cuesta nada a
+quien solo lee el hero, que es justo lo que mide Lighthouse en la prueba de cierre 1. Hasta
+entonces, y en el HTML del servidor, cada hueco es un enlace al clip en Twitch: si algo fallara, lo
+que queda es un enlace que funciona y no un rectángulo negro.
+
+**Nada sale de la API de Twitch.** No hay credenciales de Twitch en el proyecto y no hacen falta: el
+título lo escribe el host —que es quien sabe qué pasó en ese clip— y el fotograma de portada lo pone
+el propio reproductor. El precio de esa decisión es que el apartado no puede traer solos «los más
+vistos del mes»; a cambio, no hay secretos que rotar ni un servicio externo del que dependa que la
+Home cargue.
+
+> **Pendiente de la primera prueba en el despliegue:** que Twitch acepte el `parent` del dominio de
+> Vercel. Desde esta máquina no hay red hacia Twitch, así que está comprobado todo lo que es
+> responsabilidad de la aplicación —qué enlaces se aceptan, que el iframe lleve el dominio correcto,
+> que no se cargue antes de tiempo— pero no el apretón de manos final. La previsualización de
+> `/host/clips` lo enseña de un vistazo: si ahí se ve el clip, en la Home también.
 
 **Pruebas de cierre**
 1. Lighthouse en móvil: Performance ≥ 90, Accesibilidad ≥ 95, SEO ≥ 95.

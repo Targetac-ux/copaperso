@@ -231,3 +231,9 @@ button {
   border-color: rgba(255, 90, 110, 0.4);
   color: #ffb3bd;
 }
+
+.alert--warn {
+  background: rgba(255, 196, 77, 0.1);
+  border-color: rgba(255, 196, 77, 0.35);
+  color: #ffdb96;
+}

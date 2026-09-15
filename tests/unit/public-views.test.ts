@@ -34,7 +34,7 @@ const PRIVADO = [
 ]
 
 describe('vistas públicas', () => {
-  for (const view of ['public_tier_ranking', 'public_roster', 'public_session_live']) {
+  for (const view of ['public_tier_ranking', 'public_roster', 'public_session_live', 'public_clips']) {
     it(`${view} no expone datos privados`, () => {
       const body = viewBody(view)
       for (const word of PRIVADO) {
@@ -43,12 +43,20 @@ describe('vistas públicas', () => {
     })
   }
 
-  it('solo esas tres vistas se conceden a anon', () => {
-    const grants = sql.match(/grant select on ([^;]+) to anon/gi) ?? []
-    expect(grants).toHaveLength(1)
-    expect(grants[0]).toContain('public_tier_ranking')
-    expect(grants[0]).toContain('public_roster')
-    expect(grants[0]).toContain('public_session_live')
+  it('a anon no se le concede nada más que esas vistas', () => {
+    const concedido = (sql.match(/grant select on ([^;]+) to anon/gi) ?? [])
+      .flatMap((g) => g.replace(/grant select on |to anon.*/gi, '').split(','))
+      .map((v) => v.trim())
+      .sort()
+
+    // La lista completa, a propósito: añadir una vista pública obliga a tocar
+    // este test, que es el momento de preguntarse qué columnas lleva dentro.
+    expect(concedido).toEqual([
+      'public_clips',
+      'public_roster',
+      'public_session_live',
+      'public_tier_ranking',
+    ])
   })
 
   it('todas las tablas tienen RLS activado', () => {
