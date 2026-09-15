@@ -34,7 +34,13 @@ const PRIVADO = [
 ]
 
 describe('vistas públicas', () => {
-  for (const view of ['public_tier_ranking', 'public_roster', 'public_session_live', 'public_clips']) {
+  for (const view of [
+    'public_tier_ranking',
+    'public_roster',
+    'public_session_live',
+    'public_clips',
+    'public_patch_notes',
+  ]) {
     it(`${view} no expone datos privados`, () => {
       const body = viewBody(view)
       for (const word of PRIVADO) {
@@ -53,6 +59,7 @@ describe('vistas públicas', () => {
     // este test, que es el momento de preguntarse qué columnas lleva dentro.
     expect(concedido).toEqual([
       'public_clips',
+      'public_patch_notes',
       'public_roster',
       'public_session_live',
       'public_tier_ranking',

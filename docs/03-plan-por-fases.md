@@ -555,6 +555,31 @@ el propio reproductor. El precio de esa decisión es que el apartado no puede tr
 vistos del mes»; a cambio, no hay secretos que rotar ni un servicio externo del que dependa que la
 Home cargue.
 
+**Reglas, en dos mitades.** La página `/reglas` tiene dos pestañas, y la división no es
+decorativa: cada mitad cambia a un ritmo distinto y por eso vive en un sitio distinto.
+
+- **Las reglas** son texto: cambian poco y cuando cambian hay que reescribirlas con cuidado, así que
+  están en la propia página (`app/pages/reglas.vue`). Cubren cómo se entra, los cinco modos, la fase
+  de negociación con la tabla de canjeos, el Blue Shell y la puntuación.
+- **Los patch notes** son lo contrario: se añade uno cada cierto tiempo y no pueden esperar a un
+  despliegue, así que los administra el host desde `/host/patch-notes`.
+
+Están juntos porque quien viene a leer las reglas es justo quien quiere saber qué cambió desde la
+última vez. La pestaña viaja en el hash (`/reglas#patch-notes`) para poder enlazarla.
+
+**El formato de un parche.** El cuerpo es texto suelto, una línea por cambio: `+ ` es algo que entra,
+`- ` es algo que sale, y el resto es texto normal. Es la convención de los changelogs de siempre y no
+obliga al host a aprender nada. **Se exige el espacio tras el signo** a propósito: sin él, una línea
+como «-15 LP por derrota» se pintaría en rojo como una regla eliminada. Hay un test para ese caso.
+
+Un parche **nace sin publicar** y no sale de la base hasta que se publica. A diferencia de una
+edición del Tier Ranking —que es una foto y por eso queda congelada— un parche es un texto: si trae
+una errata se corrige donde está, sin abrir otro.
+
+**Premios queda en construcción** a propósito, hasta que se decida el formato (decisión del host, 15
+de septiembre de 2026). La página lo dice y enseña las tres medallas, que sí existen: los puestos no
+están en duda, solo qué se llevan.
+
 **Menú en móvil.** Por debajo de 760 px la fila de enlaces no cabe junto al logo y al botón de
 Twitch, y antes simplemente se escondía sin que la sustituyera nada: desde un teléfono solo se
 llegaba a la portada. Ahora se pliega detrás de un botón, que se cierra solo al cambiar de página y

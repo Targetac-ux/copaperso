@@ -10,6 +10,7 @@ const nav = [
   { to: '/host/roster', label: 'Roster', icon: '▤' },
   { to: '/host/tiers', label: 'Tier Manager', icon: '★' },
   { to: '/host/clips', label: 'Clips', icon: '▶' },
+  { to: '/host/patch-notes', label: 'Patch notes', icon: '✎' },
   { to: '/host/ajustes', label: 'Ajustes', icon: '⚙' },
 ]
 

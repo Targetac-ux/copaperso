@@ -229,6 +229,15 @@ type ClipRow = {
   created_at: string
 }
 
+type RulePatchRow = {
+  id: string
+  version: string | null
+  title: string
+  body: string
+  published_at: string | null
+  created_at: string
+}
+
 export type MatchStatus = 'draft' | 'live' | 'finished' | 'void'
 export type MatchResultDb = 'win' | 'loss' | 'double_loss'
 export type LpEventType = 'WIN' | 'LOSS' | 'MVP' | 'ACE' | 'OFF_ROLE' | 'DOUBLE_LOSS' | 'MANUAL'
@@ -468,6 +477,23 @@ export type Database = {
           main_role?: PlayerRoleDb | null
           elo?: EloTierDb | null
           rank_order?: number
+        }
+        Relationships: []
+      }
+      rule_patch: {
+        Row: RulePatchRow
+        Insert: {
+          id?: string
+          version?: string | null
+          title: string
+          body?: string
+          published_at?: string | null
+        }
+        Update: {
+          version?: string | null
+          title?: string
+          body?: string
+          published_at?: string | null
         }
         Relationships: []
       }
@@ -728,6 +754,16 @@ export type Database = {
           display_name: string
           photo_url: string | null
           edition_title: string | null
+          published_at: string | null
+        }
+        Relationships: []
+      }
+      public_patch_notes: {
+        Row: {
+          id: string
+          version: string | null
+          title: string
+          body: string
           published_at: string | null
         }
         Relationships: []
