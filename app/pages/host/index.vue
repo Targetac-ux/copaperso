@@ -900,7 +900,7 @@ h1 {
 }
 
 .undo:hover:not(:disabled) {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .undo:disabled {

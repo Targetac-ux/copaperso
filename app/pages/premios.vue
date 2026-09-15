@@ -46,7 +46,7 @@ useSeoMeta({
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--violet);
+  color: var(--violet-txt);
   margin: 0;
 }
 

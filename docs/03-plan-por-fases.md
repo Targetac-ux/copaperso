@@ -644,6 +644,12 @@ ancho. Ahora:
 - En móvil se apilan y **el texto va siempre primero**, también en las volteadas: si no, la volteada
   empujaba su encabezado media pantalla hacia abajo.
 
+**Página de error propia** (`app/error.vue`). Un enlace roto enseñaba la pantalla gris de Nuxt: sin
+marca, sin menú y sin forma de volver. Ahora sale el escudo, el código, una explicación y dos
+salidas. **No usa el layout público** a propósito: el layout carga los enlaces del sitio desde la
+base, y si lo que ha fallado es la base, el error se pintaría con la misma pieza rota. Devuelve un
+404 de verdad y se sirve desde el servidor, así que un buscador no lo indexa como página buena.
+
 **Menú en móvil.** Por debajo de 760 px la fila de enlaces no cabe junto al logo y al botón de
 Twitch, y antes simplemente se escondía sin que la sustituyera nada: desde un teléfono solo se
 llegaba a la portada. Ahora se pliega detrás de un botón, que se cierra solo al cambiar de página y
@@ -664,6 +670,35 @@ plantillas: ya estuvo apuntando a `twitch.tv` a secas en la cabecera y en el her
 
 **Pruebas de cierre**
 1. Lighthouse en móvil: Performance ≥ 90, Accesibilidad ≥ 95, SEO ≥ 95.
+
+   **Medido el 15 de septiembre de 2026** sobre la compilación de producción (no sobre el servidor
+   de desarrollo, que no mide nada): **Accesibilidad 100 · SEO 100 · Buenas prácticas 96 ·
+   Rendimiento 73.**
+
+   *Accesibilidad, de 91 a 100.* Tres arreglos reales, no maquillaje:
+   - El botón de Twitch de la barra **se quedaba sin nombre en móvil**, porque ahí el texto se
+     esconde para que quepa junto al menú y el icono es decorativo. Lleva `aria-label`.
+   - El violeta **fallaba el contraste por los dos lados**: 4,36 con el blanco del botón y 4,08 como
+     texto sobre un panel, cuando el mínimo es 4,5. Como fondo tiene que ser más oscuro y como texto
+     más claro, así que ahora son dos tokens: `--violet` y `--violet-txt`.
+   - `--dim` se quedaba en 3,95 sobre `--panel`. Aclarado.
+
+   *Buenas prácticas 96:* lo único que falla es un 404 de `/_vercel/insights/script.js`, que **solo
+   ocurre fuera de Vercel** —ese archivo lo sirve la plataforma— y un aviso de caché de navegación
+   que Lighthouse marca como «no accionable».
+
+   *Rendimiento 73, y la causa está aislada.* El primer pintado observado es de **606 ms**; los 4,0 s
+   son la simulación de 4G lento, donde lo que manda son los bytes. De los **665 kB** de la portada,
+   **328 son el cliente de Supabase** —autenticación y realtime— que el módulo `@nuxtjs/supabase`
+   registra como plugin global y por tanto viaja en todas las páginas. **Ninguna página pública lo
+   usa**: el middleware sale antes si la ruta no empieza por `/host`, y lo público lee por
+   `server/api/public/*`. Solo lo necesitan `/host/*` y `/en-vivo`.
+
+   Bajar de ahí exige que ese cliente deje de ser global —cargarlo bajo demanda solo donde hace
+   falta—, lo que significa sustituir el cableado de sesión del módulo. **Es un cambio de
+   arquitectura sobre un login que funciona, y queda como decisión del host.** Lo que sí se hizo, por
+   ser correcto de todas formas: el escudo y los iconos de los modos pasan de SVG vectorizado a webp
+   al tamaño en que se pintan (de 106 kB a 50), porque a 34 y 52 px el vector no aportaba nada.
 2. Visual: 360 px, 768 px, 1440 px sin scroll horizontal ni texto cortado.
 3. E2E: usuario anónimo no puede alcanzar ninguna ruta `/host/*` ni ningún endpoint de escritura (403).
 4. Integración: la Home no expone datos privados (bits, préstamos, cárcel, notas) en el HTML ni en el payload.

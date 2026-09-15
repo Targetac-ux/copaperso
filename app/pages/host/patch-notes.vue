@@ -394,7 +394,7 @@ code {
 .version {
   font-family: var(--f-mono);
   font-size: 10.5px;
-  color: var(--violet);
+  color: var(--violet-txt);
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 1px 8px;
@@ -411,7 +411,7 @@ code {
 
 .mas { color: #7be0a0; }
 .menos { color: #ff8da0; }
-.tiene-video { color: var(--violet); }
+.tiene-video { color: var(--violet-txt); }
 
 .cuando {
   margin-left: auto;

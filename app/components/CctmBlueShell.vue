@@ -247,7 +247,7 @@ h2 {
 }
 
 .is-spinning .cara {
-  color: var(--violet);
+  color: var(--violet-txt);
   opacity: 0.8;
 }
 

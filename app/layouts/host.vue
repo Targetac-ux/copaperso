@@ -97,7 +97,7 @@ async function logout() {
 }
 
 .host__nav a.router-link-exact-active span {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .host__user {

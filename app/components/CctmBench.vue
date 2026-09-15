@@ -208,7 +208,7 @@ li:active {
 }
 
 .vacio a {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .pista {

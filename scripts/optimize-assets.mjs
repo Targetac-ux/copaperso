@@ -21,7 +21,14 @@ const out = join(root, 'public')
 /** Cada entrada describe un derivado. `skip` avisa en vez de romper. */
 const jobs = [
   // --- marca -------------------------------------------------------------
-  { from: 'brand/isotipo.svg', to: 'brand/isotipo.svg', copy: true },
+  /**
+   * El escudo, en mapa de bits para la web.
+   *
+   * El SVG pesa 32 kB —está vectorizado desde una imagen, con miles de puntos
+   * por trazo— y se pinta a 28-36 px en la barra de **todas** las páginas. A
+   * ese tamaño el vector no aporta nada y el webp cuesta una fracción.
+   */
+  { from: 'brand/isotipo.svg', to: 'brand/isotipo.webp', width: 108, format: 'webp', quality: 88 },
   { from: 'brand/logo-horizontal.svg', to: 'brand/logo-horizontal.svg', copy: true },
   { from: 'brand/logo-horizontal-light.svg', to: 'brand/logo-horizontal-light.svg', copy: true },
   { from: 'brand/favicon.png', to: 'favicon.png', width: 48, format: 'png' },
@@ -68,6 +75,18 @@ const jobs = [
   { from: 'ui/premio-3.png', to: 'ui/premio-3.png', width: 512, format: 'png' },
 ]
 
+/**
+ * Los iconos de los modos, en mapa de bits.
+ *
+ * Mismo caso que el escudo: son SVG vectorizados desde imagen —hasta 25 kB
+ * cada uno— y se pintan a 52 px en la Home y a 84 en las reglas. Los cinco
+ * juntos eran 74 kB de los 719 de la portada.
+ */
+const MODOS = ['copa-perso', 'copa-tryhard', 'copa-random', 'copa-analisis', 'copa-aram-afk']
+for (const m of MODOS) {
+  jobs.push({ from: `modes/${m}.svg`, to: `modes/${m}.webp`, width: 200, format: 'webp', quality: 86 })
+}
+
 // Los SVG sueltos (modos, tiers, ui) se copian tal cual, sin tocar.
 const passthroughDirs = ['modes', 'tiers', 'ui']
 
@@ -79,7 +98,12 @@ const passthroughDirs = ['modes', 'tiers', 'ui']
  * nadie. **El original no se toca**: es arte del host y sigue donde estaba;
  * simplemente no viaja al despliegue.
  */
-const noPublicar = new Set(['ui/blue-shell.svg'])
+const noPublicar = new Set([
+  'ui/blue-shell.svg',
+  // Los modos se sirven en webp, arriba. El SVG es el original y se queda en
+  // assets/: publicarlo además sería mandar la misma imagen dos veces.
+  ...MODOS.map((m) => `modes/${m}.svg`),
+])
 
 const kb = (n) => `${Math.round(n / 102.4) / 10} kB`
 

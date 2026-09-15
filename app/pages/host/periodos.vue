@@ -288,7 +288,7 @@ h2 {
 .ses__num {
   font-family: var(--f-display);
   font-weight: 700;
-  color: var(--violet);
+  color: var(--violet-txt);
   min-width: 42px;
 }
 

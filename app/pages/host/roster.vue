@@ -308,7 +308,7 @@ tbody tr.is-open {
 }
 
 .lp {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .wr {

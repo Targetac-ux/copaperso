@@ -382,7 +382,7 @@ code {
 }
 
 .datos__slug:hover {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .acciones {

@@ -447,7 +447,7 @@ h2 {
   margin-left: auto;
   font-family: var(--f-mono);
   font-size: 12px;
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .delta {

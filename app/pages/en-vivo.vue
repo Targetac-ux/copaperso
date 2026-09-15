@@ -269,7 +269,7 @@ const huecos = (n: number) => Math.max(0, 5 - n)
 .nada a {
   display: block;
   margin-top: 8px;
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .marcador {
@@ -328,7 +328,7 @@ const huecos = (n: number) => Math.max(0, 5 - n)
 }
 
 .reloj.is-run {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .reloj.is-hot {

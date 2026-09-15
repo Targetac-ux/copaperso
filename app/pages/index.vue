@@ -79,7 +79,7 @@ const modes = [
       <h2 class="modes__title">Modos de juego</h2>
       <ul class="modes__grid">
         <li v-for="mode in modes" :key="mode.icon" class="mode">
-          <img :src="`/modes/${mode.icon}.svg`" :alt="''" width="52" height="52" loading="lazy">
+          <img :src="`/modes/${mode.icon}.webp`" :alt="''" width="52" height="52" loading="lazy">
           <h3>{{ mode.name }}</h3>
           <p>{{ mode.desc }}</p>
         </li>

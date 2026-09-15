@@ -132,7 +132,7 @@ const incrustar = (slug: string) => (cerca.value ? urlDeIncrustado(slug, dominio
   font-size: 10.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 /* El marco reserva el sitio desde el primer pintado, así que montar el iframe

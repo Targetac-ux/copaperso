@@ -13,7 +13,7 @@ withDefaults(defineProps<{ size?: number; wordmark?: boolean }>(), {
 <template>
   <span class="logo">
     <img
-      src="/brand/isotipo.svg"
+      src="/brand/isotipo.webp"
       alt="CopaPerso"
       :width="size"
       :height="size"

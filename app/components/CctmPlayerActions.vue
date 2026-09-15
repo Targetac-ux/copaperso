@@ -195,7 +195,7 @@ h2 {
   margin-left: auto;
   font-family: var(--f-mono);
   font-size: 10px;
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .swap-aviso {

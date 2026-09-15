@@ -122,7 +122,7 @@ const LP = [
              fila entera en vez de dejar un hueco. -->
         <ul class="modos">
           <li v-for="m in MODOS" :key="m.icon">
-            <img :src="`/modes/${m.icon}.svg`" :alt="''" width="84" height="84" loading="lazy">
+            <img :src="`/modes/${m.icon}.webp`" :alt="''" width="84" height="84" loading="lazy">
             <div>
               <h3>{{ m.name }}</h3>
               <p>{{ m.desc }}</p>
@@ -255,7 +255,7 @@ const LP = [
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--violet);
+  color: var(--violet-txt);
   margin: 0 0 6px;
 }
 
@@ -505,7 +505,7 @@ strong {
 }
 
 .notas a {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .sr {

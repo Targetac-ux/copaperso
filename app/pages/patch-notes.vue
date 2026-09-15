@@ -122,7 +122,7 @@ const fecha = (iso: string | null) =>
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--violet);
+  color: var(--violet-txt);
   margin: 0 0 6px;
 }
 
@@ -152,7 +152,7 @@ h1 {
 }
 
 .vacio a {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .parche {
@@ -179,7 +179,7 @@ h1 {
 .version {
   font-family: var(--f-mono);
   font-size: 11px;
-  color: var(--violet);
+  color: var(--violet-txt);
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 2px 9px;
@@ -295,7 +295,7 @@ h1 {
 }
 
 .video__enlace:hover {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .sr {

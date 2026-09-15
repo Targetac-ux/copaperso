@@ -166,7 +166,7 @@ function abrirEdicion() {
 }
 
 .is-running .reloj {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 .is-hot .reloj {

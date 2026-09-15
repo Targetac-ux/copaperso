@@ -45,7 +45,17 @@ onMounted(() => {
         <nav class="site__nav">
           <NuxtLink v-for="item in nav" :key="item.to" :to="item.to">{{ item.label }}</NuxtLink>
         </nav>
-        <a class="btn btn--primary site__twitch" :href="twitch" target="_blank" rel="noopener">
+        <!-- El `aria-label` no es de adorno: en móvil el texto se esconde para
+             que quepa junto al menú, y sin él el enlace se queda sin nombre
+             —solo el icono, que es decorativo— y un lector de pantalla lo
+             anuncia como «enlace». -->
+        <a
+          class="btn btn--primary site__twitch"
+          :href="twitch"
+          target="_blank"
+          rel="noopener"
+          aria-label="Ver en Twitch"
+        >
           <AppBrandIcon name="twitch" />
           <span>Ver en Twitch</span>
         </a>
@@ -244,7 +254,7 @@ main {
 }
 
 .site__hostlink:hover {
-  color: var(--violet);
+  color: var(--violet-txt);
 }
 
 /* El botón de la hamburguesa solo existe en móvil; en escritorio manda la
