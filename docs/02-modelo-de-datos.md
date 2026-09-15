@@ -263,8 +263,9 @@ TIER_LIST         id, period_id, published_at, is_current
 TIER_ENTRY        id, tier_list_id, player_id, tier(D|C|B|A|S|S+), points, rank_order, main_role, elo
 CLIP              id, slug, title, edition, sort_order, visible, created_at
                   -- solo el slug del clip de Twitch; ni título ni portada salen de su API
-RULE_PATCH        id, version, title, body, published_at, created_at
+RULE_PATCH        id, version, title, body, video_id, published_at, created_at
                   -- una línea por cambio: «+ » entra, «- » sale, el resto es texto
+                  -- video_id: el id de YouTube, no la URL; opcional
 SETTING           key, value, updated_at
 SITE_LINK         id, network, url, sort_order, visible, created_at
 ```

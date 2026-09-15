@@ -1,29 +1,24 @@
 <script setup lang="ts">
 import { BLUE_SHELL_DESC, BLUE_SHELL_LABEL, BLUE_SHELL_OUTCOMES } from '#shared/blueshell'
 import { LP_INICIAL } from '#shared/lp'
-import { leerCuerpo } from '#shared/patchnotes'
-import type { PatchNote } from '#shared/patchnotes'
 
 /**
- * Reglas y formato, en dos partes.
+ * Las reglas y los modos.
  *
- * **Las reglas** son texto: cambian poco y cuando cambian hay que reescribirlas
- * con cuidado, así que viven en esta página y no en la base.
+ * Son texto: cambian poco y cuando cambian hay que reescribirlas con cuidado,
+ * así que viven en esta página y no en la base.
  *
- * **Los patch notes** son lo contrario: se añade uno cada cierto tiempo y no
- * pueden esperar a un despliegue, así que los administra el host desde
- * `/host/patch-notes`. Están juntos aquí porque quien viene a leer las reglas
- * es exactamente quien quiere saber qué cambió desde la última vez.
+ * **Los patch notes se fueron a su propia sección** (`/patch-notes`). Estuvieron
+ * aquí como una pestaña, pero van a ser muchos: las reglas son un texto que se
+ * lee una vez y los parches una lista que crece. Al final de la página queda el
+ * enlace, porque quien termina de leer las reglas es justo quien quiere saber
+ * qué ha cambiado desde entonces.
  */
 useSeoMeta({
   title: 'Reglas y formato',
   description:
     'Cómo se entra a la CopaPerso, los cinco modos de juego, la fase de negociación con bits y ' +
-    'la puntuación. Y los patch notes de cada cambio en las reglas.',
-})
-
-const { data: parches } = await useFetch<PatchNote[]>('/api/public/patch-notes', {
-  default: () => [],
+    'la puntuación.',
 })
 
 const MODOS = [
@@ -77,30 +72,6 @@ const LP = [
   { que: 'Doble derrota (Blue Shell)', delta: '−30' },
 ]
 
-/**
- * La pestaña viaja en el hash, para poder enlazar los patch notes directamente.
- *
- * **El hash se lee al montar, no en el setup.** El servidor nunca lo recibe
- * —el navegador no lo manda— así que durante el render inicial `useRoute()`
- * devuelve la ruta sin hash y `/reglas#patch-notes` abría igualmente la
- * pestaña de las reglas. Leerlo de `window` después de montar es lo único que
- * lo sabe de verdad, y además evita el desajuste de hidratación: el servidor
- * siempre pinta la primera pestaña y el cliente cambia después.
- */
-const router = useRouter()
-const pestana = ref<'reglas' | 'patch'>('reglas')
-
-onMounted(() => {
-  if (window.location.hash === '#patch-notes') pestana.value = 'patch'
-})
-
-function ver(cual: 'reglas' | 'patch') {
-  pestana.value = cual
-  router.replace({ hash: cual === 'patch' ? '#patch-notes' : '' })
-}
-
-const fecha = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : ''
 </script>
 
 <template>
@@ -110,16 +81,7 @@ const fecha = (iso: string | null) =>
       <h1>Reglas y formato</h1>
     </header>
 
-    <nav class="tabs" aria-label="Secciones">
-      <button :class="{ 'is-on': pestana === 'reglas' }" @click="ver('reglas')">Las reglas</button>
-      <button :class="{ 'is-on': pestana === 'patch' }" @click="ver('patch')">
-        Patch notes
-        <i v-if="parches.length" class="cuantos">{{ parches.length }}</i>
-      </button>
-    </nav>
-
-    <!-- ── Las reglas ──────────────────────────────────────────────── -->
-    <div v-show="pestana === 'reglas'" class="hojas">
+    <div class="hojas">
       <section class="hoja">
         <h2>Cómo se entra</h2>
         <p class="grande">
@@ -215,33 +177,10 @@ const fecha = (iso: string | null) =>
       </section>
     </div>
 
-    <!-- ── Patch notes ─────────────────────────────────────────────── -->
-    <div v-show="pestana === 'patch'" class="hojas">
-      <p class="intro">
-        Las reglas se mueven. Cada vez que se añade o se quita algo queda aquí, con su fecha.
-      </p>
-
-      <p v-if="!parches.length" class="vacio">
-        Todavía no hay ningún parche publicado. Las reglas son las de arriba, tal cual.
-      </p>
-
-      <article v-for="p in parches" :key="p.id" class="parche">
-        <header>
-          <h2>{{ p.title }}</h2>
-          <span v-if="p.version" class="version">{{ p.version }}</span>
-          <time v-if="p.publishedAt" :datetime="p.publishedAt">{{ fecha(p.publishedAt) }}</time>
-        </header>
-
-        <ul class="cambios">
-          <li v-for="(l, i) in leerCuerpo(p.body)" :key="i" :class="`es-${l.tipo}`">
-            <span v-if="l.tipo !== 'texto'" class="signo" aria-hidden="true">
-              {{ l.tipo === 'añade' ? '+' : '−' }}
-            </span>
-            <span>{{ l.texto }}</span>
-          </li>
-        </ul>
-      </article>
-    </div>
+    <p class="notas">
+      Las reglas se mueven de vez en cuando.
+      <NuxtLink to="/patch-notes">Mira los patch notes</NuxtLink> para ver qué ha cambiado y cuándo.
+    </p>
   </div>
 </template>
 
@@ -272,43 +211,10 @@ h1 {
   margin: 0;
 }
 
-.tabs {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
 
-.tabs button {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: 9px 18px;
-  color: var(--muted);
-  font: inherit;
-  font-size: 14.5px;
-  cursor: pointer;
-}
 
-.tabs button:hover {
-  color: var(--text);
-}
 
-.tabs button.is-on {
-  background: var(--violet);
-  border-color: var(--violet);
-  color: #fff;
-}
 
-.cuantos {
-  font-style: normal;
-  font-family: var(--f-mono);
-  font-size: 11px;
-  opacity: 0.8;
-}
 
 .hojas {
   display: flex;
@@ -450,88 +356,27 @@ strong {
   margin-right: 8px;
 }
 
-/* --- patch notes --- */
-.intro,
-.vacio {
-  margin: 0;
-  color: var(--muted);
-  font-size: 15px;
+
+
+
+
+
+
+
+
+
+
+
+
+.notas {
+  margin: 4px 0 0;
   text-align: center;
-}
-
-.vacio {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  padding: 28px 24px;
-  color: var(--dim);
-}
-
-.parche {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  padding: 20px 24px;
-}
-
-.parche header {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.parche h2 {
-  font-family: var(--f-display);
-  font-size: 19px;
-  margin: 0;
-}
-
-.version {
-  font-family: var(--f-mono);
-  font-size: 11px;
-  color: var(--violet);
-  border: 1px solid var(--violet-dim, var(--line));
-  border-radius: 999px;
-  padding: 2px 9px;
-}
-
-.parche time {
-  margin-left: auto;
-  font-size: 12.5px;
-  color: var(--dim);
-}
-
-.cambios {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.cambios li {
-  display: flex;
-  gap: 10px;
   font-size: 14.5px;
-  line-height: 1.55;
-  color: var(--muted);
-}
-
-.signo {
-  font-family: var(--f-mono);
-  font-weight: 700;
-  flex: none;
-  width: 1ch;
-}
-
-.es-añade .signo { color: #7be0a0; }
-.es-quita .signo { color: #ff8da0; }
-
-.es-texto {
   color: var(--dim);
+}
+
+.notas a {
+  color: var(--violet);
 }
 
 .sr {
@@ -546,10 +391,6 @@ strong {
 @media (max-width: 560px) {
   .hoja {
     padding: 20px 18px;
-  }
-
-  .parche time {
-    margin-left: 0;
   }
 }
 </style>

@@ -10,6 +10,11 @@
  * empieza por `+` es algo que entra y una que empieza por `-` es algo que sale;
  * el resto es texto normal. Es la convención de los changelogs de toda la vida y
  * no obliga al host a aprender ningún formato: escribe la lista y ya.
+ *
+ * **El detalle vive en un vídeo.** El host graba cada parche y lo explica ahí,
+ * así que lo de aquí es el resumen para leer de un vistazo y el vídeo es la
+ * versión completa. El vídeo es opcional: un parche de dos líneas no necesita
+ * uno.
  */
 
 export interface PatchNote {
@@ -18,6 +23,12 @@ export interface PatchNote {
   title: string
   publishedAt: string | null
   body: string
+  /**
+   * El **id** del vídeo de YouTube donde el host lo explica, no la URL: la URL
+   * cambia de forma según de dónde la copies, y del id salen tanto el
+   * reproductor como la miniatura. Opcional.
+   */
+  videoId: string | null
 }
 
 export type TipoDeLinea = 'añade' | 'quita' | 'texto'
@@ -64,4 +75,83 @@ export function ordenar<T extends { publishedAt: string | null }>(notas: T[]): T
     if (!b.publishedAt) return 1
     return b.publishedAt.localeCompare(a.publishedAt)
   })
+}
+
+// --- el vídeo ---------------------------------------------------------------
+
+/** Los anfitriones de los que sale un enlace de YouTube. */
+const YOUTUBE = new Set([
+  'youtube.com',
+  'www.youtube.com',
+  'm.youtube.com',
+  'music.youtube.com',
+  'youtu.be',
+  'www.youtu.be',
+])
+
+/** Un id de vídeo son once caracteres de este alfabeto. */
+const ID = /^[A-Za-z0-9_-]{11}$/
+
+/**
+ * Saca el id del vídeo de lo que sea que haya pegado el host.
+ *
+ * Acepta las formas que reparte YouTube —`watch?v=`, `youtu.be/`, `/embed/`,
+ * `/shorts/`, `/live/`— con los parámetros que vengan detrás. Cualquier otra
+ * cosa devuelve `null`, para que el host vea un aviso en vez de un recuadro
+ * negro en la web.
+ *
+ * Se guarda **el id y no la URL**: la URL cambia de forma según de dónde la
+ * copies, y con el id se construye tanto el reproductor como la miniatura.
+ */
+export function idDeYoutube(entrada: string): string | null {
+  const texto = entrada.trim()
+  if (!texto) return null
+
+  // El id suelto, que es lo que queda si copian solo el final.
+  if (!texto.includes('/') && !texto.includes('?')) return ID.test(texto) ? texto : null
+
+  let url: URL
+  try {
+    url = new URL(texto.startsWith('http') ? texto : `https://${texto}`)
+  } catch {
+    return null
+  }
+
+  if (!YOUTUBE.has(url.hostname.toLowerCase())) return null
+
+  const deParametro = url.searchParams.get('v')
+  if (deParametro) return ID.test(deParametro) ? deParametro : null
+
+  const partes = url.pathname.split('/').filter(Boolean)
+  // youtu.be/ID, /embed/ID, /shorts/ID, /live/ID, /v/ID
+  const candidato =
+    url.hostname.toLowerCase().endsWith('youtu.be')
+      ? partes[0]
+      : ['embed', 'shorts', 'live', 'v'].includes(partes[0] ?? '')
+        ? partes[1]
+        : undefined
+
+  return candidato && ID.test(candidato) ? candidato : null
+}
+
+/**
+ * La portada del vídeo. `hqdefault` existe siempre; `maxresdefault` solo si el
+ * vídeo se subió en alta, y cuando no está devuelve un 404 que se vería como
+ * una imagen rota.
+ */
+export function miniaturaDeYoutube(id: string): string {
+  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
+}
+
+/**
+ * El reproductor. `youtube-nocookie.com` no deja cookies hasta que se le da al
+ * play, y aquí el play siempre lo da la persona.
+ */
+export function incrustadoDeYoutube(id: string, autoplay = false): string {
+  return `https://www.youtube-nocookie.com/embed/${id}?rel=0${autoplay ? '&autoplay=1' : ''}`
+}
+
+/** El enlace para verlo en YouTube, que es el respaldo si el iframe no carga. */
+export function urlDeYoutube(id: string): string {
+  return `https://www.youtube.com/watch?v=${id}`
 }

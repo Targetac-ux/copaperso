@@ -13,8 +13,16 @@ const sql = readdirSync(dir)
   .map((f) => readFileSync(join(dir, f), 'utf8'))
   .join('\n')
 
+/**
+ * El cuerpo de la vista **tal y como queda al final**.
+ *
+ * Se busca la última definición, no la primera: una vista se puede recrear en
+ * una migración posterior para añadirle una columna, y mirar la primera dejaría
+ * pasar justo eso —una columna privada añadida después—, que es el accidente
+ * que este test existe para cazar.
+ */
 function viewBody(name: string): string {
-  const start = sql.indexOf(`create view ${name} as`)
+  const start = sql.lastIndexOf(`create view ${name} as`)
   expect(start, `no se encontró la vista ${name}`).toBeGreaterThan(-1)
   const end = sql.indexOf(';', start)
   return sql.slice(start, end).toLowerCase()
@@ -51,10 +59,15 @@ describe('vistas públicas', () => {
   }
 
   it('a anon no se le concede nada más que esas vistas', () => {
-    const concedido = (sql.match(/grant select on ([^;]+) to anon/gi) ?? [])
-      .flatMap((g) => g.replace(/grant select on |to anon.*/gi, '').split(','))
-      .map((v) => v.trim())
-      .sort()
+    // Sin repetidos: recrear una vista vuelve a concederla, y lo que se está
+    // comprobando es *cuáles* se conceden, no cuántas veces.
+    const concedido = [
+      ...new Set(
+        (sql.match(/grant select on ([^;]+) to anon/gi) ?? [])
+          .flatMap((g) => g.replace(/grant select on |to anon.*/gi, '').split(','))
+          .map((v) => v.trim()),
+      ),
+    ].sort()
 
     // La lista completa, a propósito: añadir una vista pública obliga a tocar
     // este test, que es el momento de preguntarse qué columnas lleva dentro.

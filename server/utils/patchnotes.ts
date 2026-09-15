@@ -10,7 +10,7 @@ export async function cargarParches(event: H3Event): Promise<PatchNote[]> {
 
   const { data, error } = await db
     .from('rule_patch')
-    .select('id, version, title, body, published_at')
+    .select('id, version, title, body, video_id, published_at')
     .order('created_at', { ascending: false })
 
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
@@ -21,6 +21,7 @@ export async function cargarParches(event: H3Event): Promise<PatchNote[]> {
       version: n.version,
       title: n.title,
       body: n.body,
+      videoId: n.video_id,
       publishedAt: n.published_at,
     })),
   )

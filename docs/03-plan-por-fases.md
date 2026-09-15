@@ -586,8 +586,8 @@ En la Home solo se pintan las redes que tengan enlace —una fila de iconos muer
 tenerla— y Twitch y PayPal caen a la constante de `shared/enlaces.ts` si faltan, porque tienen su
 propio botón y uno que no lleva a ningún sitio es peor que uno desactualizado.
 
-**Reglas, en dos mitades.** La página `/reglas` tiene dos pestañas, y la división no es
-decorativa: cada mitad cambia a un ritmo distinto y por eso vive en un sitio distinto.
+**Reglas y patch notes, en dos secciones.** La división no es decorativa: cada parte cambia a un
+ritmo distinto y por eso vive en un sitio distinto.
 
 - **Las reglas** son texto: cambian poco y cuando cambian hay que reescribirlas con cuidado, así que
   están en la propia página (`app/pages/reglas.vue`). Cubren cómo se entra, los cinco modos, la fase
@@ -595,8 +595,24 @@ decorativa: cada mitad cambia a un ritmo distinto y por eso vive en un sitio dis
 - **Los patch notes** son lo contrario: se añade uno cada cierto tiempo y no pueden esperar a un
   despliegue, así que los administra el host desde `/host/patch-notes`.
 
-Están juntos porque quien viene a leer las reglas es justo quien quiere saber qué cambió desde la
-última vez. La pestaña viaja en el hash (`/reglas#patch-notes`) para poder enlazarla.
+Empezaron como una pestaña dentro de Reglas y **se mudaron a `/patch-notes`** el 15 de septiembre de
+2026, ocupando en el menú el sitio de «Modos»: van a ser muchos, y las reglas son un texto que se lee
+una vez mientras que los parches son una lista que crece. Los modos no desaparecen —están explicados
+dentro de las reglas— y `/modos` redirige ahí con un 301, para no dar un 404 a quien tenga la
+dirección guardada. Al final de las reglas queda el enlace a los parches, porque quien termina de
+leerlas es justo quien quiere saber qué ha cambiado desde entonces.
+
+**Cada parche lleva un vídeo.** El host lo graba y lo explica ahí, así que lo escrito es el resumen
+para leer de un vistazo y el vídeo es la versión completa. Es opcional: un parche de dos líneas no
+necesita uno.
+
+- Se guarda **el id de YouTube y no la URL**: la URL cambia de forma según de dónde la copies
+  (`watch?v=`, `youtu.be/`, `/shorts/`) y del id salen tanto el reproductor como la miniatura.
+- **El reproductor no se carga hasta que alguien le da al play.** Se enseña la portada y un botón;
+  con varios parches en la página, montar todos los reproductores de golpe sería la parte más pesada
+  de la web y la mayoría no se verían.
+- Va por `youtube-nocookie.com`, que no deja cookies hasta que empieza la reproducción — y aquí el
+  play siempre lo da la persona.
 
 **El formato de un parche.** El cuerpo es texto suelto, una línea por cambio: `+ ` es algo que entra,
 `- ` es algo que sale, y el resto es texto normal. Es la convención de los changelogs de siempre y no

@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
 
   const { data, error } = await db
     .from('public_patch_notes')
-    .select('id, version, title, body, published_at')
+    .select('id, version, title, body, video_id, published_at')
     .order('published_at', { ascending: false })
 
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
     version: n.version,
     title: n.title,
     body: n.body,
+    videoId: n.video_id,
     publishedAt: n.published_at,
   }))
 })

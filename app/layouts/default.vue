@@ -8,7 +8,7 @@ const nav = [
   { to: '/en-vivo', label: 'En vivo' },
   { to: '/tier-ranking', label: 'Tier Ranking' },
   { to: '/reglas', label: 'Reglas' },
-  { to: '/modos', label: 'Modos' },
+  { to: '/patch-notes', label: 'Patch notes' },
   { to: '/premios', label: 'Premios' },
 ]
 

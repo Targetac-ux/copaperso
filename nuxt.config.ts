@@ -67,6 +67,13 @@ export default defineNuxtConfig({
    */
   routeRules: {
     '/en-vivo': { ssr: false },
+    /**
+     * `/modos` era una página en obra y su sitio en el menú lo ocupan ahora los
+     * patch notes. Los modos no desaparecen: están explicados dentro de las
+     * reglas, así que la dirección vieja lleva ahí en vez de dar un 404 a quien
+     * la tenga guardada.
+     */
+    '/modos': { redirect: { to: '/reglas', statusCode: 301 } },
   },
 
   nitro: { preset: process.env.VERCEL ? 'vercel' : undefined },

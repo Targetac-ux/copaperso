@@ -234,6 +234,8 @@ type RulePatchRow = {
   version: string | null
   title: string
   body: string
+  /** Id de YouTube, no la URL. Opcional. */
+  video_id: string | null
   published_at: string | null
   created_at: string
 }
@@ -522,12 +524,14 @@ export type Database = {
           version?: string | null
           title: string
           body?: string
+          video_id?: string | null
           published_at?: string | null
         }
         Update: {
           version?: string | null
           title?: string
           body?: string
+          video_id?: string | null
           published_at?: string | null
         }
         Relationships: []
@@ -807,6 +811,7 @@ export type Database = {
           version: string | null
           title: string
           body: string
+          video_id: string | null
           published_at: string | null
         }
         Relationships: []

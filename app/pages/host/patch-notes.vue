@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { contarCambios, leerCuerpo } from '#shared/patchnotes'
+import {
+  contarCambios,
+  idDeYoutube,
+  leerCuerpo,
+  miniaturaDeYoutube,
+  urlDeYoutube,
+} from '#shared/patchnotes'
 import type { PatchNote } from '#shared/patchnotes'
 
 /**
@@ -9,6 +15,10 @@ import type { PatchNote } from '#shared/patchnotes'
  * entra y una que empieza por `- ` es algo que sale**; el resto es texto normal.
  * Es la convención de los changelogs de siempre y no obliga a aprender ningún
  * formato: se escribe la lista y ya.
+ *
+ * **El detalle va en un vídeo.** El host graba cada parche y lo explica ahí, así
+ * que lo escrito aquí es el resumen para leer de un vistazo. El vídeo es
+ * opcional: un parche de dos líneas no necesita uno.
  *
  * Nace **sin publicar**, y se ve tal cual quedará antes de sacarlo. A diferencia
  * de una edición del Tier Ranking, publicar no lo congela: si trae una errata se
@@ -29,6 +39,10 @@ const abierto = ref<string | null>(null)
 
 /** Lo que se está escribiendo, sin mandarlo en cada tecla. */
 const borrador = ref('')
+const video = ref('')
+
+/** El id que se guardaría, para enseñar la portada antes de darle a guardar. */
+const idVideo = computed(() => idDeYoutube(video.value))
 
 async function llamar(fn: () => Promise<PatchNote[]>) {
   ocupado.value = true
@@ -64,6 +78,8 @@ function abrir(p: PatchNote) {
   }
   abierto.value = p.id
   borrador.value = p.body
+  // El enlace entero y no el id: es lo que el host reconoce de un vistazo.
+  video.value = p.videoId ? urlDeYoutube(p.videoId) : ''
 }
 
 const guardar = (p: PatchNote, campos: Record<string, unknown>) =>
@@ -85,9 +101,7 @@ const fecha = (iso: string | null) =>
       <h1>Patch notes</h1>
       <span class="cuenta">{{ data.filter((p) => p.publishedAt).length }} publicados</span>
       <span class="hueco" />
-      <NuxtLink class="btn btn--ghost" to="/reglas#patch-notes" target="_blank">
-        Ver en la web
-      </NuxtLink>
+      <NuxtLink class="btn btn--ghost" to="/patch-notes" target="_blank">Ver en la web</NuxtLink>
     </header>
 
     <p v-if="errorCarga" class="alert alert--error">
@@ -136,6 +150,7 @@ const fecha = (iso: string | null) =>
             <span class="resumen">
               <i class="mas">+{{ contarCambios(p.body).añade }}</i>
               <i class="menos">−{{ contarCambios(p.body).quita }}</i>
+              <i v-if="p.videoId" class="tiene-video" title="Lleva vídeo">▶</i>
             </span>
             <span class="cuando">{{ p.publishedAt ? fecha(p.publishedAt) : 'sin publicar' }}</span>
           </button>
@@ -174,6 +189,20 @@ const fecha = (iso: string | null) =>
             />
           </label>
 
+          <label>
+            Vídeo de YouTube <i>(opcional)</i>
+            <input
+              v-model="video"
+              type="text"
+              placeholder="https://youtu.be/…"
+              :disabled="ocupado"
+            >
+          </label>
+
+          <p v-if="video && !idVideo" class="pista pista--mal">
+            Eso no parece un vídeo de YouTube. Pega el enlace que da «Compartir».
+          </p>
+
           <div class="editor__pie">
             <p class="pista">
               Una línea por cambio. <code>+ </code> para lo que entra, <code>- </code> para lo que
@@ -181,15 +210,29 @@ const fecha = (iso: string | null) =>
             </p>
             <button
               class="btn btn--primary"
-              :disabled="ocupado || borrador === p.body"
-              @click="guardar(p, { body: borrador })"
+              :disabled="
+                ocupado ||
+                  (borrador === p.body && idVideo === p.videoId) ||
+                  (!!video && !idVideo)
+              "
+              @click="guardar(p, { body: borrador, video })"
             >
               Guardar
             </button>
           </div>
 
-          <div v-if="borrador.trim()" class="previa">
+          <div v-if="borrador.trim() || idVideo" class="previa">
             <p class="etq">Así se verá</p>
+
+            <img
+              v-if="idVideo"
+              class="previa__video"
+              :src="miniaturaDeYoutube(idVideo)"
+              :alt="''"
+              width="320"
+              height="240"
+            >
+
             <ul class="cambios">
               <li v-for="(l, i) in leerCuerpo(borrador)" :key="i" :class="`es-${l.tipo}`">
                 <span v-if="l.tipo !== 'texto'" class="signo" aria-hidden="true">
@@ -368,6 +411,7 @@ code {
 
 .mas { color: #7be0a0; }
 .menos { color: #ff8da0; }
+.tiene-video { color: var(--violet); }
 
 .cuando {
   margin-left: auto;
@@ -410,6 +454,20 @@ code {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--dim);
+}
+
+.previa__video {
+  width: 200px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.pista--mal {
+  color: var(--danger);
 }
 
 .cambios {
