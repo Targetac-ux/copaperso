@@ -23,11 +23,10 @@ iconos de 24–48 px no compensa, salvo que Lighthouse se queje en la Fase 7.
 > `blue-shell.svg` y `blue-shell.png` son la misma imagen. El código usa la versión PNG/webp; el SVG
 > está publicado pero no lo carga nadie. Si no lo quieres, se borra y son 205 kB menos.
 
-**`tier-b.svg` tiene el fondo blanco.** Las seis insignias llevan un rectángulo de fondo a pantalla
-completa; cinco lo tienen casi negro (`#040732`, `#05052d`…) y se funden con el panel, pero la de B
-lo tiene en `#f8f7fa` y se ve un cuadro blanco en la página. **Hay que regenerarla con el fondo
-oscuro**, o quitárselo a las seis para que queden transparentes. No se ha tocado el archivo: es tu
-arte y la corrección es de origen.
+**`tier-b.svg`: resuelto (15 de septiembre de 2026).** Llegó con un rectángulo de fondo a pantalla
+completa en `#f8f7fa` —las otras cinco lo tienen casi negro y se funden con el panel—, así que en la
+página se veía un cuadro blanco. El host la regeneró sin ese fondo y ya pasó por el pipeline: las
+seis se ven igual sobre el panel.
 
 **Las insignias no dicen de qué tier son.** A 60 px no se lee ninguna letra dentro, así que en la
 página pública van acompañadas del rótulo (S+, S, A…). Si alguna vez llevan la letra grabada, el
