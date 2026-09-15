@@ -95,6 +95,14 @@ function guardar() {
         ahora.
       </p>
 
+      <!-- Los iconos van aquí y no en cada botón: son diez jugadores por tres
+           botones, y treinta iconos minúsculos serían ruido, no ayuda. -->
+      <p class="leyenda">
+        <span><CopaIcon name="mvp" :size="17" />MVP +5</span>
+        <span><CopaIcon name="ace" :size="17" />ACE +10</span>
+        <span><CopaIcon name="blue-shell" :size="17" />×2 doble derrota −30</span>
+      </p>
+
       <fieldset class="ganador">
         <legend>¿Quién ganó?</legend>
         <button
@@ -215,6 +223,22 @@ h2 {
   font-size: 12px;
   color: var(--muted);
   margin: 0 0 14px;
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0 0 12px;
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  color: var(--dim);
+}
+
+.leyenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .ganador {

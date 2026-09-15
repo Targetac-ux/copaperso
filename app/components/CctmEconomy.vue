@@ -109,6 +109,7 @@ function premios(m: PartidaCargada) {
         Partidas <span class="cnt">{{ matches.length }}</span>
       </button>
       <button :class="{ on: pestana === 'prestamos' }" @click="pestana = 'prestamos'">
+        <CopaIcon name="prestamo" :size="16" />
         Préstamos <span class="cnt">{{ prestamosAbiertos.length }}</span>
       </button>
       <button :class="{ on: pestana === 'estados' }" @click="pestana = 'estados'">
@@ -241,7 +242,7 @@ function premios(m: PartidaCargada) {
     <!-- -------------------------------------------------------- estados -->
     <div v-else class="cuerpo">
       <div class="col">
-        <h3>Cárcel</h3>
+        <h3><CopaIcon name="carcel" :size="18" />Cárcel</h3>
         <ul v-if="jailed.length" class="lista">
           <li v-for="p in jailed" :key="p.sessionParticipantId">
             <span>{{ p.displayName }}</span>
@@ -258,7 +259,7 @@ function premios(m: PartidaCargada) {
       </div>
 
       <div class="col">
-        <h3>Cementerio</h3>
+        <h3><CopaIcon name="cementerio" :size="18" />Cementerio</h3>
         <ul v-if="graveyard.length" class="lista">
           <li v-for="p in graveyard" :key="p.sessionParticipantId">
             <span>{{ p.displayName }}</span>
@@ -351,6 +352,9 @@ function premios(m: PartidaCargada) {
 }
 
 h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-family: var(--f-mono);
   font-size: 9.5px;
   letter-spacing: 0.13em;

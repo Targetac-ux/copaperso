@@ -55,12 +55,16 @@ const hora = (iso: string) =>
 <template>
   <section class="canj">
     <header>
+      <CopaIcon name="bits" :size="20" />
       <h2>Canjeos en bits</h2>
       <span v-if="tripled" class="x3">×3</span>
     </header>
 
     <ul class="precios">
       <li v-for="p in prices" :key="p.id">
+        <!-- El Blue Shell es el canjeo que más se busca en la lista: lleva su
+             propio icono para encontrarlo sin leer. -->
+        <CopaIcon v-if="p.code === 'BLUE_SHELL'" name="blue-shell" :size="18" />
         <span class="etq">{{ p.label }}</span>
         <b :class="{ alto: tripled }">{{ p.effective }}</b>
       </li>

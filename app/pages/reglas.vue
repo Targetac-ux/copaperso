@@ -53,24 +53,30 @@ const MODOS = [
   },
 ]
 
-/** Los seis canjeos y su precio, tal y como están en el catálogo del torneo. */
+/**
+ * Los seis canjeos y su precio, tal y como están en el catálogo del torneo.
+ *
+ * Solo dos llevan icono: los que nombran una cosa del torneo que tiene el suyo
+ * —el cementerio y el Blue Shell—. Ponerle uno a cada fila obligaría a inventar
+ * dibujos para «cambio de Team» y acabaría siendo decoración.
+ */
 const CANJEOS = [
-  { label: 'Cupo: entrar en lugar de alguien ya seleccionado', bits: 200 },
-  { label: 'Cambio de Team', bits: 150 },
-  { label: 'Sacar a alguien de la banca', bits: 200 },
-  { label: 'Cambio de rol y reingreso', bits: 300 },
-  { label: 'Sacar del cementerio', bits: 300 },
-  { label: 'Blue Shell', bits: 500 },
-]
+  { label: 'Cupo: entrar en lugar de alguien ya seleccionado', bits: 200, icono: null },
+  { label: 'Cambio de Team', bits: 150, icono: null },
+  { label: 'Sacar a alguien de la banca', bits: 200, icono: null },
+  { label: 'Cambio de rol y reingreso', bits: 300, icono: null },
+  { label: 'Sacar del cementerio', bits: 300, icono: 'cementerio' },
+  { label: 'Blue Shell', bits: 500, icono: 'blue-shell' },
+] as const
 
 const LP = [
-  { que: 'Ganar la partida', delta: '+15' },
-  { que: 'Perderla', delta: '−15' },
-  { que: 'MVP de la partida', delta: '+5' },
-  { que: 'ACE de la partida', delta: '+10' },
-  { que: 'Jugar fuera de tu rol', delta: '+2' },
-  { que: 'Doble derrota (Blue Shell)', delta: '−30' },
-]
+  { que: 'Ganar la partida', delta: '+15', icono: null },
+  { que: 'Perderla', delta: '−15', icono: null },
+  { que: 'MVP de la partida', delta: '+5', icono: 'mvp' },
+  { que: 'ACE de la partida', delta: '+10', icono: 'ace' },
+  { que: 'Jugar fuera de tu rol', delta: '+2', icono: null },
+  { que: 'Doble derrota (Blue Shell)', delta: '−30', icono: 'blue-shell' },
+] as const
 
 </script>
 
@@ -110,7 +116,7 @@ const LP = [
       </section>
 
       <section class="hoja">
-        <h2>La fase de negociación</h2>
+        <h2><CopaIcon name="bits" :size="22" />La fase de negociación</h2>
         <p class="grande">
           Antes de cada partida se abre una fase de negociación con el cronómetro corriendo.
           Mientras dura, <strong>tanto quienes juegan como quienes miran</strong> pueden canjear
@@ -124,7 +130,12 @@ const LP = [
           </thead>
           <tbody>
             <tr v-for="c in CANJEOS" :key="c.label">
-              <td>{{ c.label }}</td>
+              <td>
+                <span class="celda">
+                  <span class="celda__ic"><CopaIcon v-if="c.icono" :name="c.icono" :size="20" /></span>
+                  {{ c.label }}
+                </span>
+              </td>
               <td class="num">{{ c.bits }}</td>
             </tr>
           </tbody>
@@ -139,7 +150,7 @@ const LP = [
       </section>
 
       <section class="hoja">
-        <h2>El Blue Shell</h2>
+        <h2><CopaIcon name="blue-shell" :size="24" />El Blue Shell</h2>
         <p>
           El canjeo más caro castiga a un jugador. La ruleta tiene cuatro resultados y
           <strong>los cuatro salen con la misma probabilidad</strong>:
@@ -165,7 +176,12 @@ const LP = [
           </thead>
           <tbody>
             <tr v-for="l in LP" :key="l.que">
-              <td>{{ l.que }}</td>
+              <td>
+                <span class="celda">
+                  <span class="celda__ic"><CopaIcon v-if="l.icono" :name="l.icono" :size="20" /></span>
+                  {{ l.que }}
+                </span>
+              </td>
               <td class="num" :class="l.delta.startsWith('+') ? 'sube' : 'baja'">{{ l.delta }}</td>
             </tr>
           </tbody>
@@ -230,9 +246,25 @@ h1 {
 }
 
 .hoja h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--f-display);
   font-size: 20px;
   margin: 0 0 12px;
+}
+
+/* El hueco del icono se reserva en todas las filas, tengan icono o no: si no,
+   las que lo llevan empujan su texto y la columna se ve escalonada. */
+.celda {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.celda__ic {
+  width: 20px;
+  flex: none;
 }
 
 .hoja p {

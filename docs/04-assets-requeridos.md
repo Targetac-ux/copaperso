@@ -30,11 +30,27 @@ También la carpeta `sponsors/`, que estaba vacía. El despliegue pasó de **2,5
 > pipeline; si alguno vuelve a hacer falta, se añade su línea y reaparece. `blue-shell.svg` tiene su
 > propia excepción en el script (`noPublicar`) para que el copiado automático de SVG no lo devuelva.
 
-**Iconos del torneo que todavía no usa ninguna pantalla:** `bits.svg` (154 kB), `ace.svg` (59 kB),
-`sub.svg` (47 kB), `mvp.svg`, `carcel.svg`, `cementerio.svg`, `dado.svg`, `prestamo.svg`, y las tres
-versiones de `blue-shell`. No son basura —son los iconos de conceptos que sí existen en el torneo—
-pero hoy las pantallas los nombran con texto. O se usan, o se quitan; ahora mismo viajan al
-despliegue sin que nadie los pida.
+**Los iconos del torneo ya están colocados (15 de septiembre de 2026).** Estaban publicados sin que
+ninguna pantalla los pidiera; ahora los pinta `CopaIcon.vue`:
+
+| Icono | Dónde |
+|---|---|
+| `bits` | Cabecera de «Canjeos en bits» y del Banco · «La fase de negociación» en las reglas |
+| `sub` | Junto al saldo en subs de cada cuenta del banco |
+| `dado` | Cabecera del panel Aleatorio (sustituye al emoji 🎲 del botón) |
+| `prestamo` | Pestaña de Préstamos |
+| `carcel` · `cementerio` | Títulos de la pestaña Estados · fila «Sacar del cementerio» en las reglas |
+| `mvp` · `ace` | Leyenda del cierre de partida · tabla de puntuación en las reglas |
+| `blue-shell` | Su fila en los canjeos, la cabecera de su modal, la leyenda del cierre, y dos sitios en las reglas |
+
+Van como `<img>` y no en línea —al revés que los logos de marca— porque son ilustraciones a varios
+colores, no glifos de una tinta. Y son decorativos: llevan `alt=""` porque siempre acompañan a una
+etiqueta que ya dice lo mismo, y un lector de pantalla no tiene que leerlo dos veces.
+
+> En el cierre de partida los iconos van **en la leyenda y no en cada botón**: son diez jugadores por
+> tres botones, y treinta iconos minúsculos serían ruido en vez de ayuda. Lo mismo en la tabla de
+> canjeos de las reglas: solo llevan icono las dos filas que nombran una cosa del torneo que tiene el
+> suyo; ponerle uno a «Cambio de Team» sería inventar un dibujo para rellenar.
 
 **`tier-b.svg`: resuelto (15 de septiembre de 2026).** Llegó con un rectángulo de fondo a pantalla
 completa en `#f8f7fa` —las otras cinco lo tienen casi negro y se funden con el panel—, así que en la

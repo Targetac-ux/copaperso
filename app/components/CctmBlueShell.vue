@@ -81,7 +81,10 @@ function guardar() {
 <template>
   <div v-if="open" class="capa" @click.self="emit('close')">
     <div class="bs" role="dialog" aria-labelledby="bs-titulo">
-      <h2 id="bs-titulo">Blue Shell</h2>
+      <header class="bs__cab">
+        <CopaIcon name="blue-shell" :size="30" />
+        <h2 id="bs-titulo">Blue Shell</h2>
+      </header>
       <p class="sub">Elige a quién le cae y gira. Hasta que guardes, no existe.</p>
 
       <p v-if="!candidates.length" class="vacio">
@@ -167,6 +170,13 @@ function guardar() {
   width: min(520px, 100%);
   max-height: 88vh;
   overflow-y: auto;
+}
+
+.bs__cab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 3px;
 }
 
 h2 {

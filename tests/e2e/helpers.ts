@@ -67,9 +67,24 @@ export async function registrarLinea(page: Page, linea: string) {
  *
  * Así que se reintenta. Antes de cada intento mira si el hueco ya lo tiene,
  * para no arrastrar dos veces cuando el primero sí funcionó y solo tardó.
+ *
+ * **Y antes de cada intento cierra el aviso, si hay uno abierto.** Cuando un
+ * arrastre cae en el hueco equivocado —otro rol, otro equipo— el panel saca el
+ * «¿Seguro?», que es un diálogo a pantalla completa: a partir de ahí ningún
+ * reintento puede funcionar, porque la capa se come el ratón, y el test se
+ * quedaba girando hasta agotar el tiempo. Se **cancela** y no se confirma: la
+ * asignación que lo levantó no es la que el test quería, así que aplicarla
+ * dejaría al jugador en el sitio equivocado.
  */
 export async function arrastrarJugador(origen: Locator, destino: Locator, nombre: string) {
+  const aviso = origen.page().getByRole('alertdialog')
+
   for (let intento = 0; intento < 3; intento++) {
+    if (await aviso.isVisible().catch(() => false)) {
+      await aviso.getByRole('button', { name: 'Cancelar' }).click()
+      await expect(aviso).toBeHidden()
+    }
+
     if (((await destino.textContent()) ?? '').includes(nombre)) return
 
     await origen.dragTo(destino)
@@ -81,5 +96,8 @@ export async function arrastrarJugador(origen: Locator, destino: Locator, nombre
     }
   }
 
+  if (await aviso.isVisible().catch(() => false)) {
+    await aviso.getByRole('button', { name: 'Cancelar' }).click()
+  }
   await expect(destino, `no se pudo arrastrar a ${nombre}`).toContainText(nombre)
 }

@@ -57,6 +57,7 @@ const conSaldo = computed(() => props.accounts.filter((a) => a.balance_bits !== 
 <template>
   <section class="banco">
     <header class="cab">
+      <CopaIcon name="bits" :size="20" />
       <h2>Banco de bits</h2>
       <span v-if="accounts.length" class="cnt">
         {{ conSaldo }} con saldo de {{ accounts.length }}
@@ -70,7 +71,9 @@ const conSaldo = computed(() => props.accounts.filter((a) => a.balance_bits !== 
           <li v-for="a in accounts" :key="a.id">
             <span>{{ a.display_name }}<em v-if="a.kind === 'supporter'"> ✦</em></span>
             <b>{{ a.balance_bits }}</b>
-            <em v-if="a.balance_subs">{{ a.balance_subs }} subs</em>
+            <em v-if="a.balance_subs" class="subs">
+              <CopaIcon name="sub" :size="15" />{{ a.balance_subs }}
+            </em>
           </li>
         </ul>
         <p v-else class="vacio">Nadie tiene saldo todavía.</p>

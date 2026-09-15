@@ -34,10 +34,13 @@ function asignar() {
 
 <template>
   <section class="rnd">
-    <h2>Aleatorio</h2>
+    <header>
+      <CopaIcon name="dado" :size="20" />
+      <h2>Aleatorio</h2>
+    </header>
 
     <button class="btn btn--primary tirar" :disabled="busy || !available" @click="emit('roll')">
-      🎲 Sortear jugador
+      Sortear jugador
     </button>
     <p class="disp num">{{ available }} disponibles en la banca</p>
 
@@ -85,6 +88,12 @@ function asignar() {
   padding: 14px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+header {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
