@@ -33,18 +33,11 @@ const jobs = [
   { from: 'brand/keyart.png', to: 'brand/keyart.webp', width: 1424, format: 'webp', quality: 78, flatten: true },
   { from: 'brand/keyart.png', to: 'brand/keyart-900.webp', width: 900, format: 'webp', quality: 76, flatten: true },
   { from: 'brand/keyart.png', to: 'brand/keyart.jpg', width: 1424, format: 'jpeg', quality: 80 },
-  // La versión cuadrada sirve para avatares de Twitch, Discord e Instagram.
-  { from: 'brand/keyart-cuadrado.png', to: 'brand/keyart-cuadrado.webp', width: 800, format: 'webp', quality: 80, flatten: true },
 
-  // El trofeo del hero: webp con alfa + png de respaldo.
-  { from: 'brand/trofeo-hero.png', to: 'brand/trofeo-hero.webp', width: 1000, format: 'webp', quality: 82 },
-  { from: 'brand/trofeo-hero.png', to: 'brand/trofeo-hero.png', width: 1000, format: 'png' },
   // og-image: 1200x630 exacto y en jpeg, que es lo que leen todos los scrapers.
   { from: 'brand/og-image.png', to: 'brand/og-image.jpg', width: 1200, height: 630, format: 'jpeg', quality: 82 },
 
   // --- fondos ------------------------------------------------------------
-  { from: 'backgrounds/hero-bg.jpg', to: 'backgrounds/hero-bg.webp', width: 1920, format: 'webp', quality: 70 },
-  { from: 'backgrounds/hero-bg.jpg', to: 'backgrounds/hero-bg.jpg', width: 1920, format: 'jpeg', quality: 74 },
   // La textura se pinta como una sola copia que cubre la pantalla —el mosaico no
   // casa por los bordes y se le verían las costuras— así que hace falta a su
   // tamaño de origen y no a 600 px, o se ve borrosa en un monitor grande.
@@ -66,7 +59,17 @@ const jobs = [
 ]
 
 // Los SVG sueltos (modos, tiers, ui) se copian tal cual, sin tocar.
-const passthroughDirs = ['modes', 'tiers', 'ui', 'sponsors']
+const passthroughDirs = ['modes', 'tiers', 'ui']
+
+/**
+ * Lo que vive en `assets/` pero no se publica.
+ *
+ * `blue-shell.svg` es la misma imagen que `blue-shell.png`, vectorizada: pesa
+ * 210 kB —vectorizar un PNG deja miles de puntos por trazo— y no la carga
+ * nadie. **El original no se toca**: es arte del host y sigue donde estaba;
+ * simplemente no viaja al despliegue.
+ */
+const noPublicar = new Set(['ui/blue-shell.svg'])
 
 const kb = (n) => `${Math.round(n / 102.4) / 10} kB`
 
@@ -115,6 +118,7 @@ async function run() {
       // Lo que tiene su propio trabajo arriba ya salió con el tamaño correcto;
       // copiarlo aquí lo devolvería al original de 1,4 MB.
       if (conTrabajoPropio.has(`${dir}/${file}`)) continue
+      if (noPublicar.has(`${dir}/${file}`)) continue
       const target = join(out, dir, file)
 
       if (file.endsWith('.svg')) {

@@ -20,8 +20,21 @@ navegador y png de respaldo, al tamaño en que se usan— y el total bajó de **
 imagen. Ya pasan por SVGO; para bajarlos más habría que redibujarlos como vector de verdad. Para
 iconos de 24–48 px no compensa, salvo que Lighthouse se queje en la Fase 7.
 
-> `blue-shell.svg` y `blue-shell.png` son la misma imagen. El código usa la versión PNG/webp; el SVG
-> está publicado pero no lo carga nadie. Si no lo quieres, se borra y son 205 kB menos.
+**Lo que se dejó de publicar (15 de septiembre de 2026).** Seis derivados que no carga ninguna
+página se han quitado de `public/`, y con ellos sus trabajos del pipeline: `trofeo-hero` (png y webp,
+lo sustituyó el key art), `keyart-cuadrado.webp` (es para avatares de redes, no para la web),
+`hero-bg` (jpg y webp) y `blue-shell.svg` (la misma imagen que el PNG, vectorizada: 210 kB de puntos).
+También la carpeta `sponsors/`, que estaba vacía. El despliegue pasó de **2,5 MB a 1,7 MB**.
+
+> **Tus originales siguen intactos en `assets/`.** Lo que se borró son los derivados que genera el
+> pipeline; si alguno vuelve a hacer falta, se añade su línea y reaparece. `blue-shell.svg` tiene su
+> propia excepción en el script (`noPublicar`) para que el copiado automático de SVG no lo devuelva.
+
+**Iconos del torneo que todavía no usa ninguna pantalla:** `bits.svg` (154 kB), `ace.svg` (59 kB),
+`sub.svg` (47 kB), `mvp.svg`, `carcel.svg`, `cementerio.svg`, `dado.svg`, `prestamo.svg`, y las tres
+versiones de `blue-shell`. No son basura —son los iconos de conceptos que sí existen en el torneo—
+pero hoy las pantallas los nombran con texto. O se usan, o se quitan; ahora mismo viajan al
+despliegue sin que nadie los pida.
 
 **`tier-b.svg`: resuelto (15 de septiembre de 2026).** Llegó con un rectángulo de fondo a pantalla
 completa en `#f8f7fa` —las otras cinco lo tienen casi negro y se funden con el panel—, así que en la
