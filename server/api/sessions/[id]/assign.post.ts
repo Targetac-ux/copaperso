@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { serverSupabaseServiceRole } from '#supabase/server'
-import { checkAssignment, findMember, isOffRole } from '#shared/draft'
+import { checkAssignment, findMember, importanLosRoles, isOffRole } from '#shared/draft'
 import type { Database } from '#shared/types/database.types'
 
 const body = z.object({
@@ -37,7 +37,10 @@ export default defineEventHandler(async (event) => {
 
   const anterior = findMember(state, input.session_participant_id)
   const jugador = state.bench.find((b) => b.sessionParticipantId === input.session_participant_id)
-  const offRole = isOffRole(jugador?.roles ?? [], input.role)
+  // En ARAM AFK nadie va off-role: no hay posiciones que respetar, así que
+  // tampoco hay +2 LP por jugar fuera de la tuya.
+  const offRole =
+    importanLosRoles(state.mode) && isOffRole(jugador?.roles ?? [], input.role)
   const ids = await teamIds(event, sessionId)
 
   if (anterior) {

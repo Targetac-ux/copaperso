@@ -10,6 +10,10 @@ const body = z.object({
 /**
  * Abre una CopaPerso. Numera sola dentro del periodo y crea de una vez los dos
  * equipos vacíos, para que el CCTM no tenga que crearlos a mitad del draft.
+ *
+ * **Una abierta a la vez.** El CCTM trabaja siempre sobre la sesión abierta; con
+ * dos, elegía la más nueva y la otra se quedaba en el limbo, imposible de
+ * alcanzar desde el panel. Para abrir la siguiente hay que cerrar la de hoy.
  */
 export default defineEventHandler(async (event) => {
   const staff = await requireStaff(event)
@@ -33,6 +37,20 @@ export default defineEventHandler(async (event) => {
       })
     }
     periodId = activo.id
+  }
+
+  const { data: abierta } = await db
+    .from('session')
+    .select('number')
+    .neq('status', 'closed')
+    .limit(1)
+    .maybeSingle()
+
+  if (abierta) {
+    throw createError({
+      statusCode: 409,
+      statusMessage: `La sesión #${abierta.number} sigue abierta. Ciérrala antes de abrir otra.`,
+    })
   }
 
   const { data: previas } = await db

@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { DraftState, DraftTeam, BenchPlayer, DraftMember } from '#shared/draft'
-import type { Database, PlayerRoleDb, EloTierDb } from '#shared/types/database.types'
+import type { Database, PlayerRoleDb, EloTierDb, SessionMode } from '#shared/types/database.types'
 
 /**
  * Carga la mesa de control entera de una sesión: quién está en la banca y cómo
@@ -10,6 +10,10 @@ import type { Database, PlayerRoleDb, EloTierDb } from '#shared/types/database.t
  */
 export async function loadDraftState(event: H3Event, sessionId: string): Promise<DraftState> {
   const db = serverSupabaseServiceRole<Database>(event)
+
+  // El modo viaja con la mesa porque manda sobre las reglas: en ARAM AFK los
+  // roles no cuentan y los Demon no hay que repartirlos.
+  const { data: sesion } = await db.from('session').select('mode').eq('id', sessionId).maybeSingle()
 
   const { data: participantes, error: errP } = await db
     .from('session_participant')
@@ -74,7 +78,7 @@ export async function loadDraftState(event: H3Event, sessionId: string): Promise
     return { teamNumber: n as 1 | 2, members }
   }) as [DraftTeam, DraftTeam]
 
-  return { bench, teams }
+  return { bench, teams, mode: (sesion?.mode ?? 'perso') as SessionMode }
 }
 
 /** Los ids de los dos equipos de una sesión, para no repetir la consulta. */

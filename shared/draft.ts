@@ -1,4 +1,4 @@
-import type { PlayerRoleDb, EloTierDb } from './types/database.types'
+import type { PlayerRoleDb, EloTierDb, SessionMode } from './types/database.types'
 
 /**
  * Reglas del draft (§9, §10, §11).
@@ -11,6 +11,37 @@ import type { PlayerRoleDb, EloTierDb } from './types/database.types'
 
 export const ROLES: PlayerRoleDb[] = ['TOP', 'JG', 'MID', 'ADC', 'SUP']
 export const TEAM_SIZE = 5
+
+/**
+ * En la **Copa ARAM AFK los roles no existen**: se juega una sola línea y cada
+ * quien tiene una vida, así que da igual quién va de qué y da igual cómo
+ * queden repartidos los Demon (confirmado por el host el 15 de septiembre de
+ * 2026). Un equipo puede llevar dos y el otro ninguno sin que eso sea nada.
+ *
+ * De ahí cuelgan tres cosas, y conviene verlas juntas porque son la misma:
+ * en ese modo no se avisa de rol repetido, no se avisa de desequilibrio de
+ * Demon, y **nadie juega off-role** —así que tampoco se llevan los +2 LP, que
+ * premian jugar en una posición que no es la tuya cuando las posiciones
+ * significan algo—.
+ *
+ * El rol se sigue guardando en `team_member` porque la columna lo exige y
+ * porque los cinco huecos son lo que hace legible la mesa; simplemente no
+ * quiere decir nada.
+ */
+export function importanLosRoles(mode: SessionMode): boolean {
+  return mode !== 'aram_afk'
+}
+
+/**
+ * El rol con el que entra alguien cuando los roles no significan nada.
+ *
+ * `team_member.role` no admite nulos y los cinco puestos son lo que da forma a
+ * la mesa, así que en ARAM AFK hay que poner *algo*. Se pone el primero suyo
+ * —para que al menos no sea un dato inventado— y MID si no tiene ninguno.
+ */
+export function rolPorDefecto(roles: PlayerRoleDb[]): PlayerRoleDb {
+  return roles[0] ?? 'MID'
+}
 
 export interface DraftMember {
   sessionParticipantId: string
@@ -37,6 +68,8 @@ export interface BenchPlayer {
 export interface DraftState {
   bench: BenchPlayer[]
   teams: [DraftTeam, DraftTeam]
+  /** El modo manda sobre las reglas: en ARAM AFK los roles no cuentan. */
+  mode: SessionMode
 }
 
 /** Algo que impide la acción. */
@@ -113,7 +146,12 @@ export function demonBalance(state: DraftState): DemonBalance {
   const t1 = demonCount(state, 1)
   const t2 = demonCount(state, 2)
   const enBanca = state.bench.some((b) => isDemon(b.elo))
-  return { t1, t2, diff: Math.abs(t1 - t2), any: t1 + t2 > 0 || enBanca }
+
+  // `any` es lo que decide si el recuento se pinta en la cabecera de cada
+  // equipo. En ARAM AFK no se pinta: enseñar un marcador de una regla que no
+  // se aplica solo confunde al host a mitad del reparto.
+  const any = importanLosRoles(state.mode) && (t1 + t2 > 0 || enBanca)
+  return { t1, t2, diff: Math.abs(t1 - t2), any }
 }
 
 /** Cuánto se separarían los equipos si se asigna a alguien a `teamNumber`. */
@@ -177,6 +215,11 @@ export function checkAssignment(
   if (!yaEstaAqui && target.members.length >= TEAM_SIZE) {
     errors.push({ code: 'team_full', message: `El Team ${teamNumber} ya tiene ${TEAM_SIZE} jugadores.` })
   }
+
+  // En ARAM AFK se para aquí: sin roles no hay rol repetido, no hay off-role y
+  // los Demon no tienen que repartirse. Lo único que sigue en pie es que un
+  // equipo no admite un sexto.
+  if (!importanLosRoles(state.mode)) return { errors, warnings }
 
   const ocupando = target.members.filter(
     (m) => m.role === role && m.sessionParticipantId !== sessionParticipantId,

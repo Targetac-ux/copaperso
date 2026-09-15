@@ -9,6 +9,28 @@ const nav = [
   { to: '/modos', label: 'Modos' },
   { to: '/premios', label: 'Premios' },
 ]
+
+/**
+ * El menú de móvil.
+ *
+ * Por debajo de 760 px la fila de enlaces no cabe junto al logo y al botón de
+ * Twitch, así que se pliega detrás de este botón. Antes simplemente se
+ * escondía y no la sustituía nada: desde un teléfono solo se llegaba a la
+ * portada.
+ */
+const abierto = ref(false)
+const ruta = useRoute()
+
+// Al cambiar de página se cierra solo: si no, el menú tapa lo que acabas de
+// abrir. Y con Escape, que es lo que espera cualquiera con un panel abierto.
+watch(() => ruta.fullPath, () => (abierto.value = false))
+onMounted(() => {
+  const alPulsar = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') abierto.value = false
+  }
+  window.addEventListener('keydown', alPulsar)
+  onBeforeUnmount(() => window.removeEventListener('keydown', alPulsar))
+})
 </script>
 
 <template>
@@ -21,11 +43,30 @@ const nav = [
         <nav class="site__nav">
           <NuxtLink v-for="item in nav" :key="item.to" :to="item.to">{{ item.label }}</NuxtLink>
         </nav>
-        <a class="btn btn--primary" :href="CANAL_TWITCH" target="_blank" rel="noopener">
+        <a class="btn btn--primary site__twitch" :href="CANAL_TWITCH" target="_blank" rel="noopener">
           <AppBrandIcon name="twitch" />
-          Ver en Twitch
+          <span>Ver en Twitch</span>
         </a>
+
+        <button
+          class="site__menu"
+          type="button"
+          :aria-expanded="abierto"
+          aria-controls="menu-movil"
+          aria-label="Menú"
+          @click="abierto = !abierto"
+        >
+          <span class="site__hamburguesa" :class="{ 'is-x': abierto }" aria-hidden="true" />
+        </button>
       </div>
+
+      <nav v-show="abierto" id="menu-movil" class="site__movil">
+        <NuxtLink v-for="item in nav" :key="item.to" :to="item.to">{{ item.label }}</NuxtLink>
+        <a class="site__movil-canal" :href="CANAL_TWITCH" target="_blank" rel="noopener">
+          <AppBrandIcon name="twitch" :size="17" />
+          <span>Ver en Twitch</span>
+        </a>
+      </nav>
     </header>
 
     <main>
@@ -137,9 +178,110 @@ main {
   color: var(--violet);
 }
 
+/* El botón de la hamburguesa solo existe en móvil; en escritorio manda la
+   fila de enlaces. */
+.site__menu {
+  display: none;
+  background: none;
+  border: 0;
+  padding: 10px 4px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+/* Tres rayas que se cruzan al abrir: la de en medio se desvanece y las otras
+   dos giran sobre el mismo punto. */
+.site__hamburguesa,
+.site__hamburguesa::before,
+.site__hamburguesa::after {
+  display: block;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.site__hamburguesa::before,
+.site__hamburguesa::after {
+  content: '';
+  position: relative;
+}
+
+.site__hamburguesa::before {
+  top: -7px;
+}
+
+.site__hamburguesa::after {
+  top: 5px;
+}
+
+.site__hamburguesa.is-x {
+  background: transparent;
+}
+
+.site__hamburguesa.is-x::before {
+  top: -2px;
+  transform: rotate(45deg);
+}
+
+.site__hamburguesa.is-x::after {
+  top: -4px;
+  transform: rotate(-45deg);
+}
+
+.site__movil {
+  display: none;
+}
+
 @media (max-width: 760px) {
   .site__nav {
     display: none;
+  }
+
+  .site__menu {
+    display: block;
+  }
+
+  /* El botón de Twitch se queda, pero solo con el logo: el texto no cabe al
+     lado de la hamburguesa y el icono ya dice a dónde va. Los dos se van a la
+     derecha, que es donde el pulgar los alcanza. */
+  .site__twitch {
+    margin-left: auto;
+    padding: 9px 12px;
+  }
+
+  .site__twitch span {
+    display: none;
+  }
+
+  .site__movil {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 24px 14px;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .site__movil a {
+    padding: 13px 4px;
+    font-size: 16px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .site__movil a:last-child {
+    border-bottom: 0;
+  }
+
+  .site__movil a.router-link-active {
+    color: var(--text);
+  }
+
+  .site__movil-canal {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #a970ff !important;
   }
 }
 </style>

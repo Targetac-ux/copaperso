@@ -555,6 +555,11 @@ el propio reproductor. El precio de esa decisión es que el apartado no puede tr
 vistos del mes»; a cambio, no hay secretos que rotar ni un servicio externo del que dependa que la
 Home cargue.
 
+**Menú en móvil.** Por debajo de 760 px la fila de enlaces no cabe junto al logo y al botón de
+Twitch, y antes simplemente se escondía sin que la sustituyera nada: desde un teléfono solo se
+llegaba a la portada. Ahora se pliega detrás de un botón, que se cierra solo al cambiar de página y
+con Escape. El botón de Twitch se queda en la barra, con el logo pero sin texto.
+
 **Los logotipos de Twitch y PayPal** van en línea (`AppBrandIcon.vue`), no como `<img>`: así heredan
 el color del texto con `currentColor` y el mismo icono sirve sobre el morado del botón principal y
 sobre el gris del pie. Los trazos son los oficiales, copiados de `simple-icons` (v16.31.0) y anotados

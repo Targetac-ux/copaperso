@@ -1,14 +1,10 @@
 <script setup lang="ts">
+import { MODE_LABEL, SESSION_MODES } from '#shared/types/models'
+import type { SessionMode } from '#shared/types/database.types'
+
 definePageMeta({ layout: 'host' })
 useSeoMeta({ title: 'Periodos y sesiones', robots: 'noindex' })
 
-const MODOS = [
-  { value: 'perso', label: 'Copa Perso' },
-  { value: 'tryhard', label: 'Copa Tryhard' },
-  { value: 'random', label: 'Copa Random' },
-  { value: 'analisis', label: 'Copa Análisis' },
-  { value: 'aram_afk', label: 'Copa ARAM AFK' },
-] as const
 
 const { data: periodos, refresh: refrescarPeriodos } = await useFetch('/api/periods', {
   default: () => [],
@@ -18,7 +14,7 @@ const { data: sesiones, refresh: refrescarSesiones } = await useFetch('/api/sess
 })
 
 const activo = computed(() => periodos.value.find((p) => p.status === 'active') ?? null)
-const modo = ref<(typeof MODOS)[number]['value']>('perso')
+const modo = ref<SessionMode>('perso')
 const error = ref('')
 const ocupado = ref(false)
 
@@ -47,6 +43,36 @@ async function abrirMes() {
   }
 }
 
+/**
+ * Cerrar y reabrir una sesión.
+ *
+ * Solo puede haber una abierta —el CCTM trabaja sobre ella— así que cerrar es
+ * lo que deja sitio para la siguiente. Reabrir existe porque cerrar es un clic
+ * y equivocarse también; nada se borra al cerrar.
+ */
+async function cambiarEstado(s: { id: string; number: number; status: string }) {
+  const cerrar = s.status !== 'closed'
+  if (
+    cerrar &&
+    !confirm(`¿Cerrar la sesión #${s.number}? No se borra nada y se puede reabrir desde aquí.`)
+  ) {
+    return
+  }
+
+  ocupado.value = true
+  error.value = ''
+  try {
+    await $fetch(`/api/sessions/${s.id}/${cerrar ? 'close' : 'reopen'}`, { method: 'POST' })
+    await Promise.all([refrescarSesiones(), refrescarPeriodos()])
+  } catch (e) {
+    error.value =
+      (e as { statusMessage?: string }).statusMessage ??
+      `No se pudo ${cerrar ? 'cerrar' : 'reabrir'} la sesión.`
+  } finally {
+    ocupado.value = false
+  }
+}
+
 async function nuevaSesion() {
   ocupado.value = true
   error.value = ''
@@ -60,7 +86,7 @@ async function nuevaSesion() {
   }
 }
 
-const etiquetaModo = (v: string) => MODOS.find((m) => m.value === v)?.label ?? v
+const etiquetaModo = (v: SessionMode) => MODE_LABEL[v] ?? v
 const ESTADO: Record<string, string> = { open: 'Abierta', live: 'En vivo', closed: 'Cerrada' }
 </script>
 
@@ -102,13 +128,18 @@ const ESTADO: Record<string, string> = { open: 'Abierta', live: 'En vivo', close
         <h2>Sesiones</h2>
         <div class="acciones">
           <select v-model="modo" aria-label="Modo de juego">
-            <option v-for="m in MODOS" :key="m.value" :value="m.value">{{ m.label }}</option>
+            <option v-for="m in SESSION_MODES" :key="m.value" :value="m.value">{{ m.label }}</option>
           </select>
           <button class="btn btn--primary" :disabled="ocupado || !activo" @click="nuevaSesion">
             Nueva sesión
           </button>
         </div>
       </div>
+
+      <p class="nota nota--arriba">
+        Solo puede haber una sesión abierta: el CCTM trabaja siempre sobre ella. Cerrar la de hoy
+        es lo que deja sitio para la siguiente, y no borra nada.
+      </p>
 
       <p v-if="!sesiones.length" class="vacio">Todavía no hay ninguna CopaPerso en este periodo.</p>
       <ul v-else class="sesiones">
@@ -117,6 +148,9 @@ const ESTADO: Record<string, string> = { open: 'Abierta', live: 'En vivo', close
           <span class="ses__modo">{{ etiquetaModo(s.mode) }}</span>
           <span class="ses__estado" :class="`is-${s.status}`">{{ ESTADO[s.status] }}</span>
           <time class="num">{{ new Date(s.started_at).toLocaleDateString('es-MX') }}</time>
+          <button class="btn btn--ghost ses__btn" :disabled="ocupado" @click="cambiarEstado(s)">
+            {{ s.status === 'closed' ? 'Reabrir' : 'Cerrar' }}
+          </button>
         </li>
       </ul>
     </section>
@@ -218,6 +252,16 @@ h2 {
   font-size: 13px;
   color: var(--dim);
   max-width: 66ch;
+}
+
+.nota--arriba {
+  margin-bottom: 12px;
+}
+
+.ses__btn {
+  margin-left: 12px;
+  padding: 5px 12px;
+  font-size: 12.5px;
 }
 
 .sesiones,

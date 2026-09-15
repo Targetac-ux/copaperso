@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ROLES, findMember } from '#shared/draft'
+import { ROLES, findMember, importanLosRoles, rolPorDefecto } from '#shared/draft'
 import type { DraftState } from '#shared/draft'
 import type { PlayerRole } from '#shared/types/models'
 
@@ -25,6 +25,9 @@ const jugador = computed(() =>
 )
 const enEquipo = computed(() => findMember(props.draft, props.selectedId))
 
+/** En ARAM AFK no se elige rol: no significa nada. */
+const conRoles = computed(() => importanLosRoles(props.draft.mode))
+
 const rol = ref<PlayerRole | null>(null)
 const equipo = ref<1 | 2 | null>(null)
 
@@ -37,7 +40,12 @@ watch(
   { immediate: true },
 )
 
-const puedeAsignar = computed(() => !!rol.value && !!equipo.value)
+const puedeAsignar = computed(() => (conRoles.value ? !!rol.value : true) && !!equipo.value)
+
+/** El rol que se manda: el elegido, o uno cualquiera si no cuentan. */
+const rolAEnviar = computed(() =>
+  conRoles.value ? rol.value! : rolPorDefecto(jugador.value?.roles ?? []),
+)
 </script>
 
 <template>
@@ -53,7 +61,11 @@ const puedeAsignar = computed(() => !!rol.value && !!equipo.value)
         <span v-for="r in jugador.roles" :key="r" class="rl">{{ r }}</span>
         <em v-if="!jugador.roles.length">sin rol</em>
         <span class="donde">
-          {{ enEquipo ? `Team ${enEquipo.team.teamNumber} · ${enEquipo.member.role}` : 'en la banca' }}
+          <template v-if="!enEquipo">en la banca</template>
+          <template v-else-if="conRoles">
+            Team {{ enEquipo.team.teamNumber }} · {{ enEquipo.member.role }}
+          </template>
+          <template v-else>Team {{ enEquipo.team.teamNumber }}</template>
         </span>
       </span>
     </div>
@@ -63,11 +75,12 @@ const puedeAsignar = computed(() => !!rol.value && !!equipo.value)
     </template>
 
     <p class="etq">Asignar a</p>
-    <div class="ops">
+    <div v-if="conRoles" class="ops">
       <button v-for="r in ROLES" :key="r" class="chip" :class="{ 'is-on': rol === r, 'is-suyo': jugador.roles.includes(r) }" @click="rol = r">
         {{ r }}
       </button>
     </div>
+    <p v-else class="sin-roles">En ARAM AFK no se elige rol: una línea y una vida.</p>
     <div class="ops">
       <button class="chip t1" :class="{ 'is-on': equipo === 1 }" @click="equipo = 1">Team 1</button>
       <button class="chip t2" :class="{ 'is-on': equipo === 2 }" @click="equipo = 2">Team 2</button>
@@ -75,7 +88,7 @@ const puedeAsignar = computed(() => !!rol.value && !!equipo.value)
     <button
       class="btn btn--primary ancho"
       :disabled="!puedeAsignar || busy"
-      @click="emit('assign', { id: selectedId, team: equipo!, role: rol! })"
+      @click="emit('assign', { id: selectedId, team: equipo!, role: rolAEnviar })"
     >
       {{ enEquipo ? 'Mover aquí' : 'Asignar' }}
     </button>
@@ -190,6 +203,12 @@ h2 {
   font-family: var(--f-mono);
   font-size: 10.5px;
   color: var(--gold);
+}
+
+.sin-roles {
+  margin: 0;
+  font-size: 12px;
+  color: var(--dim);
 }
 
 .etq {

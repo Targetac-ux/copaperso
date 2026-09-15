@@ -1,21 +1,15 @@
 <script setup lang="ts">
-import { demonBalance } from '#shared/draft'
+import { demonBalance, importanLosRoles, rolPorDefecto } from '#shared/draft'
 import { partidaEnCurso } from '#shared/match'
 import type { BenchPlayer } from '#shared/draft'
 import type { CierreDePartida } from '#shared/lp'
 import type { PartidaCargada } from '#shared/match'
+import { MODE_LABEL, SESSION_MODES } from '#shared/types/models'
 import type { PlayerRole, Player, PlayerRole as Rol } from '#shared/types/models'
+import type { SessionMode } from '#shared/types/database.types'
 
 definePageMeta({ layout: 'host' })
 useSeoMeta({ title: 'CCTM Manager', robots: 'noindex' })
-
-const MODOS: Record<string, string> = {
-  perso: 'Copa Perso',
-  tryhard: 'Copa Tryhard',
-  random: 'Copa Random',
-  analisis: 'Copa Análisis',
-  aram_afk: 'Copa ARAM AFK',
-}
 
 interface Participacion {
   id: string
@@ -337,12 +331,47 @@ async function meterEnBanca(participationId: string) {
   await recargar()
 }
 
+/** El modo con el que se abrirá la próxima. Se elige antes de abrirla. */
+const modoNuevo = ref<SessionMode>('perso')
+
 async function nuevaSesion() {
   creando.value = true
+  error.value = ''
   try {
-    await $fetch('/api/sessions', { method: 'POST', body: { mode: 'perso' } })
+    await $fetch('/api/sessions', { method: 'POST', body: { mode: modoNuevo.value } })
     await refrescarSesiones()
     await recargar()
+  } catch (e) {
+    error.value = (e as { statusMessage?: string }).statusMessage ?? 'No se pudo abrir la sesión.'
+  } finally {
+    creando.value = false
+  }
+}
+
+/**
+ * Cerrar la copa del día. Es lo que deja sitio para la siguiente: mientras haya
+ * una abierta no se puede abrir otra. Nada se borra —la bitácora, las partidas
+ * y el roster siguen donde estaban— y si es un error se reabre desde Periodos.
+ */
+async function cerrarSesion() {
+  if (!activa.value) return
+  if (
+    !confirm(
+      `¿Cerrar la sesión #${activa.value.number}? Deja de estar en el panel y podrás abrir la ` +
+        'siguiente. No se borra nada, y se puede reabrir desde Periodos.',
+    )
+  ) {
+    return
+  }
+
+  creando.value = true
+  error.value = ''
+  try {
+    await $fetch(`/api/sessions/${activa.value.id}/close`, { method: 'POST' })
+    await refrescarSesiones()
+    await recargar()
+  } catch (e) {
+    error.value = (e as { statusMessage?: string }).statusMessage ?? 'No se pudo cerrar la sesión.'
   } finally {
     creando.value = false
   }
@@ -354,8 +383,15 @@ async function tras(accion: Promise<unknown>) {
   await recargar()
 }
 
-function alSoltar(payload: { id: string; role: PlayerRole }, team: 1 | 2) {
-  tras(assign(payload.id, team, payload.role))
+/** Si los roles cuentan en el modo de la sesión abierta. */
+const conRoles = computed(() => (draft.value ? importanLosRoles(draft.value.mode) : true))
+
+function alSoltar(payload: { id: string; role?: PlayerRole }, team: 1 | 2) {
+  // En ARAM AFK se suelta sobre el equipo, no sobre un puesto: el rol lo pone
+  // aquí, porque la columna lo exige y en ese modo da igual cuál sea.
+  const jugador = draft.value?.bench.find((b) => b.sessionParticipantId === payload.id)
+  const role = payload.role ?? rolPorDefecto(jugador?.roles ?? [])
+  tras(assign(payload.id, team, role))
 }
 
 function alSeleccionar(id: string) {
@@ -391,9 +427,25 @@ const hora = (iso: string) =>
       <p class="vacio__txt">
         Abre una sesión para empezar a registrar gente, sortear y formar los equipos.
       </p>
-      <button class="btn btn--primary" :disabled="creando" @click="nuevaSesion">
-        {{ creando ? 'Abriendo…' : 'Abrir sesión' }}
-      </button>
+
+      <div class="vacio__abrir">
+        <label>
+          Modo
+          <select v-model="modoNuevo" :disabled="creando">
+            <option v-for="m in SESSION_MODES" :key="m.value" :value="m.value">{{ m.label }}</option>
+          </select>
+        </label>
+        <button class="btn btn--primary" :disabled="creando" @click="nuevaSesion">
+          {{ creando ? 'Abriendo…' : 'Abrir sesión' }}
+        </button>
+      </div>
+
+      <p v-if="error" class="alert alert--error vacio__error">{{ error }}</p>
+
+      <p v-if="modoNuevo === 'aram_afk'" class="vacio__nota">
+        En ARAM AFK los roles no cuentan: no se avisa de rol repetido, nadie juega off-role y los
+        Demon no hay que repartirlos 1:1.
+      </p>
     </section>
 
     <template v-else>
@@ -402,7 +454,7 @@ const hora = (iso: string) =>
         <span class="chip" :class="`is-${activa.status}`">
           {{ activa.status === 'live' ? 'En vivo' : 'Abierta' }}
         </span>
-        <span class="chip">{{ MODOS[activa.mode] ?? activa.mode }}</span>
+        <span class="chip">{{ MODE_LABEL[activa.mode] ?? activa.mode }}</span>
         <span class="hueco" />
         <CctmTimer
           :timer="cronometro"
@@ -420,6 +472,11 @@ const hora = (iso: string) =>
         />
         <button class="btn btn--ghost" :disabled="busy" @click="tras(benchAll())">
           Devolver equipos a banca
+        </button>
+        <!-- «Cerrar la copa», no «Cerrar sesión»: eso último es el botón de
+             salir del panel, y confundirlos en directo sería caro. -->
+        <button class="btn btn--ghost es-cerrar" :disabled="busy || creando" @click="cerrarSesion">
+          Cerrar la copa
         </button>
       </div>
 
@@ -447,6 +504,7 @@ const hora = (iso: string) =>
               :selected="seleccionado"
               :swap-from="swapDesde"
               :demons="demonsDe(t.teamNumber)"
+              :con-roles="conRoles"
               @drop="(p) => alSoltar(p, t.teamNumber)"
               @select="alSeleccionar"
             />
@@ -612,6 +670,49 @@ h1 {
   color: var(--muted);
   max-width: 52ch;
   margin: 0;
+}
+
+.vacio__abrir {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.vacio__abrir label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.vacio__abrir select {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.vacio__nota,
+.vacio__error {
+  max-width: 62ch;
+  margin: 0;
+}
+
+.vacio__nota {
+  font-size: 13px;
+  color: var(--dim);
+}
+
+/* Cerrar la sesión es lo único de la barra que no tiene vuelta de un clic, así
+   que se marca al pasar por encima. */
+.es-cerrar:hover {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .barra {

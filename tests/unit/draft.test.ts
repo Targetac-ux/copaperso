@@ -43,6 +43,7 @@ function estado(overrides: Partial<DraftState> = {}): DraftState {
       { teamNumber: 1, members: [] },
       { teamNumber: 2, members: [] },
     ],
+    mode: 'perso',
     ...overrides,
   }
 }
@@ -299,6 +300,57 @@ describe('balance de Demons', () => {
 
   it('sin ningún Demon, el recuento no se enseña', () => {
     expect(demonBalance(estado()).any).toBe(false)
+  })
+
+  // En ARAM AFK no hay líneas ni posiciones, así que la regla del 1:1 no tiene
+  // sentido: un equipo puede llevar dos Demon y el otro ninguno.
+  describe('en la Copa ARAM AFK', () => {
+    const aram = () => {
+      const s = conUnDemonEnT1()
+      s.mode = 'aram_afk'
+      return s
+    }
+
+    it('dos Demon en el mismo equipo no avisan', () => {
+      const r = checkAssignment(aram(), 'd2', 1, 'TOP')
+      expect(r.warnings.map((w) => w.code)).not.toContain('demon_balance')
+    })
+
+    it('el recuento de Demon no se enseña', () => {
+      expect(demonBalance(aram()).any).toBe(false)
+    })
+
+    it('el rol repetido tampoco avisa', () => {
+      const s = aram()
+      s.teams[0].members.push(miembro('n1', 'Normal Uno', 'MID'))
+      const r = checkAssignment(s, 'd2', 1, 'MID')
+      expect(r.warnings.map((w) => w.code)).not.toContain('duplicate_role')
+    })
+
+    it('nadie juega off-role', () => {
+      // 'd2' tiene TOP como rol suyo; en cualquier otro modo, ponerlo de SUP
+      // avisaría.
+      const r = checkAssignment(aram(), 'd2', 2, 'SUP')
+      expect(r.warnings.map((w) => w.code)).not.toContain('off_role')
+    })
+
+    it('lo que sí sigue en pie es que no caben seis', () => {
+      const s = aram()
+      for (const [i, rol] of (['TOP', 'JG', 'MID', 'ADC', 'SUP'] as const).entries()) {
+        s.teams[1].members.push(miembro(`x${i}`, `Relleno ${i}`, rol))
+      }
+      const r = checkAssignment(s, 'd2', 2, 'MID')
+      expect(r.errors.map((e) => e.code)).toContain('team_full')
+    })
+
+    it('en los demás modos la regla sigue viva', () => {
+      for (const modo of ['perso', 'tryhard', 'random', 'analisis'] as const) {
+        const s = conUnDemonEnT1()
+        s.mode = modo
+        const r = checkAssignment(s, 'd2', 1, 'TOP')
+        expect(r.warnings.map((w) => w.code), `modo ${modo}`).toContain('demon_balance')
+      }
+    })
   })
 
   it('isDemon solo reconoce el elo exacto', () => {

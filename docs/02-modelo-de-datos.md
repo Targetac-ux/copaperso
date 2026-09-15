@@ -161,6 +161,44 @@ equipos**.
 - Es un aviso con «Hacerlo igual», no una prohibición, como el rol repetido y el off-role (§1: el
   host manda).
 - La cabecera de cada equipo lleva el recuento, en verde si están igualados y en ámbar si no.
+- **En la Copa ARAM AFK la regla no aplica** (confirmado por el host el 15 de septiembre de 2026).
+  Ahí se juega una sola línea y cada quien tiene una vida, así que los roles no significan nada y da
+  igual cómo queden repartidos los Demon: un equipo puede llevar dos y el otro ninguno.
+
+### A8 bis. Lo que arrastra que en ARAM AFK no haya roles
+
+Es una sola decisión con cuatro consecuencias, y conviene verlas juntas porque separarlas deja la
+pantalla a medias:
+
+1. No se avisa de rol repetido, ni de desequilibrio de Demon, y **el recuento de Demon no se pinta**:
+   enseñar el marcador de una regla que no se aplica solo confunde a mitad del reparto.
+2. **Nadie juega off-role**, así que nadie se lleva los +2 LP. Ese bonus premia jugar en una
+   posición que no es la tuya, y para eso las posiciones tienen que significar algo. Se aplica en
+   los dos sitios por donde se llega a un equipo: `/assign` y el registro rápido.
+3. **El equipo no se pinta como una rejilla de cinco puestos**, sino como una lista. Con la rejilla,
+   dos jugadores con el mismo rol se tapaban: el segundo entraba al equipo (el contador subía a 2/5)
+   pero no aparecía en pantalla. Lo encontró la prueba e2e del modo.
+4. El panel del jugador **no ofrece elegir rol**. `team_member.role` no admite nulos, así que se
+   guarda el primer rol suyo —o MID si no tiene ninguno— y no se enseña en ninguna parte.
+
+La regla vive en una sola función, `importanLosRoles(mode)` en `shared/draft.ts`; todo lo demás
+cuelga de ella.
+
+### A8 ter. Una sesión abierta a la vez
+
+El CCTM trabaja siempre sobre «la sesión abierta». Con dos abiertas elegía la más nueva y la otra
+quedaba en el limbo, imposible de alcanzar desde el panel; y sin forma de cerrar ninguna, la primera
+se quedaba puesta para siempre.
+
+- `POST /api/sessions` devuelve 409 si ya hay una sin cerrar.
+- `POST /api/sessions/:id/close` la cierra —y **se niega si hay una partida en juego**, que se
+  quedaría colgada sin LP y sin forma de terminarla—. No borra nada.
+- `POST /api/sessions/:id/reopen` deshace el cierre, si no hay otra abierta. Existe porque cerrar es
+  un clic y equivocarse también.
+- Cerrar no se deshace desde la bitácora: al cerrar, el CCTM deja de enseñar esa sesión y el botón
+  de deshacer queda fuera de alcance. Para eso está «Reabrir» en Periodos, que sí se puede pulsar.
+- En el panel el botón se llama **«Cerrar la copa»**, no «Cerrar sesión»: eso último es salir del
+  panel, y confundirlos en directo sería caro.
 
 ### A9. Lo que la Fase 4 tuvo que decidir
 
@@ -198,6 +236,7 @@ PERIOD            id, name ("SEP-2026"), starts_at, ends_at, status
 PLAYER            id, display_name, slug, photo_url, twitch_handle, created_at
 PARTICIPATION     id, player_id, period_id, elo, roles[], initial_lp(100), current_lp, status
 SESSION           id, period_id, number, mode, status, started_at, closed_at
+                  -- una sola abierta a la vez: el CCTM trabaja sobre ella
 SESSION_PARTICIPANT id, session_id, participation_id,
                   state(bench|team|jail|graveyard|removed), joined_at
 TEAM              id, session_id, team_number(1|2), name

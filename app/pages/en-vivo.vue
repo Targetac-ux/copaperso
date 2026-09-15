@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { importanLosRoles } from '#shared/draft'
 import { formatSeconds, remainingSeconds } from '#shared/timer'
+import { MODE_LABEL } from '#shared/types/models'
+import type { SessionMode } from '#shared/types/database.types'
 
 /**
  * La vista pública en vivo (Fase 4B).
@@ -27,13 +30,10 @@ const { enabled: sonido, chime, toggle: alternarSonido } = useTicTac({
   estado: 'aviso-publico',
 })
 
-const MODOS: Record<string, string> = {
-  perso: 'Copa Perso',
-  tryhard: 'Copa Tryhard',
-  random: 'Copa Random',
-  analisis: 'Copa Análisis',
-  aram_afk: 'Copa ARAM AFK',
-}
+/** En ARAM AFK no hay posiciones, así que tampoco se enseñan aquí. */
+const conRoles = computed(() =>
+  estado.value?.sesion ? importanLosRoles(estado.value.sesion.mode as SessionMode) : true,
+)
 
 // --- cronómetro ------------------------------------------------------------
 const restante = ref(0)
@@ -83,7 +83,7 @@ const huecos = (n: number) => Math.max(0, 5 - n)
 
       <span v-if="estado.hay && estado.sesion" class="sesion">
         Sesión #{{ estado.sesion.number }}
-        <i>{{ MODOS[estado.sesion.mode] ?? estado.sesion.mode }}</i>
+        <i>{{ MODE_LABEL[estado.sesion.mode as SessionMode] ?? estado.sesion.mode }}</i>
       </span>
 
       <span class="hueco" />
@@ -144,12 +144,14 @@ const huecos = (n: number) => Math.max(0, 5 - n)
           <h2>Team {{ eq.teamNumber }}</h2>
           <ul>
             <li v-for="m in eq.members" :key="m.displayName + m.role">
-              <span class="rol" :class="`rol--${m.role.toLowerCase()}`">{{ m.role }}</span>
+              <span v-if="conRoles" class="rol" :class="`rol--${m.role.toLowerCase()}`">
+                {{ m.role }}
+              </span>
               <span class="nombre">{{ m.displayName }}</span>
               <span v-if="m.isOffRole" class="off" title="Juega fuera de su rol">off</span>
             </li>
             <li v-for="h in huecos(eq.members.length)" :key="`h${h}`" class="vacio">
-              <span class="rol">—</span>
+              <span v-if="conRoles" class="rol">—</span>
               <span class="nombre">por elegir</span>
             </li>
           </ul>

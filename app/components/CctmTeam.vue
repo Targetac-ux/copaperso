@@ -3,17 +3,32 @@ import { ROLES, emptyRoles, TEAM_SIZE } from '#shared/draft'
 import type { DraftTeam } from '#shared/draft'
 import type { PlayerRole } from '#shared/types/models'
 
-/** Un equipo con sus cinco puestos. Cada puesto acepta que le suelten a alguien. */
-const props = defineProps<{
-  team: DraftTeam
-  selected: string | null
-  swapFrom: string | null
-  /** Demons de este equipo y del otro: la regla del torneo es repartirlos 1:1. */
-  demons?: { own: number; other: number; any: boolean }
-}>()
+/**
+ * Un equipo. Normalmente con sus cinco puestos —uno por rol— y cada puesto
+ * acepta que le suelten a alguien.
+ *
+ * **En ARAM AFK no hay puestos**: los roles no significan nada, así que se
+ * pinta una lista de quienes están y el equipo entero es la zona donde soltar.
+ * Con la rejilla de cinco roles, dos jugadores con el mismo rol se tapaban el
+ * uno al otro y el segundo desaparecía de la pantalla aunque estuviera en el
+ * equipo.
+ */
+const props = withDefaults(
+  defineProps<{
+    team: DraftTeam
+    selected: string | null
+    swapFrom: string | null
+    /** Demons de este equipo y del otro: la regla del torneo es repartirlos 1:1. */
+    demons?: { own: number; other: number; any: boolean }
+    /** Si los roles cuentan en este modo. */
+    conRoles?: boolean
+  }>(),
+  { conRoles: true, demons: undefined },
+)
 
 const emit = defineEmits<{
-  drop: [payload: { id: string; role: PlayerRole }]
+  /** Sin `role` cuando el modo no los usa: lo resuelve quien escucha. */
+  drop: [payload: { id: string; role?: PlayerRole }]
   select: [id: string]
 }>()
 
@@ -31,13 +46,19 @@ const slots = computed(() =>
 /** Alguien con un rol que no es de los cinco (no debería pasar, pero se ve). */
 const extras = computed(() => props.team.members.filter((m) => !ROLES.includes(m.role)))
 
-const libres = computed(() => emptyRoles(props.team).length)
+const libres = computed(() =>
+  props.conRoles ? emptyRoles(props.team).length : TEAM_SIZE - props.team.members.length,
+)
 
-function onDrop(event: DragEvent, role: PlayerRole) {
+/** Zona de soltar del equipo entero, para el modo sin roles. */
+const sobreEquipo = ref(false)
+
+function onDrop(event: DragEvent, role?: PlayerRole) {
   const id = read(event)
   encima.value = null
+  sobreEquipo.value = false
   end()
-  if (id) emit('drop', { id, role })
+  if (id) emit('drop', role ? { id, role } : { id })
 }
 </script>
 
@@ -56,7 +77,31 @@ function onDrop(event: DragEvent, role: PlayerRole) {
       </span>
     </header>
 
-    <ul>
+    <!-- Sin roles: una lista de quienes están, y el equipo entero recibe. -->
+    <ul
+      v-if="!conRoles"
+      class="lista"
+      :class="{ 'is-over': sobreEquipo, 'is-open': dragging && team.members.length < TEAM_SIZE }"
+      @dragover.prevent="sobreEquipo = true"
+      @dragleave="sobreEquipo = false"
+      @drop.prevent="onDrop($event)"
+    >
+      <li
+        v-for="m in team.members"
+        :key="m.sessionParticipantId"
+        class="is-filled"
+        :class="{
+          'is-sel': selected === m.sessionParticipantId,
+          'is-swap': swapFrom === m.sessionParticipantId,
+        }"
+        @click="emit('select', m.sessionParticipantId)"
+      >
+        <span class="nm">{{ m.displayName }}</span>
+      </li>
+      <li v-if="!team.members.length" class="vacio">Arrastra aquí a quien juegue</li>
+    </ul>
+
+    <ul v-else>
       <li
         v-for="slot in slots"
         :key="slot.role"
@@ -201,6 +246,31 @@ li.is-over {
 
 li.is-sel {
   border-color: var(--violet);
+}
+
+/* Modo sin roles: la lista entera es la zona de soltar, así que el borde que
+   reacciona es el suyo y no el de cada hueco. */
+ul.lista {
+  border: 1px dashed transparent;
+  border-radius: var(--r-sm);
+  padding: 3px;
+  min-height: 52px;
+}
+
+ul.lista.is-open {
+  border-color: var(--violet-dim);
+}
+
+ul.lista.is-over {
+  border-color: var(--violet);
+  background: var(--panel-2);
+}
+
+li.vacio {
+  border-style: dashed;
+  color: var(--dim);
+  justify-content: center;
+  cursor: default;
 }
 
 li.is-swap {

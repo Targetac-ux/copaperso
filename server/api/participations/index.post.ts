@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { parsePlayerLine } from '#shared/parser'
-import { isOffRole } from '#shared/draft'
+import { importanLosRoles, isOffRole } from '#shared/draft'
 import type { Database } from '#shared/types/database.types'
 
 const ROLES = ['TOP', 'JG', 'MID', 'ADC', 'SUP'] as const
@@ -202,13 +202,15 @@ async function colocarEnSesion(
   if (!input.team_number || !input.role) return { session_participant_id: spId }
 
   const ids = await teamIds(event, input.session_id)
-  const { data: participacion } = await db
-    .from('participation')
-    .select('roles')
-    .eq('id', participationId)
-    .maybeSingle()
+  const [{ data: participacion }, { data: sesion }] = await Promise.all([
+    db.from('participation').select('roles').eq('id', participationId).maybeSingle(),
+    db.from('session').select('mode').eq('id', input.session_id).maybeSingle(),
+  ])
 
-  const offRole = isOffRole(participacion?.roles ?? [], input.role)
+  // En ARAM AFK nadie va off-role: no hay posiciones que respetar. La misma
+  // regla que en /assign, porque por aquí se llega al mismo sitio.
+  const offRole =
+    importanLosRoles(sesion?.mode ?? 'perso') && isOffRole(participacion?.roles ?? [], input.role)
 
   await db.from('team_member').delete().eq('session_participant_id', spId!)
   const { error } = await db.from('team_member').insert({
