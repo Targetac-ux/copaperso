@@ -77,10 +77,22 @@ const LP = [
   { que: 'Doble derrota (Blue Shell)', delta: '−30' },
 ]
 
-// La pestaña viaja en el hash para poder enlazar los patch notes directamente.
-const ruta = useRoute()
+/**
+ * La pestaña viaja en el hash, para poder enlazar los patch notes directamente.
+ *
+ * **El hash se lee al montar, no en el setup.** El servidor nunca lo recibe
+ * —el navegador no lo manda— así que durante el render inicial `useRoute()`
+ * devuelve la ruta sin hash y `/reglas#patch-notes` abría igualmente la
+ * pestaña de las reglas. Leerlo de `window` después de montar es lo único que
+ * lo sabe de verdad, y además evita el desajuste de hidratación: el servidor
+ * siempre pinta la primera pestaña y el cliente cambia después.
+ */
 const router = useRouter()
-const pestana = ref<'reglas' | 'patch'>(ruta.hash === '#patch-notes' ? 'patch' : 'reglas')
+const pestana = ref<'reglas' | 'patch'>('reglas')
+
+onMounted(() => {
+  if (window.location.hash === '#patch-notes') pestana.value = 'patch'
+})
 
 function ver(cual: 'reglas' | 'patch') {
   pestana.value = cual

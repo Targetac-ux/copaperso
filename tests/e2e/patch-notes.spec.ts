@@ -58,7 +58,8 @@ test.describe.serial('reglas y patch notes', () => {
     await expect(page.locator('.modos')).toContainText('ARAM AFK')
     // Los seis canjeos con su precio, y la puntuación.
     await expect(page.locator('.precios').first().locator('tbody tr')).toHaveCount(6)
-    await expect(page.locator('.hojas')).toContainText('100 LP')
+    // Hay dos `.hojas` —reglas y patch notes—, así que se acota a la primera.
+    await expect(page.locator('.hojas').first()).toContainText('100 LP')
   })
 
   test('el enlace directo abre la pestaña de patch notes', async ({ page }) => {
@@ -119,9 +120,11 @@ test.describe.serial('reglas y patch notes', () => {
   test('publicarlo lo lleva a las reglas, con su fecha', async ({ page }) => {
     await gotoHydrated(page, '/host/patch-notes')
 
+    // `exact` porque el botón que despliega la fila dice «sin publicar», y sin
+    // él «Publicar» casa con los dos.
     const fila = page.locator('.lista li').filter({ hasText: TITULO })
-    await fila.getByRole('button', { name: 'Publicar' }).click()
-    await expect(fila.getByRole('button', { name: 'Retirar' })).toBeVisible({ timeout: 15_000 })
+    await fila.getByRole('button', { name: 'Publicar', exact: true }).click()
+    await expect(fila.getByRole('button', { name: 'Retirar', exact: true })).toBeVisible({ timeout: 15_000 })
 
     await gotoHydrated(page, '/reglas#patch-notes')
     const parcheWeb = page.locator('.parche').filter({ hasText: TITULO })
@@ -135,8 +138,8 @@ test.describe.serial('reglas y patch notes', () => {
     await gotoHydrated(page, '/host/patch-notes')
 
     const fila = page.locator('.lista li').filter({ hasText: TITULO })
-    await fila.getByRole('button', { name: 'Retirar' }).click()
-    await expect(fila.getByRole('button', { name: 'Publicar' })).toBeVisible({ timeout: 15_000 })
+    await fila.getByRole('button', { name: 'Retirar', exact: true }).click()
+    await expect(fila.getByRole('button', { name: 'Publicar', exact: true })).toBeVisible({ timeout: 15_000 })
 
     const publico = await page.request.get('/api/public/patch-notes')
     const lista = (await publico.json()) as { title: string }[]
