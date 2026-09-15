@@ -157,11 +157,22 @@ test.describe.serial('cambio de mes', () => {
     expect(nuevaParticipacion!.current_lp).toBe(100)
     expect(nuevaParticipacion!.initial_lp).toBe(100)
 
-    // Y el catálogo de recompensas del mes nuevo se sembró solo.
-    const { count: acciones } = await c
-      .from('action_catalog')
-      .select('id', { count: 'exact', head: true })
-      .eq('period_id', nuevo!.id)
-    expect(acciones).toBe(6)
+    /**
+     * Y el catálogo del mes nuevo **es el del mes anterior**, no los seis de
+     * siempre sembrados otra vez.
+     *
+     * Antes esto comprobaba que hubiera exactamente 6. Dejó de valer cuando el
+     * host pudo añadir y quitar recompensas: volver a sembrar cada mes le
+     * borraría ese trabajo en silencio. Se comparan los códigos, no la
+     * cantidad, para que la prueba siga siendo cierta con las recompensas que
+     * haya en cada momento.
+     */
+    const codigos = async (periodo: string) =>
+      ((await c.from('action_catalog').select('code').eq('period_id', periodo)).data ?? [])
+        .map((a) => a.code)
+        .sort()
+
+    expect(await codigos(nuevo!.id)).toEqual(await codigos(periodoAnterior!.id))
+    expect((await codigos(nuevo!.id)).length, 'y no está vacío').toBeGreaterThan(0)
   })
 })

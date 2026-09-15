@@ -255,7 +255,15 @@ test.describe.serial('ajustes', () => {
       heredado!.some((a) => a.label === RECOMPENSA),
       'la recompensa que añadió el host sigue ahí el mes siguiente',
     ).toBe(true)
-    expect(heredado!.length, 'y también los seis de siempre').toBe(7)
+
+    // Y el resto también: se comparan los códigos con los del mes anterior, no
+    // una cantidad fija, que dependería de cuántas recompensas hubiera puestas.
+    const codigos = async (periodo: string) =>
+      ((await c.from('action_catalog').select('code').eq('period_id', periodo)).data ?? [])
+        .map((a) => a.code)
+        .sort()
+
+    expect(await codigos(periodoNuevo!)).toEqual(await codigos(periodoPrevio!))
   })
 
   // Prueba 3: un enlace guardado aparece en la Home; quitado, desaparece.

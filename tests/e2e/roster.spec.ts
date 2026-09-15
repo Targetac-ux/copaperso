@@ -53,6 +53,8 @@ test.describe.serial('roster del mes', () => {
 
   let periodId: string | null = null
   let sessionId: string | null = null
+  /** La copa que abre este spec si no había ninguna, para borrarla al final. */
+  let sesionDePrueba: string | null = null
 
   test.beforeEach(async ({ page }) => {
     // Cada test arranca con el navegador limpio, así que hay que entrar en
@@ -88,17 +90,40 @@ test.describe.serial('roster del mes', () => {
     }
 
     if (sessionId) await c.from('match').delete().eq('session_id', sessionId)
+    if (sesionDePrueba) await c.from('session').delete().eq('id', sesionDePrueba)
   })
 
   test('sembrar tres partidas con resultados conocidos', async () => {
     const c = db()
-    const { data: ses } = await c
+    let { data: ses } = await c
       .from('session')
       .select('id, period_id')
       .neq('status', 'closed')
       .order('started_at', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
+
+    /**
+     * Si no hay ninguna copa abierta, se abre aquí.
+     *
+     * Este spec daba por hecho que el host se había dejado una, y con la base
+     * recién limpia se caía con un «no se puede leer id de null», que no dice
+     * nada de lo que en realidad falta.
+     */
+    if (!ses) {
+      const { data: periodo } = await c.from('period').select('id').eq('status', 'active').single()
+      const { data: nueva } = await c
+        .from('session')
+        .insert({ period_id: periodo!.id, number: 1, mode: 'perso', status: 'open' })
+        .select('id, period_id')
+        .single()
+      await c.from('team').insert([
+        { session_id: nueva!.id, team_number: 1, name: 'Team 1' },
+        { session_id: nueva!.id, team_number: 2, name: 'Team 2' },
+      ])
+      ses = nueva
+      sesionDePrueba = nueva!.id
+    }
 
     sessionId = ses!.id
     periodId = ses!.period_id
