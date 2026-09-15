@@ -8,17 +8,20 @@ avatares de Twitch, Discord e Instagram. El pipeline los deja en 150 kB y 122 kB
 (`isotipo.svg`) sigue siendo la marca en nav, favicon y avatar del panel, donde una ilustración no
 se puede leer.
 
-**Recibidos y ya integrados (14):** todo `brand/` menos el wordmark, los dos fondos y los cinco
-modos de juego. Ya están optimizados en `public/` y funcionando en la web.
+**Todas recibidas e integradas (14 de septiembre de 2026).** Las 6 insignias de tier, los iconos del
+torneo y las 3 medallas de premios ya están en `public/`.
 
-**Faltan (19):** las 6 insignias de tier, los 10 iconos del torneo y las 3 medallas de premios.
-Los prompts están en `docs/06-prompts-de-imagenes.md`. Cuando los dejes en `assets/`, ejecuta:
+**Los PNG llegaban a 1254×1254**, que es mucho más de lo que se ve en pantalla: `blue-shell.png`
+pesaba 1,4 MB y cada medalla unos 800 kB. Ahora pasan por el pipeline como el resto —webp para el
+navegador y png de respaldo, al tamaño en que se usan— y el total bajó de **6,7 MB a 2,4 MB**.
 
-```bash
-npm run assets
-```
+**Lo que sigue pesando son los SVG vectorizados desde PNG:** `blue-shell.svg` (205 kB), `bits.svg`
+(151 kB), `tier-s.svg` (109 kB). Traen miles de puntos por trazo, que es lo normal al vectorizar una
+imagen. Ya pasan por SVGO; para bajarlos más habría que redibujarlos como vector de verdad. Para
+iconos de 24–48 px no compensa, salvo que Lighthouse se queje en la Fase 7.
 
-y te dice cuáles siguen faltando.
+> `blue-shell.svg` y `blue-shell.png` son la misma imagen. El código usa la versión PNG/webp; el SVG
+> está publicado pero no lo carga nadie. Si no lo quieres, se borra y son 205 kB menos.
 
 > El `wordmark.svg` no hace falta: la palabra CopaPerso se compone con tipografía real
 > (Chakra Petch) en el componente `AppLogo`, así se ve nítida a cualquier tamaño.

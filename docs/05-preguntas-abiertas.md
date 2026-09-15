@@ -21,6 +21,9 @@
    por si algún día hace falta, pero no se diseña para uso simultáneo.
 8. **Las recompensas no ejecutan nada.** El catálogo es una lista de precios de consulta; el host cumple la
    recompensa moviendo él mismo a los participantes. El sistema solo deja constancia en la bitácora.
+9. **El Tier Ranking es manual** (14 de septiembre de 2026). El host coloca a cada jugador en su tier;
+   el LP del periodo no lo decide ni lo propone. La columna de «Puntos» del wireframe es un valor que
+   se escribe a mano, no un cálculo. Desbloquea la Fase 6.
 
 ## ✅ Timer de negociación — cerrado (10 de septiembre de 2026)
 
@@ -36,10 +39,18 @@
 > quedan así toda la sesión). Si prefieres que vuelvan a precio normal al empezar cada partida, dilo
 > y se cambia en una línea.
 
-## 🕓 Donaciones de PayPal — pendiente hasta la Fase 7
+## ✅ Donaciones de PayPal — cerrado (14 de septiembre de 2026)
 
-El host dará el enlace cuando toque implementarlo. Falta también decidir qué dice el apartado
-(a qué van las donaciones) y si va además en el pie de página.
+- **Enlace:** <https://paypal.me/Targetac>
+- **Es del desarrollador, no del torneo.** No van a premios ni al servidor: van a quien programa la
+  página. El apartado lo dice explícitamente para que nadie done creyendo otra cosa.
+- **Tono:** el desarrollo se hizo sin esperar compensación; la donación es opcional y para ir
+  mejorando la página.
+- **Dónde:** apartado propio al final de la Home. Abre PayPal en pestaña nueva con `rel="noopener"`;
+  **ningún formulario de pago vive dentro de CopaPerso**.
+
+> Ojo: el blueprint publicado todavía dice «Las donaciones van a los premios y al servidor», que era
+> la idea vieja. Hay que corregirlo cuando se actualice.
 
 ## 🔵 Decididas por defecto al construir — **confirma o cámbialas**
 
@@ -56,9 +67,6 @@ dilo y se cambia.
 
 ## 🟡 Importantes — siguen abiertas
 
-8. **Tier Ranking: ¿manual o calculado?** §30 lo describe administrativo, pero el wireframe muestra una
-   columna de "Puntos". ¿Lo decides a mano, o se propone desde el LP del periodo y tú ajustas?
-   **Bloquea la Fase 6**, que es la siguiente después del roster.
 13. **Modos de juego.** ¿Cambian las reglas de LP, o son solo etiquetas de la sesión? En ARAM AFK con una
     sola vida, ¿el LP funciona igual? **Construido asumiendo que el LP es el mismo en todos los modos.**
     Si cambia, hay que volver sobre la Fase 4, que ya está cerrada.

@@ -68,10 +68,66 @@ const modes = [
         </li>
       </ul>
     </section>
+
+    <!-- El enlace va al desarrollador, no al torneo: por eso lo dice en voz
+         alta. Y el pago lo gestiona PayPal en su propia pestaña: aquí no se
+         pide ni se guarda ningún dato de nadie. -->
+    <section class="wrap dona">
+      <div class="dona__caja">
+        <h2>¿Te sirve CopaPerso?</h2>
+        <p class="dona__txt">
+          Esta página la desarrollé sin esperar compensación alguna, y así va a seguir. Si te apetece
+          aportar algo para irla mejorando, se agradece de verdad.
+        </p>
+        <a class="btn btn--primary" href="https://paypal.me/Targetac" target="_blank" rel="noopener">
+          Donar con PayPal
+        </a>
+        <p class="dona__nota">
+          Va al desarrollador de la página, no a los premios del torneo. El pago lo gestiona PayPal
+          en su propia página.
+        </p>
+      </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
+.dona {
+  padding-bottom: 56px;
+}
+
+.dona__caja {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 26px 28px;
+  max-width: 620px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.dona h2 {
+  font-family: var(--f-display);
+  font-size: 22px;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.dona__txt {
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.dona__nota {
+  margin: 14px 0 0;
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: var(--dim);
+}
+
 .hero {
   position: relative;
   /* El alto crece con el ancho para que el arte no se quede pequeño en

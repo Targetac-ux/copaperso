@@ -450,6 +450,8 @@ segunda fila ya arranca por debajo de la más alta y el banco queda alineado sol
 
 **Entregables**
 - Tiers D/C/B/A/S/S+, drag & drop entre tiers, foto, edición de datos, publicar edición, histórico de ediciones.
+- **El tier es manual** (decidido el 14 de septiembre de 2026): lo coloca el host y los «Puntos» se
+  escriben a mano. El LP del periodo no lo calcula ni lo propone.
 
 **Pruebas de cierre**
 1. E2E: mover un jugador de A a S+, publicar, y verlo reflejado en la Home pública.
@@ -464,9 +466,9 @@ segunda fila ya arranca por debajo de la más alta y el banco queda alineado sol
 **Entregables**
 - Hero, qué es CopaPerso, modos de juego, cómo participar, reglas, premios, Tier Ranking público,
   enlace a la vista en vivo, Twitch, redes, clips, patrocinadores. Responsive y SEO.
-- **Apartado de donaciones de PayPal** (pedido por el host). El enlace lo da él al empezar la fase;
-  falta decidir qué dice el apartado y si va también en el pie. El formulario de pago **nunca** vive
-  dentro de CopaPerso: es un enlace que abre en pestaña nueva.
+- ✅ **Apartado de donaciones de PayPal**, ya en la Home: <https://paypal.me/Targetac>. Va al
+  desarrollador de la página, **no** a los premios del torneo, y el apartado lo dice. Abre en pestaña
+  nueva con `rel="noopener"`; ningún formulario de pago vive dentro de CopaPerso.
 
 **Pruebas de cierre**
 1. Lighthouse en móvil: Performance ≥ 90, Accesibilidad ≥ 95, SEO ≥ 95.
@@ -503,8 +505,8 @@ segunda fila ya arranca por debajo de la más alta y el banco queda alineado sol
 | 4 · Partidas y LP | 1.5 sem | ✅ cerrada |
 | 4B · Vista pública en vivo | 1 sem | ✅ cerrada |
 | 5 · Roster | 1 sem | pendiente |
-| 6 · Tier Manager | 1 sem | pendiente · **bloqueada** por las 6 insignias de tier y por decidir si el tier es manual o calculado |
-| 7 · Home pública | 1.5 sem | pendiente · falta el enlace de PayPal y las 3 medallas de premios |
+| 6 · Tier Manager | 1 sem | pendiente · desbloqueada: insignias recibidas y el tier es **manual** |
+| 7 · Home pública | 1.5 sem | pendiente · donaciones y medallas ya resueltas |
 | 8 · Prueba real | 1 sesión + 1 sem | pendiente |
 | **Total** | **≈ 11.5–13.5 semanas** | |
 

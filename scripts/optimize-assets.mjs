@@ -46,6 +46,20 @@ const jobs = [
   { from: 'backgrounds/hero-bg.jpg', to: 'backgrounds/hero-bg.webp', width: 1920, format: 'webp', quality: 70 },
   { from: 'backgrounds/hero-bg.jpg', to: 'backgrounds/hero-bg.jpg', width: 1920, format: 'jpeg', quality: 74 },
   { from: 'backgrounds/textura.png', to: 'backgrounds/textura.webp', width: 600, format: 'webp', quality: 60 },
+
+  // Los PNG del torneo llegan a 1254×1254 desde el generador de imágenes, que
+  // es muchísimo más de lo que se ve en pantalla. Cada uno sale en webp para
+  // el navegador y en png como respaldo, ambos al tamaño en que se usan.
+  { from: 'ui/blue-shell.png', to: 'ui/blue-shell.webp', width: 512, format: 'webp', quality: 82 },
+  { from: 'ui/blue-shell.png', to: 'ui/blue-shell.png', width: 256, format: 'png' },
+  { from: 'ui/avatar-default.png', to: 'ui/avatar-default.webp', width: 256, format: 'webp', quality: 82 },
+  { from: 'ui/avatar-default.png', to: 'ui/avatar-default.png', width: 256, format: 'png' },
+  { from: 'ui/premio-1.png', to: 'ui/premio-1.webp', width: 512, format: 'webp', quality: 82 },
+  { from: 'ui/premio-1.png', to: 'ui/premio-1.png', width: 512, format: 'png' },
+  { from: 'ui/premio-2.png', to: 'ui/premio-2.webp', width: 512, format: 'webp', quality: 82 },
+  { from: 'ui/premio-2.png', to: 'ui/premio-2.png', width: 512, format: 'png' },
+  { from: 'ui/premio-3.png', to: 'ui/premio-3.webp', width: 512, format: 'webp', quality: 82 },
+  { from: 'ui/premio-3.png', to: 'ui/premio-3.png', width: 512, format: 'png' },
 ]
 
 // Los SVG sueltos (modos, tiers, ui) se copian tal cual, sin tocar.
@@ -91,8 +105,13 @@ async function run() {
     const dirPath = join(src, dir)
     if (!existsSync(dirPath)) continue
     await mkdir(join(out, dir), { recursive: true })
+    const conTrabajoPropio = new Set(jobs.map((j) => j.from))
+
     for (const file of await readdir(dirPath)) {
       if (file.startsWith('.')) continue
+      // Lo que tiene su propio trabajo arriba ya salió con el tamaño correcto;
+      // copiarlo aquí lo devolvería al original de 1,4 MB.
+      if (conTrabajoPropio.has(`${dir}/${file}`)) continue
       const target = join(out, dir, file)
 
       if (file.endsWith('.svg')) {
