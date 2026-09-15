@@ -635,8 +635,10 @@ ancho. Ahora:
   ser diminuto para que la sección no se alargara media pantalla; en dos caben al triple de tamaño
   en el mismo alto. El quinto ocupa la fila entera en vez de dejar un hueco a su lado.
 - **Las tarjetas con ilustración se parten en dos**, texto en una mitad y el dibujo a 230 px en la
-  otra, y **el lado alterna**: negociación a la derecha, Blue Shell a la izquierda, puntuación a la
-  derecha. Al bajar la página no parece la misma tarjeta repetida.
+  otra, y **el lado alterna**: «Cómo se entra» a la izquierda, negociación a la derecha, Blue Shell a
+  la izquierda, puntuación a la derecha. Al bajar la página no parece la misma tarjeta repetida.
+- El trofeo que protagonizaba el hero antes del key art es la ilustración de «Cómo se entra»: se
+  había quedado sin usar y ahí vuelve a tener sitio.
 - El volteo lo hace `order`, que **cambia el orden visual y no el del documento**: quien la lee con
   un lector de pantalla oye siempre el texto antes que la ilustración, que es la que no dice nada.
 - En móvil se apilan y **el texto va siempre primero**, también en las volteadas: si no, la volteada

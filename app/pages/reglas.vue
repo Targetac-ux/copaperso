@@ -88,17 +88,30 @@ const LP = [
     </header>
 
     <div class="hojas">
-      <section class="hoja">
-        <h2>Cómo se entra</h2>
-        <p class="grande">
-          No hay formularios ni inscripción previa. La copa se anuncia en el chat de Twitch y entra
-          quien esté ahí en ese momento.
-        </p>
-        <p>
-          Eso es todo el requisito: <strong>estar presente cuando se anuncia que va a empezar</strong>.
-          Quien llega tarde se queda en la banca, y desde la banca todavía se puede entrar — pero ya
-          no gratis, sino por los canjeos de ahí abajo.
-        </p>
+      <section class="hoja hoja--parte es-volteada">
+        <div class="hoja__arte">
+          <img
+            src="/brand/trofeo-hero.webp"
+            :alt="''"
+            width="230"
+            height="230"
+            fetchpriority="high"
+          >
+        </div>
+
+        <div class="hoja__texto">
+          <h2>Cómo se entra</h2>
+          <p class="grande">
+            No hay formularios ni inscripción previa. La copa se anuncia en el chat de Twitch y
+            entra quien esté ahí en ese momento.
+          </p>
+          <p>
+            Eso es todo el requisito:
+            <strong>estar presente cuando se anuncia que va a empezar</strong>. Quien llega tarde se
+            queda en la banca, y desde la banca todavía se puede entrar — pero ya no gratis, sino
+            por los canjeos de ahí abajo.
+          </p>
+        </div>
       </section>
 
       <section class="hoja">
@@ -307,7 +320,8 @@ h1 {
   padding: 10px;
 }
 
-.hoja__arte :deep(img) {
+.hoja__arte :deep(img),
+.hoja__arte > img {
   width: 100%;
   height: auto;
   max-width: 230px;
@@ -539,7 +553,8 @@ strong {
     order: 2;
   }
 
-  .hoja__arte :deep(img) {
+  .hoja__arte :deep(img),
+  .hoja__arte > img {
     max-width: 150px;
   }
 

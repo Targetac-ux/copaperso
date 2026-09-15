@@ -20,11 +20,15 @@ navegador y png de respaldo, al tamaño en que se usan— y el total bajó de **
 imagen. Ya pasan por SVGO; para bajarlos más habría que redibujarlos como vector de verdad. Para
 iconos de 24–48 px no compensa, salvo que Lighthouse se queje en la Fase 7.
 
-**Lo que se dejó de publicar (15 de septiembre de 2026).** Seis derivados que no carga ninguna
-página se han quitado de `public/`, y con ellos sus trabajos del pipeline: `trofeo-hero` (png y webp,
-lo sustituyó el key art), `keyart-cuadrado.webp` (es para avatares de redes, no para la web),
-`hero-bg` (jpg y webp) y `blue-shell.svg` (la misma imagen que el PNG, vectorizada: 210 kB de puntos).
-También la carpeta `sponsors/`, que estaba vacía. El despliegue pasó de **2,5 MB a 1,7 MB**.
+**Lo que se dejó de publicar (15 de septiembre de 2026).** Derivados que no carga ninguna página,
+quitados de `public/` junto con sus trabajos del pipeline: `keyart-cuadrado.webp` (es para avatares
+de redes, no para la web), `hero-bg` (jpg y webp) y `blue-shell.svg` (la misma imagen que el PNG,
+vectorizada: 210 kB de puntos). También la carpeta `sponsors/`, que estaba vacía. El despliegue pasó
+de **2,5 MB a 1,7 MB**.
+
+> **`trofeo-hero` volvió el mismo día**, a la tarjeta de «Cómo se entra» de las reglas. Se publica
+> solo en webp y a **520 px** en vez de los 1000 de cuando protagonizaba el hero: ahora se pinta en
+> un hueco de 230, así que con el doble va sobrado para pantallas densas. De 454 kB a 73.
 
 > **Tus originales siguen intactos en `assets/`.** Lo que se borró son los derivados que genera el
 > pipeline; si alguno vuelve a hacer falta, se añade su línea y reaparece. `blue-shell.svg` tiene su

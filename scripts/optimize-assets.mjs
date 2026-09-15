@@ -34,6 +34,16 @@ const jobs = [
   { from: 'brand/keyart.png', to: 'brand/keyart-900.webp', width: 900, format: 'webp', quality: 76, flatten: true },
   { from: 'brand/keyart.png', to: 'brand/keyart.jpg', width: 1424, format: 'jpeg', quality: 80 },
 
+  /**
+   * El trofeo, en la tarjeta de «Cómo se entra» de las reglas.
+   *
+   * A 520 px y no a los 1000 de cuando protagonizaba el hero: ahora se pinta en
+   * un hueco de 230, así que con el doble para pantallas densas va sobrado.
+   * Solo webp, sin respaldo en png: lleva transparencia, y el navegador que no
+   * entienda webp tampoco existe ya.
+   */
+  { from: 'brand/trofeo-hero.png', to: 'brand/trofeo-hero.webp', width: 520, format: 'webp', quality: 82 },
+
   // og-image: 1200x630 exacto y en jpeg, que es lo que leen todos los scrapers.
   { from: 'brand/og-image.png', to: 'brand/og-image.jpg', width: 1200, height: 630, format: 'jpeg', quality: 82 },
 
