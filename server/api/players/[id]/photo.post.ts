@@ -8,9 +8,12 @@ const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 /**
  * Sube la foto de un jugador.
  *
- * El recorte cuadrado lo hace el servidor: da igual con qué proporción llegue
- * la imagen, sale 512x512 centrada y en webp. Así el Tier List y la banca
+ * Siempre sale 512x512 en webp, venga como venga: así el Tier List y la banca
  * nunca se descuadran por una foto apaisada.
+ *
+ * El **encuadre lo elige el host** si quiere (§29): puede mandar un recorte
+ * cuadrado en píxeles de la imagen original. Sin recorte, el servidor lo decide
+ * solo buscando la parte con más detalle, que para un avatar suele ser la cara.
  */
 export default defineEventHandler(async (event) => {
   const staff = await requireStaff(event)
@@ -37,9 +40,35 @@ export default defineEventHandler(async (event) => {
   if (playerError) throw createError({ statusCode: 500, statusMessage: playerError.message })
   if (!player) throw createError({ statusCode: 404, statusMessage: 'Ese jugador no existe.' })
 
-  const square = await sharp(file.data)
-    .rotate()
-    .resize(512, 512, { fit: 'cover', position: 'attention' })
+  // El recorte llega como tres números en el propio formulario.
+  const num = (nombre: string) => {
+    const parte = form?.find((p) => p.name === nombre)
+    const v = parte ? Number(parte.data.toString()) : NaN
+    return Number.isFinite(v) ? Math.round(v) : null
+  }
+
+  const recorte = { x: num('crop_x'), y: num('crop_y'), lado: num('crop_lado') }
+  const hayRecorte = recorte.x !== null && recorte.y !== null && !!recorte.lado
+
+  let img = sharp(file.data).rotate()
+
+  if (hayRecorte) {
+    // Después de `rotate()` el tamaño puede no ser el del fichero: una foto de
+    // móvil viene tumbada con la orientación en los metadatos. El encuadre que
+    // eligió el host es sobre la imagen ya derecha, que es la que vio.
+    const meta = await img.metadata()
+    const ancho = meta.width ?? 0
+    const alto = meta.height ?? 0
+    const lado = Math.min(recorte.lado!, ancho, alto)
+    // Se acota dentro de la imagen: un recorte que se salga hace fallar a sharp.
+    const left = Math.max(0, Math.min(recorte.x!, ancho - lado))
+    const top = Math.max(0, Math.min(recorte.y!, alto - lado))
+
+    if (lado > 0) img = img.extract({ left, top, width: lado, height: lado })
+  }
+
+  const square = await img
+    .resize(512, 512, hayRecorte ? { fit: 'cover' } : { fit: 'cover', position: 'attention' })
     .webp({ quality: 82 })
     .toBuffer()
 

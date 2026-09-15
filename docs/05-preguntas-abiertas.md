@@ -73,9 +73,9 @@ Y estas tres las contestó el host:
 
 ## 🕓 Pendientes de fecha, no de decisión
 
-- **Fotos de jugadores** (14 de septiembre de 2026): **las sube el host**, que las descarga de
-  Discord, y tiene que poder **ajustarlas** —encuadre— desde la aplicación. Hoy la subida existe y
-  recorta al centro automáticamente; el ajuste manual entra en la Fase 5, con la ficha del jugador.
+- ✅ **Fotos de jugadores** — hecho en la Fase 5. Las sube el host desde la ficha del jugador y
+  **elige el encuadre**: arrastra y amplía dentro de un marco redondo, y se guarda lo que ve. Si no
+  toca nada, el servidor recorta solo buscando la parte con más detalle.
 - **Datos históricos:** el host pasará el Excel al día **cuando el desarrollo esté terminado**; el
   que hay ahora está desactualizado en banco y puntos. La importación va después de la Fase 7, no
   dentro de ninguna fase.

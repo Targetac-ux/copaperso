@@ -85,6 +85,63 @@ test.describe('subida de fotos', () => {
     expect(log?.length).toBe(1)
   })
 
+  test('el encuadre que elige el host es el que se guarda', async ({ page }) => {
+    // Una imagen partida en dos: rojo a la izquierda, azul a la derecha. Así el
+    // color de la foto resultante dice qué mitad se recortó, sin ambigüedad.
+    const ancha = await sharp({
+      create: { width: 400, height: 200, channels: 3, background: { r: 220, g: 30, b: 30 } },
+    })
+      .composite([
+        {
+          input: await sharp({
+            create: { width: 200, height: 200, channels: 3, background: { r: 30, g: 30, b: 220 } },
+          }).png().toBuffer(),
+          left: 200,
+          top: 0,
+        },
+      ])
+      .png()
+      .toBuffer()
+
+    // Cada test arranca con el navegador limpio: hay que entrar otra vez para
+    // que `page.request` lleve la sesión.
+    await gotoHydrated(page, '/host/login')
+    await page.getByLabel('Correo').fill(email!)
+    await page.getByLabel('Contraseña').fill(password!)
+    await page.getByRole('button', { name: 'Iniciar sesión' }).click()
+    await expect(page).toHaveURL(/\/host$/)
+
+    /** Sube la imagen recortando desde `x` y devuelve el color medio del resultado. */
+    async function subirYMirar(x: number) {
+      const res = await page.request.post(`/api/players/${playerId}/photo`, {
+        multipart: {
+          file: { name: 'mitades.png', mimeType: 'image/png', buffer: ancha },
+          crop_x: String(x),
+          crop_y: '0',
+          crop_lado: '200',
+        },
+      })
+      expect(res.ok(), await res.text()).toBe(true)
+      const { photo_url: photoUrl } = (await res.json()) as { photo_url: string }
+
+      const bajada = await page.request.get(photoUrl)
+      expect(bajada.ok()).toBe(true)
+      const img = sharp(Buffer.from(await bajada.body()))
+      const meta = await img.metadata()
+      expect(meta.width, 'sigue saliendo cuadrada').toBe(512)
+      expect(meta.height).toBe(512)
+
+      const { channels } = await img.stats()
+      return { r: channels[0]!.mean, b: channels[2]!.mean }
+    }
+
+    const izquierda = await subirYMirar(0)
+    expect(izquierda.r, 'el encuadre de la izquierda sale rojo').toBeGreaterThan(izquierda.b + 100)
+
+    const derecha = await subirYMirar(200)
+    expect(derecha.b, 'el de la derecha sale azul').toBeGreaterThan(derecha.r + 100)
+  })
+
   test('rechaza lo que no es imagen', async ({ page }) => {
     await gotoHydrated(page, '/host/login')
     await page.getByLabel('Correo').fill(email!)

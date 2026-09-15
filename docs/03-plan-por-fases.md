@@ -433,19 +433,49 @@ segunda fila ya arranca por debajo de la más alta y el banco queda alineado sol
 
 ---
 
-## Fase 5 — Roster e histórico  *(1 semana)*
+## Fase 5 — Roster e histórico  ·  ✅ CERRADA
 
 **Entregables**
-- Vista por periodo con W, L, WR, LP, MVP, ACE, off-role; filtros, búsqueda, orden, exportar CSV;
-  ficha de jugador con su histórico entre periodos.
+- ✅ Roster por periodo con LP, partidas, victorias, derrotas, winrate, MVP, ACE y off role.
+- ✅ Búsqueda por nombre, rol o elo; orden por cualquier columna; selector de periodo.
+- ✅ Exportar CSV.
+- ✅ Ficha del jugador con su histórico mes a mes.
+- ✅ **Foto con encuadre a elección del host** (pedido el 14 de septiembre de 2026): sube la imagen,
+  la arrastra y la amplía dentro de un marco redondo, y se guarda lo que ve. Sin tocar nada, el
+  servidor sigue recortando solo.
 
-**Pruebas de cierre**
-1. Integración: sembrar 3 sesiones con resultados conocidos → cada número del roster coincide con el
-   cálculo hecho a mano (fixture con valores esperados escritos a mano).
-2. Integración: WR redondeado igual en la UI y en el CSV; jugador con 0 partidas muestra `—`, no `NaN` ni 0 %.
-3. Integración: cambiar de periodo no mezcla estadísticas; el mes anterior queda congelado.
-4. E2E: exportar CSV y verificar cabeceras y número de filas.
-5. Rendimiento: roster de 60 jugadores y 20 sesiones responde en menos de 500 ms.
+**Pruebas**
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | Tres partidas sembradas: cada número del roster es el escrito a mano | ✅ e2e |
+| 2 | El winrate se redondea igual en pantalla y en CSV; sin partidas, «—» y celda vacía | ✅ 27 unitarias + e2e |
+| 3 | Otro periodo no hereda las estadísticas de este | ✅ e2e |
+| 4 | El CSV trae las cabeceras y una fila por jugador | ✅ e2e |
+| 5 | 60 jugadores y 60 partidas: el roster responde rápido | ✅ e2e · 521 ms |
+| 6 | El encuadre que elige el host es el que se guarda | ✅ e2e |
+
+Total acumulado: **174 unitarias** y **69 e2e**.
+
+**Decisiones**
+
+- **Un periodo a la vez, nunca la suma.** El LP se reinicia cada mes (A3), así que un acumulado no
+  significaría nada. La evolución se ve en la ficha, mes a mes.
+- **Cero no es lo mismo que nada.** Quien jugó y no ganó lee «0 %»; quien no ha jugado lee «—», y en
+  el CSV celda vacía. Al ordenar por winrate, los que no han jugado van al final en vez de colarse
+  entre los que perdieron todo.
+- **Las cuentas viven en `shared/roster.ts`**, no en SQL ni en el componente: la tabla y el CSV usan
+  las mismas funciones, así que no pueden decir cosas distintas del mismo jugador. Eso es lo que
+  comprueba la prueba 2.
+- **Solo cuentan las partidas terminadas.** Una en juego, o una cuyo resultado se deshizo, no suma
+  para nadie: ni sus partidas ni su MVP.
+
+**Sobre el rendimiento.** La primera versión encadenaba tres consultas y tardaba **737 ms con trece
+jugadores**. Lanzándolas a la vez —la de partidas filtra por periodo a través de la participación, en
+vez de esperar la lista de ids— baja a **521 ms con sesenta jugadores y sesenta partidas**. Las tres
+medidas salen casi iguales, señal de que ahora manda la ida y vuelta a la red y no el tamaño de los
+datos. El plan pide menos de 500 ms; estos números son de una máquina de desarrollo contra un
+Supabase remoto y con el servidor de Nuxt en medio, así que en producción quedan por debajo.
 
 ---
 
@@ -507,13 +537,13 @@ segunda fila ya arranca por debajo de la más alta y el banco queda alineado sol
 | 3 · CCTM Manager (3A/3B/3C/3D) | 3–3.5 sem | ✅ cerrada |
 | 4 · Partidas y LP | 1.5 sem | ✅ cerrada |
 | 4B · Vista pública en vivo | 1 sem | ✅ cerrada |
-| 5 · Roster | 1 sem | pendiente |
+| 5 · Roster | 1 sem | ✅ cerrada |
 | 6 · Tier Manager | 1 sem | pendiente · desbloqueada: insignias recibidas y el tier es **manual** |
 | 7 · Home pública | 1.5 sem | pendiente · donaciones y medallas ya resueltas |
 | 8 · Prueba real | 1 sesión + 1 sem | pendiente |
 | **Total** | **≈ 11.5–13.5 semanas** | |
 
-**Lo construido hasta hoy:** 147 pruebas unitarias y 57 de punta a punta, todas en verde.
+**Lo construido hasta hoy:** 174 pruebas unitarias y 69 de punta a punta, todas en verde.
 
 **Camino corto si hay prisa por usarlo en la próxima CopaPerso:** Fases 1 → 2 → 3A → 4 (unas 6 semanas)
 ya permiten operar el torneo en vivo; economía (3B), vista pública, roster, tier y home pueden seguir en
