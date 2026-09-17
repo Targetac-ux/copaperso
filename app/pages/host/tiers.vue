@@ -42,6 +42,16 @@ const ocupado = ref(false)
 const error = ref('')
 
 const editable = computed(() => !!data.value.edicion && !data.value.edicion.publishedAt)
+
+/**
+ * Un borrador sin nadie no es trabajo empezado: es un despiste.
+ *
+ * Nace así al pulsar «Nueva edición» cuando todavía no hay ninguna publicada
+ * —no hay de dónde copiar—. Se le siguen ofreciendo los botones de sembrar,
+ * porque si no la pantalla se queda sin un solo clic útil: publicar está
+ * deshabilitado, y empezar otra chocaba con este.
+ */
+const vacio = computed(() => editable.value && !data.value.entradas.length)
 const grupos = computed(() => porTier(data.value.entradas))
 
 // --- arrastrar -------------------------------------------------------------
@@ -104,6 +114,24 @@ async function nuevaEdicion(desde: 'actual' | 'periodo') {
   }
 }
 
+async function descartar() {
+  if (!data.value.edicion) return
+  // Sin gente no hay nada que perder y preguntar sobra. Con gente colocada, sí.
+  if (data.value.entradas.length && !confirm(`Se descarta el borrador con ${data.value.entradas.length} jugadores colocados. No se puede deshacer.`)) return
+
+  ocupado.value = true
+  error.value = ''
+  try {
+    await $fetch(`/api/tiers/${data.value.edicion.id}`, { method: 'DELETE' })
+    data.value = await $fetch<Tabla>('/api/tiers')
+    await refrescarEdiciones()
+  } catch (err) {
+    error.value = (err as { statusMessage?: string }).statusMessage ?? 'No se pudo descartar.'
+  } finally {
+    ocupado.value = false
+  }
+}
+
 async function publicar() {
   if (!data.value.edicion) return
   ocupado.value = true
@@ -140,6 +168,19 @@ const fecha = (iso: string | null) =>
 
       <span class="hueco" />
 
+      <button v-if="editable" class="btn btn--ghost" :disabled="ocupado" @click="descartar">
+        Descartar borrador
+      </button>
+
+      <template v-if="!editable || vacio">
+        <button class="btn btn--ghost" :disabled="ocupado" @click="nuevaEdicion('actual')">
+          Nueva edición
+        </button>
+        <button class="btn btn--ghost" :disabled="ocupado" @click="nuevaEdicion('periodo')">
+          Empezar desde el mes
+        </button>
+      </template>
+
       <button
         v-if="editable"
         class="btn btn--primary"
@@ -148,20 +189,17 @@ const fecha = (iso: string | null) =>
       >
         Publicar
       </button>
-      <template v-else>
-        <button class="btn btn--ghost" :disabled="ocupado" @click="nuevaEdicion('actual')">
-          Nueva edición
-        </button>
-        <button class="btn btn--ghost" :disabled="ocupado" @click="nuevaEdicion('periodo')">
-          Empezar desde el mes
-        </button>
-      </template>
     </header>
 
     <p v-if="error" class="alert alert--error">{{ error }}</p>
 
     <p v-if="!data.edicion" class="estado">
       Todavía no hay ninguna edición. Empieza una desde el mes para colocar a los inscritos.
+    </p>
+
+    <p v-else-if="vacio" class="estado">
+      Este borrador no tiene a nadie: se creó copiando una edición publicada que no existe.
+      Pulsa <b>Empezar desde el mes</b> para traer a los inscritos, o descártalo.
     </p>
 
     <template v-else>

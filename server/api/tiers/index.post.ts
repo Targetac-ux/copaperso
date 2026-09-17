@@ -24,6 +24,15 @@ export default defineEventHandler(async (event) => {
   const input = body.parse(await readBody(event).catch(() => ({})))
   const db = serverSupabaseServiceRole<Database>(event)
 
+  /**
+   * Un borrador a medias se respeta; uno vacío se reaprovecha.
+   *
+   * La diferencia importa: si «Nueva edición» se pulsa antes de que exista una
+   * publicada, no hay nada que copiar y el borrador nace sin nadie. Ese no es
+   * trabajo de nadie, es un accidente — y negarse a empezar otro por su culpa
+   * dejaba el módulo sin un solo botón que hiciera algo, porque un borrador
+   * vacío tampoco se puede publicar.
+   */
   const { data: borrador } = await db
     .from('tier_list')
     .select('id')
@@ -31,10 +40,19 @@ export default defineEventHandler(async (event) => {
     .maybeSingle()
 
   if (borrador) {
-    throw createError({
-      statusCode: 409,
-      statusMessage: 'Ya hay una edición sin publicar. Publícala o bórrala antes de empezar otra.',
-    })
+    const { count } = await db
+      .from('tier_entry')
+      .select('id', { count: 'exact', head: true })
+      .eq('tier_list_id', borrador.id)
+
+    if (count) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'Ya hay una edición sin publicar. Publícala o descártala antes de empezar otra.',
+      })
+    }
+
+    await db.from('tier_list').delete().eq('id', borrador.id)
   }
 
   const { data: periodo } = await db
