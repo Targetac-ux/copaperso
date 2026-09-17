@@ -21,15 +21,22 @@ Todo lo que hay que hacer una vez para que el proyecto arranque. Después de est
 
 ### Aplicar el esquema
 
-Desde el **SQL Editor** de Supabase, ejecuta en orden los cuatro archivos de
-`supabase/migrations/`:
+Desde el **SQL Editor** de Supabase, ejecuta **todos** los archivos de
+`supabase/migrations/` en orden alfabético, que es el cronológico. Los cuatro
+primeros levantan el esquema; los demás son cambios posteriores y hay que
+aplicarlos igual:
 
 ```
-20260909000001_schema.sql     tablas, enums y funciones
-20260909000002_rls.sql        seguridad y vistas públicas
-20260909000003_storage.sql    buckets de fotos
-20260909000004_seed_dev.sql   periodo actual + costos de §13
+20260909000001_schema.sql            tablas, enums y funciones
+20260909000002_rls.sql               seguridad y vistas públicas
+20260909000003_storage.sql           buckets de fotos
+20260909000004_seed_dev.sql          periodo actual + costos de §13
+…                                    el resto, por fecha
+20260916000001_historico_importado.sql   columnas del histórico importado
 ```
+
+**Si ya tenías el proyecto montado**, solo hacen falta las que no hayas
+aplicado: son ficheros sueltos y ninguna repite lo que hace otra.
 
 O con la CLI, que es lo recomendable en cuanto le pierdas el miedo:
 

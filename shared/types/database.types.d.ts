@@ -50,6 +50,16 @@ type ParticipationRow = {
   roles: PlayerRoleDb[]
   initial_lp: number
   current_lp: number
+  /**
+   * Los totales del Excel, para los meses que se importaron del CCPR Roster.
+   * `null` es «este mes lo contó la aplicación», que no es lo mismo que cero.
+   */
+  historic_wins: number | null
+  historic_losses: number | null
+  historic_mvps: number | null
+  historic_aces: number | null
+  historic_off_roles: number | null
+  imported_from: string | null
   created_at: string
   updated_at: string
 }
@@ -393,6 +403,12 @@ export type Database = {
           roles?: PlayerRoleDb[]
           initial_lp?: number
           current_lp?: number
+          historic_wins?: number | null
+          historic_losses?: number | null
+          historic_mvps?: number | null
+          historic_aces?: number | null
+          historic_off_roles?: number | null
+          imported_from?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -401,6 +417,12 @@ export type Database = {
           roles?: PlayerRoleDb[]
           initial_lp?: number
           current_lp?: number
+          historic_wins?: number | null
+          historic_losses?: number | null
+          historic_mvps?: number | null
+          historic_aces?: number | null
+          historic_off_roles?: number | null
+          imported_from?: string | null
           updated_at?: string
         }
         Relationships: []

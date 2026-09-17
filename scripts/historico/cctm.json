@@ -1,0 +1,498 @@
+{
+  "origen": "CCTM Manager (1).xlsm",
+  "leidoEl": "2026-09-16",
+  "precios": [
+    {
+      "etiqueta": "CUPO",
+      "bits": 200,
+      "celda": "C25"
+    },
+    {
+      "etiqueta": "CAMBIO DE TEAM",
+      "bits": 150,
+      "celda": "C26"
+    },
+    {
+      "etiqueta": "BLUE SHELL",
+      "bits": 499,
+      "celda": "C27"
+    },
+    {
+      "etiqueta": "OTP OPEN",
+      "bits": 500,
+      "celda": "C28"
+    },
+    {
+      "etiqueta": "SACADA DE CEMENTERIO",
+      "bits": 300,
+      "celda": "C29"
+    },
+    {
+      "etiqueta": "CAMBIO DE ROL + CUPO",
+      "bits": 300,
+      "celda": "C30"
+    }
+  ],
+  "banco": [
+    {
+      "nombre": "CARNITAS",
+      "slug": "carnitas",
+      "bits": 6200,
+      "subs": 0,
+      "sabor": null,
+      "literal": "6200",
+      "celda": "Q24"
+    },
+    {
+      "nombre": "GODESU",
+      "slug": "godesu",
+      "bits": 17200,
+      "subs": 0,
+      "sabor": null,
+      "literal": "17200",
+      "celda": "Q25"
+    },
+    {
+      "nombre": "CANDY",
+      "slug": "candy",
+      "bits": 1100,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1100",
+      "celda": "Q26"
+    },
+    {
+      "nombre": "VIBES",
+      "slug": "vibes",
+      "bits": 1032,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1032",
+      "celda": "Q27"
+    },
+    {
+      "nombre": "HANZO",
+      "slug": "hanzo",
+      "bits": 8500,
+      "subs": 0,
+      "sabor": null,
+      "literal": "8500",
+      "celda": "Q28"
+    },
+    {
+      "nombre": "EGO",
+      "slug": "ego",
+      "bits": 1250,
+      "subs": 1,
+      "sabor": null,
+      "literal": "1SUB+1250",
+      "celda": "Q29"
+    },
+    {
+      "nombre": "LEAH",
+      "slug": "leah",
+      "bits": 545,
+      "subs": 0,
+      "sabor": null,
+      "literal": "545",
+      "celda": "Q30"
+    },
+    {
+      "nombre": "ALEJO",
+      "slug": "alejo",
+      "bits": 299,
+      "subs": 0,
+      "sabor": null,
+      "literal": "299",
+      "celda": "Q32"
+    },
+    {
+      "nombre": "MINI",
+      "slug": "mini",
+      "bits": 37,
+      "subs": 0,
+      "sabor": null,
+      "literal": "37",
+      "celda": "Q33"
+    },
+    {
+      "nombre": "OHTODEC",
+      "slug": "ohtodec",
+      "bits": 750,
+      "subs": 0,
+      "sabor": null,
+      "literal": "750",
+      "celda": "Q34"
+    },
+    {
+      "nombre": "KASE",
+      "slug": "kase",
+      "bits": 1215,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1215",
+      "celda": "Q35"
+    },
+    {
+      "nombre": "CHANWISERO",
+      "slug": "chanwisero",
+      "bits": 100,
+      "subs": 0,
+      "sabor": null,
+      "literal": "100",
+      "celda": "Q36"
+    },
+    {
+      "nombre": "RAIDER",
+      "slug": "raider",
+      "bits": 100,
+      "subs": 0,
+      "sabor": null,
+      "literal": "100",
+      "celda": "Q37"
+    },
+    {
+      "nombre": "KID",
+      "slug": "kid",
+      "bits": 50,
+      "subs": 0,
+      "sabor": null,
+      "literal": "50",
+      "celda": "Q38"
+    },
+    {
+      "nombre": "MANJARRES",
+      "slug": "manjarres",
+      "bits": 247,
+      "subs": 0,
+      "sabor": null,
+      "literal": "247",
+      "celda": "Q39"
+    },
+    {
+      "nombre": "megaplati",
+      "slug": "megaplati",
+      "bits": 100,
+      "subs": 0,
+      "sabor": null,
+      "literal": "100",
+      "celda": "Q40"
+    },
+    {
+      "nombre": "JUANSE",
+      "slug": "juanse",
+      "bits": 300,
+      "subs": 0,
+      "sabor": null,
+      "literal": "300",
+      "celda": "Q41"
+    },
+    {
+      "nombre": "CARLOS",
+      "slug": "carlos",
+      "bits": 0,
+      "subs": 4,
+      "sabor": "LATAM",
+      "literal": "4SUB LATAM",
+      "celda": "Q42"
+    },
+    {
+      "nombre": "MIUSHI",
+      "slug": "miushi",
+      "bits": 1000,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1000",
+      "celda": "Q43"
+    },
+    {
+      "nombre": "MOWIS",
+      "slug": "mowis",
+      "bits": 100,
+      "subs": 0,
+      "sabor": null,
+      "literal": "100",
+      "celda": "Q44"
+    },
+    {
+      "nombre": "PROMETEO",
+      "slug": "prometeo",
+      "bits": 300,
+      "subs": 0,
+      "sabor": null,
+      "literal": "300",
+      "celda": "Q45"
+    },
+    {
+      "nombre": "SHREK",
+      "slug": "shrek",
+      "bits": 200,
+      "subs": 0,
+      "sabor": null,
+      "literal": "200",
+      "celda": "Q46"
+    },
+    {
+      "nombre": "CHOWDER",
+      "slug": "chowder",
+      "bits": 150,
+      "subs": 0,
+      "sabor": null,
+      "literal": "150",
+      "celda": "Q47"
+    },
+    {
+      "nombre": "meqquitaron",
+      "slug": "meqquitaron",
+      "bits": 300,
+      "subs": 0,
+      "sabor": null,
+      "literal": "300",
+      "celda": "Q48"
+    },
+    {
+      "nombre": "CHALDEUIVA",
+      "slug": "chaldeuiva",
+      "bits": 1500,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1500",
+      "celda": "Q49"
+    },
+    {
+      "nombre": "Eimi",
+      "slug": "eimi",
+      "bits": 300,
+      "subs": 0,
+      "sabor": null,
+      "literal": "300",
+      "celda": "Q50"
+    },
+    {
+      "nombre": "Hounter",
+      "slug": "hounter",
+      "bits": 500,
+      "subs": 0,
+      "sabor": null,
+      "literal": "500",
+      "celda": "Q51"
+    },
+    {
+      "nombre": "Tadeoswar",
+      "slug": "tadeoswar",
+      "bits": 800,
+      "subs": 0,
+      "sabor": null,
+      "literal": "800",
+      "celda": "Q52"
+    },
+    {
+      "nombre": "CHRISboz",
+      "slug": "chrisboz",
+      "bits": 700,
+      "subs": 0,
+      "sabor": null,
+      "literal": "700",
+      "celda": "Q53"
+    },
+    {
+      "nombre": "KOAN",
+      "slug": "koan",
+      "bits": 1,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1",
+      "celda": "Q54"
+    },
+    {
+      "nombre": "JACOB",
+      "slug": "jacob",
+      "bits": 499,
+      "subs": 0,
+      "sabor": null,
+      "literal": "499",
+      "celda": "Q55"
+    },
+    {
+      "nombre": "ITSFABRII",
+      "slug": "itsfabrii",
+      "bits": 1000,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1000",
+      "celda": "Q56"
+    },
+    {
+      "nombre": "PEJCADO",
+      "slug": "pejcado",
+      "bits": 1003,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1003",
+      "celda": "Q57"
+    },
+    {
+      "nombre": "YILANG",
+      "slug": "yilang",
+      "bits": 300,
+      "subs": 0,
+      "sabor": null,
+      "literal": "300",
+      "celda": "Q58"
+    },
+    {
+      "nombre": "LINIE",
+      "slug": "linie",
+      "bits": 2000,
+      "subs": 0,
+      "sabor": null,
+      "literal": "2000",
+      "celda": "Q59"
+    },
+    {
+      "nombre": "LUNITA",
+      "slug": "lunita",
+      "bits": 20,
+      "subs": 0,
+      "sabor": null,
+      "literal": "20",
+      "celda": "Q60"
+    },
+    {
+      "nombre": "CONZ",
+      "slug": "conz",
+      "bits": 5,
+      "subs": 0,
+      "sabor": null,
+      "literal": "5",
+      "celda": "Q61"
+    },
+    {
+      "nombre": "CHACHO",
+      "slug": "chacho",
+      "bits": 1,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1",
+      "celda": "Q62"
+    },
+    {
+      "nombre": "KERRIZ",
+      "slug": "kerriz",
+      "bits": 600,
+      "subs": 0,
+      "sabor": null,
+      "literal": "600",
+      "celda": "Q63"
+    },
+    {
+      "nombre": "MICIPOTER",
+      "slug": "micipoter",
+      "bits": 1300,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1300",
+      "celda": "Q64"
+    },
+    {
+      "nombre": "LAURITAFRÍO",
+      "slug": "lauritafrio",
+      "bits": 200,
+      "subs": 0,
+      "sabor": null,
+      "literal": "200",
+      "celda": "Q65"
+    },
+    {
+      "nombre": "ERIS",
+      "slug": "eris",
+      "bits": 100,
+      "subs": 0,
+      "sabor": null,
+      "literal": "100",
+      "celda": "Q66"
+    },
+    {
+      "nombre": "CRISTO",
+      "slug": "cristo",
+      "bits": 1200,
+      "subs": 0,
+      "sabor": null,
+      "literal": "1200",
+      "celda": "Q67"
+    }
+  ],
+  "prestamos": [
+    {
+      "nombre": "EMIZ",
+      "slug": "emiz",
+      "bits": 400,
+      "celda": "J34"
+    }
+  ],
+  "notaPrestamos": "30/09/26 · SE SUBE 10 X CADA DÍA",
+  "carcel": [
+    {
+      "nombre": "DEADLY",
+      "slug": "deadly",
+      "copas": 3,
+      "literal": "DEADLY: 3 COPAS",
+      "celda": "F34"
+    },
+    {
+      "nombre": "MIUSHI",
+      "slug": "miushi",
+      "copas": 1,
+      "literal": "MIUSHI: 1 COPA",
+      "celda": "F35"
+    },
+    {
+      "nombre": "CASTI",
+      "slug": "casti",
+      "copas": 1,
+      "literal": "CASTI: 1 COPA",
+      "celda": "F36"
+    },
+    {
+      "nombre": "YMMEDS",
+      "slug": "ymmeds",
+      "copas": 2,
+      "literal": "YMMEDS: 2 COPAS",
+      "celda": "F37"
+    },
+    {
+      "nombre": "CRONO",
+      "slug": "crono",
+      "copas": 1,
+      "literal": "CRONO: 1 COPA",
+      "celda": "F38"
+    }
+  ],
+  "restricciones": [
+    {
+      "nombre": "EMIZ",
+      "slug": "emiz",
+      "tipo": "no_role",
+      "roles": [
+        "MID",
+        "SUP"
+      ],
+      "literal": "EMIZ: NO MID/SUP",
+      "celda": "F40"
+    }
+  ],
+  "extras": [
+    {
+      "texto": "yo - rol - elo | excel.",
+      "celda": "C15"
+    },
+    {
+      "texto": "500 BOO Y HANZO EN LA BOT",
+      "celda": "C16"
+    },
+    {
+      "texto": "CARNITAS: 200 ALEJO 200 CARNITOS",
+      "celda": "C17"
+    }
+  ]
+}

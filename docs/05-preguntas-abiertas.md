@@ -87,9 +87,11 @@ blueprint («Ajustes y costos») y la ficha de `action_catalog`. El host decidi�
 - ✅ **Fotos de jugadores** — hecho en la Fase 5. Las sube el host desde la ficha del jugador y
   **elige el encuadre**: arrastra y amplía dentro de un marco redondo, y se guarda lo que ve. Si no
   toca nada, el servidor recorta solo buscando la parte con más detalle.
-- **Datos históricos:** el host pasará el Excel al día **cuando el desarrollo esté terminado**; el
-  que hay ahora está desactualizado en banco y puntos. La importación va después de la Fase 7, no
-  dentro de ninguna fase.
+- ✅ **Datos históricos** — los dos Excel al día llegaron el 16 de septiembre de 2026 y el importador
+  está escrito (`scripts/leer-excel.mjs` y `scripts/importar-historico.mjs`, ver A10 del modelo de
+  datos). Entran ocho meses —ENE a SEP de 2026—, 476 participaciones, 223 perfiles, el banco, el
+  préstamo y los precios. Los nombres repetidos ya están decididos (punto 1 de abajo); lo que queda
+  sin resolver son los castigos y los cuatro detalles que siguen.
 - **Dominio:** no hay todavía. Se despliega en Vercel y se usa esa URL. Cuando haya dominio, basta
   con cambiar `NUXT_PUBLIC_SITE_URL` para que las og:image y los enlaces absolutos apunten bien.
 
@@ -99,3 +101,58 @@ blueprint («Ajustes y costos») y la ficha de `action_catalog`. El host decidi�
 banca, sorteo, equipos, negociación, economía, partidas, LP e historial— **ya está construido y
 probado**. El roster, el tier manager y la Home terminada son lo que queda, y ninguno hace falta
 para dirigir el torneo en vivo.
+
+## ❓ Abierto tras leer los dos Excel (16 de septiembre de 2026)
+
+Nada de esto bloquea la importación —todo tiene un valor por defecto escrito y argumentado— pero
+todo es una decisión del host, no del código.
+
+1. ✅ **Los nombres repetidos — resuelto el 17 de septiembre de 2026.** El host devolvió las 37
+   decisiones del informe y están en `scripts/historico/alias.json`: **26 grupos**, que dejan 252
+   nicks distintos en **223 perfiles**. Tres de las fusiones apuntadas no llegan a hacer nada
+   —`bonivitryoutdenegado`, `vindexaprobado` y `xeustryoutdenegado`—, porque el veredicto del tryout
+   ya lo quita `limpiarNombre` antes; se dejan escritas igualmente, que confirman esa limpieza. Dos no cuadraban solas y se aclararon aparte:
+
+   - **Alejo.** Las respuestas se contradecían —`Alejofacha` y `Alejozz` son dos filas del mismo mes
+     (AGO-2026), así que no podían ser los dos la misma persona que Alejo—. Decidido: `Alejozz` es
+     Alejo, y `Alejofacha` es otra persona que se queda con su nombre.
+   - **Chaldeuva.** El informe nunca llegó a emparejarla, porque su regla busca que un nick empiece
+     por el otro y `chaldeuva` no empieza por `challdeuva`. Las tres —`Chaldeuva`, `Chall`,
+     `Challdeuva`— son la misma persona, con seis meses de historial.
+
+   Dos detalles que quedan escritos porque no son evidentes al leer la base:
+
+   - **Kerri y Kerriz jugaron los dos en MAY-2026**, y el host dice que son el mismo. Sus dos filas de
+     ese mes **se suman** en una sola participación.
+   - El perfil de `Luna`/`LunaVT`/`Linie` se queda como **«Lunavt (Linie)»**, con el paréntesis que
+     era una anotación del host. Se le puede quitar el nombre desde el panel cuando moleste.
+
+2. **JUN-2026 no existe** en el libro: se salta de MAY a JUL. ¿No hubo copas ese mes, o falta la
+   hoja? No se crea un periodo vacío, que sería inventarse un mes.
+
+3. **El préstamo de EMIZ.** La hoja pone `400`, `30/09/26` y `SE SUBE 10 X CADA DÍA`. La fecha es
+   futura, así que parece un vencimiento y no la fecha del préstamo —y `loan` no tiene columna de
+   vencimiento—. Y «10 por día» no dice lo mismo que el 10 % diario confirmado en el modelo, que
+   sobre 400 son 40 al día. Se importa con `daily_rate: 0.10` y el texto literal en la nota.
+
+4. **`1SUB+1250` (EGO) y `4SUB LATAM` (CARLOS).** `ledger_account` tiene un solo `balance_subs` y no
+   distingue NA de LATAM, aunque el catálogo sí cobre distinto. Se importan como
+   `1250 bits + 1 sub` y `4 subs`, con el sabor escrito en el asiento. Es información que se pierde
+   a medias: si hace falta distinguirlas, es una columna más.
+
+5. **«Sacar a alguien de la banca» (200 bits) ya no está en el Excel.** Puede ser que el host la
+   retirara o que se le cayera de la hoja. Se deja **activa**: quitarla es `active: false` desde
+   Ajustes y un clic reversible, y resucitarla si se borró por error no lo es tanto.
+
+6. **La cárcel se cuenta en copas** y el modelo no sabe contar sesiones pendientes (A10). Entra como
+   restricción con una nota. Si el host quiere que el panel las descuente solo, hace falta ampliar
+   `state_record` o darle un contador a `restriction`.
+
+   Y hay un segundo problema, más inmediato: **los seis castigados —Deadly, Miushi, Casti, Ymmeds,
+   Crono y Emiz— no están en el roster de SEP-2026**, que es el último mes del Excel, así que no hay
+   participación de la que colgarlos. Cuatro ni siquiera aparecen con ese nick en ningún mes:
+   «CRONO» es casi seguro «Cronomus», «YMMEDS» es «Ymeeds», «DEADLY» es «DeadlyMark». La
+   importación por defecto los deja fuera y los enumera; se ponen con
+   `--castigos-en=<el mes que se va a jugar>` cuando ese mes exista.
+
+7. **Vibes, MAR-2026**: la hoja pone 0 LP donde su propia fórmula da −10. Se importa el 0.

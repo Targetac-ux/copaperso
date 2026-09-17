@@ -88,7 +88,6 @@ onMounted(() => {
     <footer class="site__footer">
       <div class="wrap site__footer-inner">
         <AppLogo :size="28" />
-        <p>La copa de la comunidad, hecha por la comunidad.</p>
         <a class="site__canal" :href="twitch" target="_blank" rel="noopener">
           <AppBrandIcon name="twitch" :size="18" />
           <span>{{ CANAL_TWITCH_NOMBRE }}</span>
@@ -206,11 +205,6 @@ main {
   flex-wrap: wrap;
 }
 
-.site__footer p {
-  margin: 0;
-  color: var(--dim);
-  font-size: 14px;
-}
 
 /* El canal y las redes se van al extremo opuesto del logo: el pie es
    marca a un lado, dónde encontrarnos al otro. Antes empujaba el enlace

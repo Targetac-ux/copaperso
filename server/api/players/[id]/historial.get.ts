@@ -1,6 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { contar } from '#shared/roster'
-import type { ResultadoDeJugador } from '#shared/roster'
+import type { AgregadoHistorico, ResultadoDeJugador } from '#shared/roster'
 import type { Database, EloTierDb, PlayerRoleDb } from '#shared/types/database.types'
 
 /**
@@ -9,6 +9,9 @@ import type { Database, EloTierDb, PlayerRoleDb } from '#shared/types/database.t
  * Cada mes va por separado y **no se suman entre sí**: el LP se reinicia cada
  * periodo (A3), así que un total acumulado sería un número que no significa
  * nada. Lo que sí tiene sentido es ver la evolución mes a mes.
+ *
+ * Los meses importados del CCPR Roster no tienen partidas, solo totales; van
+ * con su `importadoDe` para que la ficha pueda decir de dónde salió la cifra.
  */
 export default defineEventHandler(async (event) => {
   await requireStaff(event)
@@ -23,18 +26,21 @@ export default defineEventHandler(async (event) => {
 
   if (!player) throw createError({ statusCode: 404, statusMessage: 'Ese jugador no existe.' })
 
-  type FilaPart = {
+  type FilaPart = AgregadoHistorico & {
     id: string
     elo: EloTierDb | null
     roles: PlayerRoleDb[]
     current_lp: number
     initial_lp: number
+    imported_from: string | null
     period: { id: string; name: string; starts_at: string } | null
   }
 
   const { data: parts } = await db
     .from('participation')
-    .select('id, elo, roles, current_lp, initial_lp, period(id, name, starts_at)')
+    .select(
+      'id, elo, roles, current_lp, initial_lp, imported_from, historic_wins, historic_losses, historic_mvps, historic_aces, historic_off_roles, period(id, name, starts_at)',
+    )
     .eq('player_id', playerId)
 
   const participaciones = (parts ?? []) as unknown as FilaPart[]
@@ -69,7 +75,8 @@ export default defineEventHandler(async (event) => {
       roles: p.roles ?? [],
       lp: p.current_lp,
       lpInicial: p.initial_lp,
-      ...contar(porParticipacion.get(p.id) ?? []),
+      importadoDe: p.imported_from,
+      ...contar(porParticipacion.get(p.id) ?? [], p),
     }))
     .sort((a, b) => b.startsAt.localeCompare(a.startsAt))
 

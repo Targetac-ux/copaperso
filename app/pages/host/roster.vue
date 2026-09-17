@@ -45,6 +45,19 @@ const totales = computed(() => {
   }
 })
 
+/**
+ * De dónde salieron las cifras del mes, si no salieron de partidas.
+ *
+ * Los ocho meses anteriores a octubre de 2026 vienen del CCPR Roster: son
+ * totales que el host llevaba a mano, sin partida detrás. La tabla se lee
+ * igual, pero una victoria de un mes importado y una de un mes jugado no
+ * están respaldadas por lo mismo, y eso tiene que verse.
+ */
+const importadoDe = computed(() => {
+  const origenes = new Set(visibles.value.map((f) => f.importadoDe).filter(Boolean))
+  return origenes.size === 1 ? [...origenes][0] : origenes.size > 1 ? 'varios Excel' : null
+})
+
 function ordenarPor(c: CampoOrden) {
   if (campo.value === c) desc.value = !desc.value
   else {
@@ -98,6 +111,11 @@ const abierto = ref<string | null>(null)
         {{ totales.jugadores }} {{ totales.jugadores === 1 ? 'jugador' : 'jugadores' }} ·
         {{ totales.conPartidas }} con partidas jugadas ·
         {{ totales.partidas }} participaciones en partida
+      </p>
+
+      <p v-if="importadoDe" class="importado">
+        Mes importado de <strong>{{ importadoDe }}</strong>: las cifras son los totales que
+        llevaba la hoja, no partidas registradas aquí.
       </p>
 
       <div class="tabla-caja">
@@ -219,6 +237,17 @@ h1 {
   letter-spacing: 0.04em;
   color: var(--dim);
   margin: 0;
+}
+
+.importado {
+  font-size: 12px;
+  color: var(--dim);
+  margin: 0;
+}
+
+.importado strong {
+  color: var(--text);
+  font-weight: 600;
 }
 
 /* La tabla tiene su propio scroll horizontal: la página no se mueve. */

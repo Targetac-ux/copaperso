@@ -17,7 +17,7 @@ test('el área del host está cerrada para anónimos', async ({ page }) => {
 
 test('la home pública se ve sin iniciar sesión', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('comunidad')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('CopaPerso')
 })
 
 test.describe('con credenciales de host', () => {

@@ -37,10 +37,9 @@ const modes = [
     <section class="hero">
       <div class="wrap hero__text">
         <p class="eyebrow">Torneo comunitario 5v5</p>
-        <h1>La copa de la comunidad,<br>hecha por la <span>comunidad</span>.</h1>
+        <h1>Bienvenido a la <span>CopaPerso</span></h1>
         <p class="hero__lede">
-          Draft en vivo, negociación con bits y puro soloQ. La inscripción se abre en el chat de
-          Twitch: no hay formularios, solo estar ahí cuando empieza.
+          Diseñada para demostrar y superar el nivel de los bebetos.
         </p>
         <div class="hero__cta">
           <a class="btn btn--primary" :href="twitch" target="_blank" rel="noopener">

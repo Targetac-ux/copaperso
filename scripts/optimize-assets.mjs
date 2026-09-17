@@ -28,7 +28,10 @@ const jobs = [
    * por trazo— y se pinta a 28-36 px en la barra de **todas** las páginas. A
    * ese tamaño el vector no aporta nada y el webp cuesta una fracción.
    */
-  { from: 'brand/isotipo.svg', to: 'brand/isotipo.webp', width: 108, format: 'webp', quality: 88 },
+  // El isotipo pasó de ser el escudo vectorial a la ilustración del host
+  // (17-09-2026). `isotipo.svg` se queda ahí como el original del anterior,
+  // pero ya no lo lee nadie: la fuente de verdad es el .webp.
+  { from: 'brand/isotipo.webp', to: 'brand/isotipo.webp', width: 108, format: 'webp', quality: 88 },
   { from: 'brand/logo-horizontal.svg', to: 'brand/logo-horizontal.svg', copy: true },
   { from: 'brand/logo-horizontal-light.svg', to: 'brand/logo-horizontal-light.svg', copy: true },
   { from: 'brand/favicon.png', to: 'favicon.png', width: 48, format: 'png' },

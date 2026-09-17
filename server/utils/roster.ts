@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { contar } from '#shared/roster'
-import type { FilaRoster, ResultadoDeJugador } from '#shared/roster'
+import type { AgregadoHistorico, FilaRoster, ResultadoDeJugador } from '#shared/roster'
 import type { Database, EloTierDb, PlayerRoleDb } from '#shared/types/database.types'
 
 export interface RosterCargado {
@@ -9,16 +9,21 @@ export interface RosterCargado {
   filas: FilaRoster[]
 }
 
-type FilaParticipacion = {
+type FilaParticipacion = AgregadoHistorico & {
   id: string
   elo: EloTierDb | null
   roles: PlayerRoleDb[]
   current_lp: number
+  imported_from: string | null
   player: { id: string; display_name: string; photo_url: string | null } | null
 }
 
 /**
  * El roster de un periodo.
+ *
+ * Los meses que vinieron del CCPR Roster no tienen ni una partida: llegaron
+ * como totales, y esos totales viven en la propia `participation`. `contar`
+ * los suma a lo jugado, así que un mes importado y uno jugado se leen igual.
  *
  * Solo cuentan las partidas **terminadas**: una en juego, o una cuyo resultado
  * se deshizo, no suma para nadie. Por eso se filtra por el estado de la partida
@@ -56,7 +61,9 @@ export async function cargarRoster(event: H3Event, periodId?: string): Promise<R
       db.from('period').select('id, name').eq('id', idConocido).maybeSingle(),
       db
         .from('participation')
-        .select('id, elo, roles, current_lp, player(id, display_name, photo_url)')
+        .select(
+          'id, elo, roles, current_lp, imported_from, historic_wins, historic_losses, historic_mvps, historic_aces, historic_off_roles, player(id, display_name, photo_url)',
+        )
         .eq('period_id', idConocido),
       db
         .from('match_player')
@@ -102,7 +109,8 @@ export async function cargarRoster(event: H3Event, periodId?: string): Promise<R
     elo: p.elo,
     roles: p.roles ?? [],
     lp: p.current_lp,
-    ...contar(porParticipacion.get(p.id) ?? []),
+    importadoDe: p.imported_from,
+    ...contar(porParticipacion.get(p.id) ?? [], p),
   }))
 
   return { period: periodo, filas }

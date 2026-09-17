@@ -59,11 +59,35 @@ app/            interfaz: páginas, layouts, componentes
 server/api/     el backend: aquí se valida y se escribe
 shared/types/   tipos compartidos entre cliente y servidor
 supabase/       migraciones versionadas del esquema
+scripts/        utilidades de una sola vez: limpiar la base, importar el histórico
 assets/         imágenes originales (las genera el host)
 public/         derivados listos para web — no editar a mano
 docs/           plan, modelo de datos, wireframes, prompts
 tests/          unit + e2e
 ```
+
+## El histórico de los Excel
+
+Los ocho meses anteriores a octubre de 2026 vivían en dos `.xlsm` del host. Se
+traen en dos pasos, después de dejar la base en blanco:
+
+```bash
+node scripts/limpiar-datos.mjs --hazlo
+node scripts/leer-excel.mjs "CCPR Roster.xlsm" "CCTM Manager.xlsm"
+node scripts/importar-historico.mjs --hazlo
+```
+
+El primero convierte los libros a JSON dentro de `scripts/historico/` —los
+`.xlsm` no entran al repo— y deja un informe de nombres repetidos para que el
+host diga quién es quién. Sus respuestas viven en `alias.json`: `fusiones` dice
+qué nick es cuál, y `nombres` con cuál se queda la persona, porque al fundir
+varias grafías la más reciente no siempre es la buena. El segundo escribe, y con
+`--comprobar` relee la base y la cuadra fila a fila contra el JSON. Sin
+`--hazlo` ninguno toca nada.
+
+Lo que el Excel no traía —partidas, roles y elo— no se inventa: los totales
+mensuales van a las columnas `historic_*` de `participation`. Está explicado en
+`docs/02-modelo-de-datos.md`, apartado A10.
 
 ## Cómo está protegido
 

@@ -743,6 +743,58 @@ plantillas: ya estuvo apuntando a `twitch.tv` a secas en la cabecera y en el her
 
 ---
 
+## Importación del histórico  *(fuera de fase)*
+
+El 16 de septiembre de 2026 el host entrega los dos Excel al día, que es lo que
+`05-preguntas-abiertas.md` dejaba pendiente de fecha. No es una fase: es un trasvase que se hace una
+vez, después de dejar la base en blanco con `scripts/limpiar-datos.mjs`.
+
+**Va en dos pasos, y a propósito.**
+
+`node scripts/leer-excel.mjs <roster.xlsm> <cctm.xlsm>` convierte los libros a JSON dentro del repo
+(`scripts/historico/`). Los `.xlsm` no entran —llevan macros y datos personales—, así que sin este
+paso la importación dependería para siempre de dos ficheros sueltos en el Descargas de alguien. Con
+el JSON dentro, lo que se va a escribir se revisa en un diff y se puede repetir dentro de un año
+obteniendo lo mismo. El lector **no trae dependencias**: un `.xlsm` es un ZIP con XML, y leerlo a
+mano son cien líneas frente a meter un paquete de hojas de cálculo para usarlo una vez.
+
+`node scripts/importar-historico.mjs` escribe. Mismo molde que `limpiar-datos.mjs`: enseña el
+proyecto lo primero, ensaya en seco por defecto, pide escribir `IMPORTAR` a mano, y `--comprobar`
+relee la base y la cuadra fila a fila contra el JSON. Se puede volver a lanzar: todo va por las
+claves naturales y lo que no tiene clave se busca antes de insertarlo.
+
+**Lo que entra:** ocho periodos (ENE a SEP de 2026, sin JUN, que no está en el libro), 223 perfiles
+—los 252 nicks distintos del Excel menos los 29 que `alias.json` funde en otro—,
+476 participaciones con su LP, las 43 cuentas del banco con su asiento, el préstamo y los precios
+vigentes. **SEP-2026 queda abierto** para que al abrir octubre desde el panel
+`POST /api/periods` herede de él el catálogo corregido en vez de resembrar los seis de siempre.
+
+**Los castigos van aparte.** La cárcel y las restricciones del CCTM son estado de ahora, no
+historia, y cuelgan de un mes: ninguno de los seis castigados jugó en SEP-2026, así que la
+importación normal los deja fuera y los enumera con la pista del nick largo que les corresponde. Se
+ponen con `--castigos-en=OCT-2026` cuando ese mes exista, y ahí sí se registra al castigado, porque
+entrar al mes que se va a jugar es lo que el host iba a hacer igualmente. Lo que no se hace nunca es
+meter a alguien en un mes cerrado para poder colgarle una restricción.
+
+**Lo que no entra, y por qué:** ver A10 del modelo de datos. En corto: los totales del Excel no son
+partidas y no se fabrican; no hay roles ni elo en ninguna hoja; ENE no tiene LP; y el bloque EXTRA
+del CCTM son recordatorios de una copa ya jugada, que sin sesión a la que engancharlos no los leería
+nadie.
+
+**Los precios ya no eran los del código.** El Excel vigente dice Blue Shell **499** —no 500— y trae
+un **OTP OPEN** de 500 que nunca existió. El importador siembra primero el catálogo de siempre y
+luego aplica esas dos diferencias, así que «sacar a alguien de la banca» sigue puesta: el Excel ya
+no la nombra, pero de que el host la haya retirado a propósito no hay constancia, y apagarla es un
+clic reversible en Ajustes.
+
+**Migración de esta importación:** `20260916000001_historico_importado.sql`. Añade las seis columnas
+de A10 y recrea `public_roster` sumando las dos fuentes. La recrea con `drop` + `create view` y no
+con `create or replace`, porque `tests/unit/public-views.test.ts` busca literalmente
+`create view <nombre> as` para leer el cuerpo vigente: un `create or replace` habría dejado el test
+validando la definición vieja, que es el descuido que ese test existe para cazar.
+
+---
+
 ## Resumen de tiempos
 
 | Fase | Estimado | Estado |

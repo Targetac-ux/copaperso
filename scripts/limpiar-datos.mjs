@@ -4,6 +4,14 @@
  *   node scripts/limpiar-datos.mjs            enseña qué borraría, sin tocar nada
  *   node scripts/limpiar-datos.mjs --hazlo    lo borra
  *
+ * Por defecto trabaja sobre el `.env`, que es el de desarrollo. Para la base de
+ * producción —la que usa Vercel— hay que pedirlo a mano:
+ *
+ *   node scripts/limpiar-datos.mjs --env=.env.produccion
+ *
+ * Antes de nada enseña a qué proyecto va a entrar. **Míralo.** Las dos bases se
+ * parecen por dentro y el identificador de la URL es lo único que las distingue.
+ *
  * **Lo que NO se toca, nunca:** `app_user` y las cuentas de autenticación. Son
  * los accesos al panel; borrarlos te deja fuera de tu propia aplicación y no se
  * recuperan desde aquí.
@@ -21,9 +29,14 @@ import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'node:fs'
 import { createInterface } from 'node:readline/promises'
 
+/** `--env=.env.loquesea`; si no se dice nada, el `.env` de siempre. */
+const archivoEnv = process.argv.find((a) => a.startsWith('--env='))?.slice(6) ?? '.env'
+
 function cargarEnv() {
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY) return process.env
-  const file = readFileSync(new URL('../.env', import.meta.url), 'utf8')
+  if (archivoEnv === '.env' && process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY) {
+    return process.env
+  }
+  const file = readFileSync(new URL(`../${archivoEnv}`, import.meta.url), 'utf8')
   return Object.fromEntries(
     file
       .split('\n')
@@ -33,6 +46,10 @@ function cargarEnv() {
 }
 
 const env = cargarEnv()
+if (!env.SUPABASE_URL || !env.SUPABASE_SECRET_KEY) {
+  console.error(`A \`${archivoEnv}\` le falta SUPABASE_URL o SUPABASE_SECRET_KEY.`)
+  process.exit(1)
+}
 const db = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET_KEY, {
   auth: { persistSession: false },
 })
@@ -85,6 +102,10 @@ async function contar() {
 
 async function main() {
   const hazlo = process.argv.includes('--hazlo')
+
+  // A qué base se está entrando, siempre y lo primero. Nunca la llave: solo el
+  // identificador del proyecto, que es lo que hay que reconocer.
+  console.log(`Proyecto:  ${env.SUPABASE_URL}   (leído de ${archivoEnv})\n`)
 
   const antes = await contar()
   if (!antes.length) {

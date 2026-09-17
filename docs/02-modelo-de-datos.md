@@ -220,6 +220,63 @@ poder construir. Quedan aquí escritos para que se puedan cambiar a sabiendas:
   necesitó: el público recibe su estado por un canal de broadcast que arma el servidor, así que no
   lee tablas. La vista se conserva por si algún día hace falta un consumidor por SQL.
 
+### A10. El histórico de los Excel no son partidas, y no se finge que lo sean
+
+Septiembre de 2026: el host entrega los dos Excel al día y toca importarlos. El **CCPR Roster** trae
+ocho meses —ENE a SEP de 2026, sin JUN— con **478 filas** y 231 jugadores distintos. Y trae un
+problema: son **totales del mes**, no partidas.
+
+`public_roster`, `cargarRoster` y la ficha del jugador cuentan victorias, derrotas, MVP y ACE desde
+`match_player`. Importar solo el LP habría dejado meses con el número bueno al lado de «0 partidas».
+La otra salida era **fabricar partidas** que cuadraran los totales, y no se toma por dos razones:
+
+- Mete en la base equipos, rivales y roles que nunca existieron, y `match_player` es la fuente de
+  verdad del §28. Un dato inventado ahí contamina todo lo que cuelgue de él.
+- **Ni siquiera cuadran.** En febrero hay 209 victorias contra 255 derrotas. No hay reparto de 5v5
+  que produzca eso, así que las partidas inventadas tendrían que ser inventadas *y* incoherentes.
+
+Los totales van entonces donde son totales, en `participation`:
+
+```text
+PARTICIPATION + historic_wins, historic_losses, historic_mvps,
+                historic_aces, historic_off_roles   integer, nullables
+              + imported_from                       text     "CCPR Roster · FEB-2026"
+```
+
+`null` no es `0`: significa «este mes no vino de un Excel». Sin esa distinción, un mes recién abierto
+y uno importado con todo a cero serían indistinguibles. `contar()` en `shared/roster.ts` **suma** las
+dos fuentes —un mes importado al que luego se le juegue una copa tiene que enseñar las dos cosas— y
+todo lo demás (winrate, orden, CSV, la vista pública) sale de ahí sin tocarse.
+
+**Lo que el Excel no traía, y por tanto no está:**
+
+- **Roles y elo.** No hay ni una columna en las ocho hojas. Las ocho celdas de elo del CCTM son texto
+  libre —`MASTER+`, `master-`, `PEAK CHALL`, `DIAMANTE 1`— que el enum `elo_tier` no admite.
+- **ENE-2026 no tiene columna LP.** Sus 44 participaciones se quedan a 100, que es lo que dice la
+  hoja: en enero el LP todavía no existía.
+- **El récord y el LP no siempre cuadran entre sí.** Las columnas `+1 VICTORIA` / `−1 VICTORIA` mueven
+  las victorias mostradas pero no entran en el LP, que se calcula sobre `ENTRADA V/D`. Se importan
+  las dos cifras tal cual: reproducir la incoherencia del host es más honesto que elegir por él.
+
+**El LP entra como `lp_event`, no como número.** Una participación importada lleva un `MANUAL` con
+`delta = LP − 100` y la nota `Importado del CCPR Roster · <mes>`. Escribir solo `current_lp` habría
+dejado una caché que la primera llamada a `recalcular_lp()` —cerrar una partida, deshacer algo—
+borraría en silencio. Es A3 aplicado al histórico.
+
+**La cárcel del CCTM no cabe en el modelo.** El Excel la cuenta en copas pendientes
+(`DEADLY: 3 COPAS`) y `state_record` cuelga de **una** `session_participant`: no sabe decir «tres
+sesiones». Es un hueco del modelo, no del Excel. Mientras no se amplíe, entra como `restriction`
+`custom` con valor `CARCEL`, que es lo único por participación que `GET /sessions/:id/notes` saca
+junto al jugador en la copa abierta.
+
+**Y los castigos no son historia: son estado de ahora.** Cuelgan de una `participation`, o sea de un
+mes, y **ninguno de los seis castigados jugó en SEP-2026**, que es el último mes del Excel. Meterlos
+ahí obligaría a inventarles una participación en un mes ya cerrado, un roster que no tuvieron. El
+importador no lo hace: por defecto los deja fuera y lo dice, con la pista del nick largo que
+probablemente les corresponde —«CRONO» es casi seguro «Cronomus»—. Con `--castigos-en=OCT-2026`, en
+cambio, sí registra al castigado en ese mes y le cuelga la restricción, porque entrar al mes que se
+va a jugar es lo que el host iba a hacer de todos modos.
+
 ### A6. Banco de bits/subs: cuenta unificada
 
 §14–§15 piden que un *supporter* que no juega tenga saldo. Se modela como `ledger_account` que apunta
@@ -235,6 +292,7 @@ queda registrado.
 PERIOD            id, name ("SEP-2026"), starts_at, ends_at, status
 PLAYER            id, display_name, slug, photo_url, twitch_handle, created_at
 PARTICIPATION     id, player_id, period_id, elo, roles[], initial_lp(100), current_lp, status
+                  + historic_wins/losses/mvps/aces/off_roles, imported_from  -- A10, nullables
 SESSION           id, period_id, number, mode, status, started_at, closed_at
                   -- una sola abierta a la vez: el CCTM trabaja sobre ella
 SESSION_PARTICIPANT id, session_id, participation_id,

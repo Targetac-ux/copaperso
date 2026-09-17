@@ -24,6 +24,23 @@ export interface FilaRoster {
   mvps: number
   aces: number
   offRoles: number
+  /** De qué Excel salió el mes, si salió de uno. `null` lo contó la aplicación. */
+  importadoDe: string | null
+}
+
+/**
+ * Los totales que vinieron de un Excel, cuando el mes se importó.
+ *
+ * Son meses en los que no hay ni una fila de `match_player`: el CCPR Roster
+ * guardaba totales, no partidas. `null` en cualquiera de los campos significa
+ * «esto no vino de un Excel», que no es lo mismo que cero.
+ */
+export interface AgregadoHistorico {
+  historic_wins: number | null
+  historic_losses: number | null
+  historic_mvps: number | null
+  historic_aces: number | null
+  historic_off_roles: number | null
 }
 
 /** Una partida de alguien, tal y como quedó en el snapshot. */
@@ -35,23 +52,33 @@ export interface ResultadoDeJugador {
 }
 
 /**
- * Cuenta las partidas de un jugador.
+ * Cuenta las partidas de un jugador, y le suma lo que trajera de un Excel.
  *
  * Solo entran las que tienen resultado: una partida en juego, o una cuyo
  * resultado se deshizo, no cuenta para nadie.
+ *
+ * El histórico **se suma**, no sustituye: un mes importado al que luego se le
+ * juegue una copa de verdad tiene que acabar enseñando las dos cosas. Y como
+ * el Excel no guardaba dobles derrotas por separado —su columna de derrotas ya
+ * venía con la doble contada por dos—, aquí entra tal cual.
+ *
+ * `jugadas` sale de sumar victorias y derrotas del histórico, que es todo lo
+ * que la hoja sabía de una partida.
  */
-export function contar(resultados: ResultadoDeJugador[]) {
+export function contar(resultados: ResultadoDeJugador[], historico?: AgregadoHistorico | null) {
   const jugados = resultados.filter((r) => r.result !== null)
+  const h = (campo: keyof AgregadoHistorico) => historico?.[campo] ?? 0
   return {
-    jugadas: jugados.length,
-    victorias: jugados.filter((r) => r.result === 'win').length,
-    derrotas: jugados.reduce(
-      (t, r) => t + (r.result === 'loss' ? 1 : r.result === 'double_loss' ? 2 : 0),
-      0,
-    ),
-    mvps: jugados.filter((r) => r.isMvp).length,
-    aces: jugados.filter((r) => r.isAce).length,
-    offRoles: jugados.filter((r) => r.isOffRole).length,
+    jugadas: jugados.length + h('historic_wins') + h('historic_losses'),
+    victorias: jugados.filter((r) => r.result === 'win').length + h('historic_wins'),
+    derrotas:
+      jugados.reduce(
+        (t, r) => t + (r.result === 'loss' ? 1 : r.result === 'double_loss' ? 2 : 0),
+        0,
+      ) + h('historic_losses'),
+    mvps: jugados.filter((r) => r.isMvp).length + h('historic_mvps'),
+    aces: jugados.filter((r) => r.isAce).length + h('historic_aces'),
+    offRoles: jugados.filter((r) => r.isOffRole).length + h('historic_off_roles'),
   }
 }
 

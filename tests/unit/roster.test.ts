@@ -9,7 +9,7 @@ import {
   rosterACsv,
   winratePct,
 } from '../../shared/roster'
-import type { FilaRoster, ResultadoDeJugador } from '../../shared/roster'
+import type { AgregadoHistorico, FilaRoster, ResultadoDeJugador } from '../../shared/roster'
 
 function fila(p: Partial<FilaRoster> = {}): FilaRoster {
   return {
@@ -26,6 +26,7 @@ function fila(p: Partial<FilaRoster> = {}): FilaRoster {
     mvps: 1,
     aces: 0,
     offRoles: 1,
+    importadoDe: null,
     ...p,
   }
 }
@@ -204,5 +205,58 @@ describe('buscar', () => {
 
   it('vacío devuelve todo', () => {
     expect(filtrar(filas, '   ')).toHaveLength(2)
+  })
+})
+
+describe('el histórico importado del Excel', () => {
+  /**
+   * Los ocho meses del CCPR Roster llegaron como totales, no como partidas.
+   * Si `contar` no los sumara, el roster de febrero enseñaría el LP correcto
+   * junto a «0 partidas», que es exactamente la pantalla rota que la
+   * migración 20260916000001 existe para evitar.
+   */
+  const h = (p: Partial<AgregadoHistorico> = {}): AgregadoHistorico => ({
+    historic_wins: 0,
+    historic_losses: 0,
+    historic_mvps: 0,
+    historic_aces: 0,
+    historic_off_roles: 0,
+    ...p,
+  })
+
+  it('un mes sin partidas enseña lo que traía la hoja', () => {
+    const c = contar([], h({ historic_wins: 9, historic_losses: 5, historic_mvps: 1, historic_aces: 2 }))
+    expect(c).toEqual({ jugadas: 14, victorias: 9, derrotas: 5, mvps: 1, aces: 2, offRoles: 0 })
+    expect(winratePct(c)).toBe(64)
+  })
+
+  it('un mes importado al que luego se le juega una copa suma las dos cosas', () => {
+    const c = contar([r(), r({ result: 'loss' })], h({ historic_wins: 3, historic_losses: 1 }))
+    expect(c).toMatchObject({ jugadas: 6, victorias: 4, derrotas: 2 })
+  })
+
+  // La doble derrota del Blue Shell cuenta por dos, y la hoja ya la traía
+  // contada así: sumarla otra vez la contaría cuatro veces.
+  it('la doble derrota jugada sigue contando por dos junto al histórico', () => {
+    expect(contar([r({ result: 'double_loss' })], h({ historic_losses: 4 })).derrotas).toBe(6)
+  })
+
+  it('sin histórico no cambia nada de lo que ya contaba', () => {
+    const jugadas = [r(), r({ result: 'loss', isMvp: true })]
+    expect(contar(jugadas, null)).toEqual(contar(jugadas))
+    expect(contar(jugadas, undefined)).toEqual(contar(jugadas))
+  })
+
+  // `null` es «este mes no vino de un Excel», y no es lo mismo que cero: quien
+  // no ha jugado tiene que seguir saliendo con «—» y no con «0 %».
+  it('un mes vacío y sin histórico sigue sin winrate', () => {
+    expect(winratePct(contar([], h()))).toBeNull()
+    expect(winratePct(contar([], null))).toBeNull()
+  })
+
+  it('el CSV exporta las cifras importadas como cualquier otra', () => {
+    const c = contar([], h({ historic_wins: 2, historic_losses: 2, historic_mvps: 1 }))
+    expect(filaCsv(fila({ ...c, displayName: 'Ratth', elo: null, roles: [], lp: 50 })))
+      .toBe('Ratth,,,50,4,2,2,50,1,0,0')
   })
 })
