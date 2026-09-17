@@ -3,10 +3,29 @@ import { CANAL_TWITCH_NOMBRE } from '#shared/enlaces'
 
 const { twitch, sociales } = useEnlaces()
 
+/**
+ * La versión que se enseña en el pie, `major.minor`.
+ *
+ * Sale de `package.json` por `runtimeConfig` (ver nuxt.config.ts). Se corta el
+ * parche porque semver obliga a tres números y el tercero no le dice nada a
+ * quien visita la página.
+ *
+ * **No confundir con la versión de los patch notes**, que es la de las reglas
+ * y la escribe el host en `/host/patch-notes`. Son dos numeraciones distintas
+ * a propósito: una cuenta cómo cambia el sitio y la otra cómo cambia el
+ * torneo.
+ */
+const version = computed(() => {
+  const v = String(useRuntimeConfig().public.version ?? '')
+  const [mayor, menor] = v.split('.')
+  return mayor ? `v${mayor}.${menor ?? 0}` : ''
+})
+
 const nav = [
   { to: '/', label: 'Inicio' },
   { to: '/en-vivo', label: 'En vivo' },
   { to: '/tier-ranking', label: 'Tier Ranking' },
+  { to: '/historico', label: 'Histórico' },
   { to: '/reglas', label: 'Reglas' },
   { to: '/patch-notes', label: 'Patch notes' },
   { to: '/premios', label: 'Premios' },
@@ -25,7 +44,10 @@ const ruta = useRoute()
 
 // Al cambiar de página se cierra solo: si no, el menú tapa lo que acabas de
 // abrir. Y con Escape, que es lo que espera cualquiera con un panel abierto.
-watch(() => ruta.fullPath, () => (abierto.value = false))
+watch(
+  () => ruta.fullPath,
+  () => (abierto.value = false),
+)
 onMounted(() => {
   const alPulsar = (e: KeyboardEvent) => {
     if (e.key === 'Escape') abierto.value = false
@@ -102,6 +124,8 @@ onMounted(() => {
             </a>
           </li>
         </ul>
+
+        <span v-if="version" class="site__version">{{ version }}</span>
       </div>
     </footer>
   </div>
@@ -205,7 +229,6 @@ main {
   flex-wrap: wrap;
 }
 
-
 /* El canal y las redes se van al extremo opuesto del logo: el pie es
    marca a un lado, dónde encontrarnos al otro. Antes empujaba el enlace
    «Acceso host», que ya no está —al espectador no le decía nada, y
@@ -244,6 +267,13 @@ main {
   background: var(--panel);
 }
 
+.site__version {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--dim);
+  /* Separada de los iconos, que están pegados entre sí a propósito. */
+  margin-left: 4px;
+}
 
 /* El botón de la hamburguesa solo existe en móvil; en escritorio manda la
    fila de enlaces. */
@@ -266,7 +296,9 @@ main {
   height: 2px;
   border-radius: 2px;
   background: currentColor;
-  transition: transform 0.18s ease, opacity 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
 }
 
 .site__hamburguesa::before,

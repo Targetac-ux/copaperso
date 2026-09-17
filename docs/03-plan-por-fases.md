@@ -795,6 +795,58 @@ validando la definición vieja, que es el descuido que ese test existe para caza
 
 ---
 
+## Después de la importación  ·  17 de septiembre de 2026
+
+**`v2.0` en el pie.** Sale de `package.json` por `runtimeConfig.public.version`, que es donde un
+desarrollador lo busca y lo sube al publicar: nada de una constante aparte que se desincronice. Se
+pinta `major.minor`. Empieza en 2.0 porque la versión 1 del torneo eran los dos Excel.
+
+**El histórico, ahora público** (`/historico`). Los ocho meses llevaban una semana en producción sin
+que nadie de fuera pudiera verlos: la vista `public_roster` existía, estaba concedida a `anon` y ya
+sumaba las columnas `historic_*`, pero no había endpoint ni página. Ahora hay las dos, con selector
+de mes y las mismas cifras que ve el host.
+
+- Los porcentajes salen de `winratePct` y `formatWinrate` de `shared/roster.ts`, las mismas que usan
+  el panel y el CSV. Una fórmula propia aquí acabaría diciendo un número distinto del mismo jugador.
+- **`imported_from` no se añadió a la vista.** Es un dato del mes, no de cada jugador: en la vista se
+  repetiría en las 476 filas y habría obligado a recrearla con su migración, su `grant` y su test
+  para pintar un aviso. El endpoint lo pregunta aparte, que es una consulta más en el servidor y ni
+  un byte más para quien visita la página.
+- Los meses importados llevan su aviso, igual que en `/host/roster`: una victoria de febrero es un
+  total que el host llevaba a mano, no una partida registrada.
+
+**Tier rankings de meses pasados.** `POST /api/tiers` acepta `period_id` y el panel tiene un
+selector junto a «Empezar desde el mes». Con los 476 históricos ya en la base, la edición de marzo
+tiene de dónde sembrarse. Publicándolas de la más vieja a la más nueva, la vigente acaba siendo la
+del mes más reciente.
+
+**Rendimiento: hecho el paso 1 de tres, y el 2 queda parado a propósito.**
+
+Medido sobre la compilación de hoy: el chunk de entrada son **338 kB** y lo carga toda página. Dentro
+están GoTrue y realtime — es el cliente de Supabase, que `@nuxtjs/supabase` registra como plugin
+**global**. Ninguna página pública lo usa.
+
+- ✅ **`/en-vivo` deja de depender del módulo.** `useEnVivo` ya no llama a `useSupabaseClient()`:
+  importa `@supabase/supabase-js` bajo demanda dentro de `onMounted` y crea un cliente pelado con la
+  llave publicable, que es lo único que necesita para escuchar el canal. Por sí solo no baja la
+  portada, pero deja `/host/*` como único consumidor, que es lo que hace viable el paso siguiente.
+- ⏸ **Quitar el plugin global.** Es lo que bajaría el entry de 338 kB a la decena larga. Exige
+  sustituir el cableado de sesión del módulo —el puente que mete la sesión en una cookie para que
+  `guard.ts` la lea— por uno propio que importe el cliente bajo demanda solo en `/host/*`.
+
+  **Está parado porque no hay red de seguridad.** Las pruebas de login de `tests/e2e/auth.spec.ts`
+  viven dentro de un `test.skip(!email || !password)` y hoy **no se ejecutan**: no hay
+  `E2E_HOST_EMAIL` ni `E2E_HOST_PASSWORD` en el entorno. Reescribir la sesión a ciegas sobre un login
+  que funciona, en la semana de arrancar, no compensa los 300 kB. Primero esas variables, después el
+  cambio.
+
+  Buena noticia para cuando se haga: el `useSupabaseUser()` del middleware es **cosmético** —su
+  propio comentario lo dice, la comprobación de verdad está en `server/utils/guard.ts`— así que
+  puede salir sin pensarlo. Lo único que de verdad necesita el cliente es el par
+  `signInWithPassword` / `signOut` de dos páginas.
+
+---
+
 ## Resumen de tiempos
 
 | Fase | Estimado | Estado |

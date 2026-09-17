@@ -66,6 +66,16 @@ docs/           plan, modelo de datos, wireframes, prompts
 tests/          unit + e2e
 ```
 
+## Versiones
+
+El número que sale en el pie (`v2.0`) es el de `package.json`, expuesto por
+`runtimeConfig.public.version`. Se muestra `major.minor`: semver obliga a tres
+números y el tercero no le dice nada a quien visita la página. Empieza en 2.0
+porque la versión 1 del torneo eran los dos Excel que esto sustituye.
+
+**No es la versión de los patch notes.** Esa la escribe el host en
+`/host/patch-notes` y cuenta cómo cambian *las reglas*, no el sitio.
+
 ## El histórico de los Excel
 
 Los ocho meses anteriores a octubre de 2026 vivían en dos `.xlsm` del host. Se

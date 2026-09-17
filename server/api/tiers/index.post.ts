@@ -6,6 +6,16 @@ const body = z.object({
   title: z.string().trim().max(80).optional(),
   /** De dónde salen los jugadores: de la edición actual o del periodo. */
   desde: z.enum(['actual', 'periodo']).default('actual'),
+  /**
+   * Qué mes. Por defecto el activo, que es el caso normal.
+   *
+   * Se puede pedir otro para rellenar hacia atrás: con los ocho meses del
+   * histórico ya importados, la edición de marzo tiene de dónde sembrarse. Al
+   * publicarlas conviene ir de la más vieja a la más nueva —`is_current` tiene
+   * un índice único y publicar baja la anterior— para que la vigente acabe
+   * siendo la del mes más reciente, que es la que ve la Home.
+   */
+  period_id: z.string().uuid().optional(),
 })
 
 /**
@@ -15,9 +25,9 @@ const body = z.object({
  * distintas. Así el host puede prepararla con calma mientras la Home sigue
  * enseñando la anterior.
  *
- * Se puede partir de la edición vigente (para retocarla) o del periodo activo
- * (para empezar con todo el mundo). En ambos casos los jugadores entran en D:
- * el tier lo pone el host a mano, no se deduce de nada.
+ * Se puede partir de la edición vigente (para retocarla) o de un periodo —el
+ * activo, o cualquier otro para rellenar meses pasados—. En ambos casos los
+ * jugadores entran en D: el tier lo pone el host a mano, no se deduce de nada.
  */
 export default defineEventHandler(async (event) => {
   const staff = await requireStaff(event)
@@ -48,20 +58,27 @@ export default defineEventHandler(async (event) => {
     if (count) {
       throw createError({
         statusCode: 409,
-        statusMessage: 'Ya hay una edición sin publicar. Publícala o descártala antes de empezar otra.',
+        statusMessage:
+          'Ya hay una edición sin publicar. Publícala o descártala antes de empezar otra.',
       })
     }
 
     await db.from('tier_list').delete().eq('id', borrador.id)
   }
 
-  const { data: periodo } = await db
-    .from('period')
-    .select('id, name')
-    .eq('status', 'active')
-    .order('starts_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  const { data: periodo } = input.period_id
+    ? await db.from('period').select('id, name').eq('id', input.period_id).maybeSingle()
+    : await db
+        .from('period')
+        .select('id, name')
+        .eq('status', 'active')
+        .order('starts_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+  if (input.period_id && !periodo) {
+    throw createError({ statusCode: 404, statusMessage: 'No hay ningún periodo con ese id.' })
+  }
 
   const { data: lista, error } = await db
     .from('tier_list')

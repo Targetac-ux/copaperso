@@ -1,3 +1,5 @@
+import pkg from './package.json'
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-01',
   devtools: { enabled: true },
@@ -30,6 +32,16 @@ export default defineNuxtConfig({
     // y nunca sale del servidor.
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+
+      /**
+       * La versión que se enseña en el pie, sacada de `package.json`.
+       *
+       * De ahí y no de una constante aparte: es donde un desarrollador la
+       * busca y donde la sube al publicar, así que no hay dos números que
+       * puedan desincronizarse. Empieza en 2.0 porque la versión 1 del torneo
+       * eran los dos Excel que esto sustituye.
+       */
+      version: pkg.version,
     },
   },
 

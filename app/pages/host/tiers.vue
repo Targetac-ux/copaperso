@@ -17,7 +17,13 @@ definePageMeta({ layout: 'host' })
 useSeoMeta({ title: 'Tier Manager', robots: 'noindex' })
 
 interface Tabla {
-  edicion: { id: string; title: string | null; periodName: string | null; publishedAt: string | null; isCurrent: boolean } | null
+  edicion: {
+    id: string
+    title: string | null
+    periodName: string | null
+    publishedAt: string | null
+    isCurrent: boolean
+  } | null
   entradas: EntradaTier[]
 }
 interface EdicionListada {
@@ -38,8 +44,27 @@ const { data: ediciones, refresh: refrescarEdiciones } = await useFetch<EdicionL
   { default: () => [] },
 )
 
+/** Los meses, para poder sembrar una edición de uno que no sea el activo. */
+const { data: periodos } = await useFetch<{ id: string; name: string; status: string }[]>(
+  '/api/periods',
+  { default: () => [] },
+)
+
 const ocupado = ref(false)
 const error = ref('')
+
+/**
+ * Para qué mes se siembra la edición.
+ *
+ * `null` es el activo, que es el caso de cada mes. Poder elegir otro sirve
+ * para rellenar hacia atrás: los ocho meses del histórico ya están en la base,
+ * así que la edición de marzo tiene de dónde sacar a su gente.
+ *
+ * Si se hacen varias, **publícalas de la más vieja a la más nueva**: publicar
+ * baja la vigente y sube la nueva, así que la última que publiques es la que
+ * verá la Home.
+ */
+const mesElegido = ref<string | null>(null)
 
 const editable = computed(() => !!data.value.edicion && !data.value.edicion.publishedAt)
 
@@ -93,7 +118,8 @@ async function soltar(tier: TierName, pos: number) {
       body: { cambios: lista },
     })
   } catch (err) {
-    error.value = (err as { statusMessage?: string }).statusMessage ?? 'No se pudo guardar el cambio.'
+    error.value =
+      (err as { statusMessage?: string }).statusMessage ?? 'No se pudo guardar el cambio.'
     await refresh()
   } finally {
     ocupado.value = false
@@ -105,10 +131,16 @@ async function nuevaEdicion(desde: 'actual' | 'periodo') {
   ocupado.value = true
   error.value = ''
   try {
-    await $fetch('/api/tiers', { method: 'POST', body: { desde } })
+    await $fetch('/api/tiers', {
+      method: 'POST',
+      // El mes solo importa al sembrar desde el periodo; copiando la vigente
+      // no hay de dónde elegir. Sin nada, manda el activo.
+      body: { desde, period_id: desde === 'periodo' ? (mesElegido.value ?? undefined) : undefined },
+    })
     await Promise.all([refresh(), refrescarEdiciones()])
   } catch (err) {
-    error.value = (err as { statusMessage?: string }).statusMessage ?? 'No se pudo crear la edición.'
+    error.value =
+      (err as { statusMessage?: string }).statusMessage ?? 'No se pudo crear la edición.'
   } finally {
     ocupado.value = false
   }
@@ -117,7 +149,13 @@ async function nuevaEdicion(desde: 'actual' | 'periodo') {
 async function descartar() {
   if (!data.value.edicion) return
   // Sin gente no hay nada que perder y preguntar sobra. Con gente colocada, sí.
-  if (data.value.entradas.length && !confirm(`Se descarta el borrador con ${data.value.entradas.length} jugadores colocados. No se puede deshacer.`)) return
+  if (
+    data.value.entradas.length &&
+    !confirm(
+      `Se descarta el borrador con ${data.value.entradas.length} jugadores colocados. No se puede deshacer.`,
+    )
+  )
+    return
 
   ocupado.value = true
   error.value = ''
@@ -151,7 +189,9 @@ async function verEdicion(id: string) {
 }
 
 const fecha = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
+  iso
+    ? new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '—'
 </script>
 
 <template>
@@ -176,6 +216,11 @@ const fecha = (iso: string | null) =>
         <button class="btn btn--ghost" :disabled="ocupado" @click="nuevaEdicion('actual')">
           Nueva edición
         </button>
+
+        <select v-model="mesElegido" class="mes" aria-label="Mes del que sembrar">
+          <option :value="null">Mes activo</option>
+          <option v-for="p in periodos" :key="p.id" :value="p.id">{{ p.name }}</option>
+        </select>
         <button class="btn btn--ghost" :disabled="ocupado" @click="nuevaEdicion('periodo')">
           Empezar desde el mes
         </button>
@@ -198,8 +243,8 @@ const fecha = (iso: string | null) =>
     </p>
 
     <p v-else-if="vacio" class="estado">
-      Este borrador no tiene a nadie: se creó copiando una edición publicada que no existe.
-      Pulsa <b>Empezar desde el mes</b> para traer a los inscritos, o descártalo.
+      Este borrador no tiene a nadie: se creó copiando una edición publicada que no existe. Pulsa
+      <b>Empezar desde el mes</b> para traer a los inscritos, o descártalo.
     </p>
 
     <template v-else>
@@ -242,9 +287,13 @@ const fecha = (iso: string | null) =>
                 width="40"
                 height="40"
                 loading="lazy"
-              >
+              />
               <span class="jugador__nombre">{{ e.displayName }}</span>
-              <span v-if="e.mainRole" class="jugador__rol" :class="`rol--${e.mainRole.toLowerCase()}`">
+              <span
+                v-if="e.mainRole"
+                class="jugador__rol"
+                :class="`rol--${e.mainRole.toLowerCase()}`"
+              >
                 {{ e.mainRole }}
               </span>
             </li>
@@ -260,7 +309,9 @@ const fecha = (iso: string | null) =>
           <li v-for="ed in ediciones" :key="ed.id" :class="{ 'is-current': ed.isCurrent }">
             <button @click="verEdicion(ed.id)">
               <b>{{ ed.title ?? 'Sin título' }}</b>
-              <span class="cuando">{{ ed.publishedAt ? fecha(ed.publishedAt) : 'sin publicar' }}</span>
+              <span class="cuando">{{
+                ed.publishedAt ? fecha(ed.publishedAt) : 'sin publicar'
+              }}</span>
               <span class="cuantos">{{ ed.jugadores }} jugadores</span>
               <span v-if="ed.isCurrent" class="viva">en la Home</span>
             </button>
@@ -272,6 +323,21 @@ const fecha = (iso: string | null) =>
 </template>
 
 <style scoped>
+.mes {
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 7px 9px;
+}
+
+.mes:focus {
+  border-color: var(--violet);
+  outline: none;
+}
+
 .tiers {
   display: flex;
   flex-direction: column;
@@ -374,12 +440,24 @@ h1 {
   color: var(--dim);
 }
 
-.is-s_plus .fila__etq b { color: #ff7ad9; }
-.is-s .fila__etq b { color: var(--gold); }
-.is-a .fila__etq b { color: #7be0a0; }
-.is-b .fila__etq b { color: var(--team-1); }
-.is-c .fila__etq b { color: var(--muted); }
-.is-d .fila__etq b { color: var(--dim); }
+.is-s_plus .fila__etq b {
+  color: #ff7ad9;
+}
+.is-s .fila__etq b {
+  color: var(--gold);
+}
+.is-a .fila__etq b {
+  color: #7be0a0;
+}
+.is-b .fila__etq b {
+  color: var(--team-1);
+}
+.is-c .fila__etq b {
+  color: var(--muted);
+}
+.is-d .fila__etq b {
+  color: var(--dim);
+}
 
 .fila__gente {
   list-style: none;
@@ -436,11 +514,21 @@ h1 {
   pointer-events: none;
 }
 
-.rol--top { color: var(--rol-top); }
-.rol--jg { color: var(--rol-jg); }
-.rol--mid { color: var(--rol-mid); }
-.rol--adc { color: var(--rol-adc); }
-.rol--sup { color: var(--rol-sup); }
+.rol--top {
+  color: var(--rol-top);
+}
+.rol--jg {
+  color: var(--rol-jg);
+}
+.rol--mid {
+  color: var(--rol-mid);
+}
+.rol--adc {
+  color: var(--rol-adc);
+}
+.rol--sup {
+  color: var(--rol-sup);
+}
 
 .vacia {
   color: var(--dim);
