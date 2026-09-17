@@ -42,7 +42,12 @@ export async function logAction(event: H3Event, input: LogInput) {
   // cada asignación en directo tardaba el doble por avisar a la grada. El
   // espectador puede esperar ese segundo; quien está arrastrando jugadores con
   // diez personas mirando, no.
-  if (input.sessionId && esAccionPublica(input.actionType)) {
+  // Sin exigir `sessionId`: el banco y el catálogo se tocan desde pantallas
+  // que no cuelgan de una copa —Economía, Ajustes— y desde que sus paneles se
+  // ven, esos cambios también tienen que llegar a la grada. `cargarEnVivo`
+  // busca la sesión abierta por su cuenta, así que no le hace falta el id; si
+  // no hay ninguna, devuelve el vacío y no se publica nada de interés.
+  if (esAccionPublica(input.actionType)) {
     const tarea = publicarEnVivo(event, input.actionType, input.summary)
 
     // En Vercel la función se congela al responder, así que hay que pedir que

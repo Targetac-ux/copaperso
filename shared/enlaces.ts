@@ -19,3 +19,13 @@ export const CANAL_TWITCH_NOMBRE = 'madhusito'
  * salga tiene que decirlo: el visitante no tiene forma de saberlo si no.
  */
 export const PAYPAL = 'https://paypal.me/Targetac'
+
+/**
+ * El Discord de quien desarrolla la página, para quien quiera una igual.
+ *
+ * Va aquí y no suelto en la plantilla por lo mismo que el canal de Twitch: ya
+ * pasó una vez que un enlace repetido en cinco sitios se quedó apuntando a
+ * medias. Es un usuario, no una URL — Discord no tiene enlace público por
+ * nombre, hace falta el id numérico— así que se enseña para copiar y ya.
+ */
+export const DISCORD_DEV = 'targetac'

@@ -10,7 +10,17 @@ import type { PlayerRoleDb } from './types/database.types'
  * porque el espectador nunca consulta la base.
  *
  * Y para que esto no se erosione con el tiempo, `auditarEnVivo` revisa el
- * objeto antes de publicarlo: si alguien añade un campo privado, no sale.
+ * objeto antes de publicarlo: si alguien añade un campo que no está declarado
+ * aquí, no sale.
+ *
+ * **Qué se enseña, y por qué cambió** (17 de septiembre de 2026). Al principio
+ * esta vista no sacaba bits, saldos, cárcel ni restricciones. Decisión del
+ * host: los paneles son *para los jugadores*, que es donde miran para negociar
+ * —el saldo de cada uno es el motivo de todo esto—, y en el Excel el banco
+ * entero salía en pantalla igualmente. Lo que **sigue fuera**: los préstamos,
+ * las notas del host y el historial de canjeos. Las notas se quedaron fuera a
+ * propósito: son el cuaderno del host, texto libre escrito sin pensar que se
+ * ve, que es exactamente por lo que `ultimaAccion` lleva lista blanca.
  */
 
 export interface MiembroEnVivo {
@@ -31,6 +41,24 @@ export interface CronometroEnVivo {
   running: boolean
 }
 
+export interface RecompensaEnVivo {
+  codigo: string
+  etiqueta: string
+  /** Ya multiplicado si la negociación está en ×3: es el precio que se paga. */
+  precio: number
+}
+
+export interface CuentaEnVivo {
+  displayName: string
+  bits: number
+  subs: number
+}
+
+export interface CastigoEnVivo {
+  displayName: string
+  texto: string
+}
+
 export interface EnVivo {
   /** `false` cuando no hay ninguna sesión abierta: la página lo dice y ya está. */
   hay: boolean
@@ -41,8 +69,14 @@ export interface EnVivo {
   marcador: { t1: number; t2: number }
   partida: { numero: number; enJuego: boolean } | null
   cronometro: CronometroEnVivo
-  /** El ×3 de la negociación, sin cantidades: es parte del espectáculo. */
+  /** El ×3 de la negociación. Los precios de abajo ya vienen multiplicados. */
   preciosTriplicados: boolean
+  /** La mesa de negociación: qué se puede pedir y a cómo está. */
+  recompensas: RecompensaEnVivo[]
+  /** El banco entero. Es el panel por el que se hizo todo esto. */
+  banco: CuentaEnVivo[]
+  carcel: CastigoEnVivo[]
+  restricciones: CastigoEnVivo[]
   ultimaAccion: string | null
   at: string
 }
@@ -56,6 +90,10 @@ export const EN_VIVO_VACIO: EnVivo = {
   partida: null,
   cronometro: { endsAt: null, remaining: null, seconds: 900, running: false },
   preciosTriplicados: false,
+  recompensas: [],
+  banco: [],
+  carcel: [],
+  restricciones: [],
   ultimaAccion: null,
   at: '',
 }
@@ -85,6 +123,16 @@ export const ACCIONES_PUBLICAS = [
   'prices.triple',
   'prices.restore',
   'blue_shell.save',
+  // Desde que el banco y los castigos se ven, lo que los mueve tiene que
+  // avisar: si no, el saldo se queda congelado en pantalla hasta que el host
+  // toque cualquier otra cosa, y el panel estaría mintiendo.
+  'ledger.entry',
+  'ledger.open',
+  'reward.claim',
+  'restriction.create',
+  'restriction.lift',
+  'catalog.add',
+  'catalog.update',
   'undo',
 ] as const
 
@@ -95,6 +143,19 @@ export const ACCIONES_PUBLICAS = [
  */
 const RESUMEN_FIJO: Record<string, string> = {
   undo: 'Se deshizo la última acción',
+
+  /**
+   * Estas llevan texto que escribe el host —el motivo de un movimiento, la
+   * nota de una restricción— y eso no se publica aunque la cifra sí.
+   *
+   * No se pierde nada: el dato está en el panel, que es estructurado y se
+   * acaba de refrescar. Lo único que hace el aviso es decir que mires.
+   */
+  'ledger.entry': 'Movimiento en el banco',
+  'ledger.open': 'Cuenta nueva en el banco',
+  'restriction.create': 'Nueva restricción',
+  'catalog.add': 'Cambio en las recompensas',
+  'catalog.update': 'Cambio en los precios',
 }
 
 /** El texto que puede leer el público, o `null` si esa acción no cuenta nada. */
@@ -108,31 +169,48 @@ export function esAccionPublica(actionType: string): boolean {
 }
 
 /**
- * Palabras que no pueden aparecer **como nombre de campo** en el payload, ni
- * dentro del texto de la última acción.
+ * La forma exacta de lo que puede salir. **Lista blanca, no lista negra.**
  *
- * Se comprueban los nombres de campo y no los valores porque un valor es el
- * nombre de una persona: alguien que se llame «Bits» no puede tumbar la vista.
+ * Antes esto era una lista de palabras prohibidas en los nombres de campo, y
+ * funcionó mientras la vista enseñaba cuatro cosas. En cuanto hubo que sacar
+ * los saldos dejó de servir: prohibir «bits» era justo lo contrario de lo que
+ * se quería, y quitar la palabra de la lista no protegía de que alguien
+ * añadiera mañana un campo nuevo con otro nombre.
+ *
+ * Declarando la forma, lo que no está escrito aquí no sale, se llame como se
+ * llame. `null` es una hoja: su valor no se mira —un valor es el nombre de una
+ * persona, y alguien que se llame «Bits» no puede tumbar la vista—. Un array
+ * lleva dentro la forma de sus elementos.
+ */
+export const FORMA_PUBLICA = {
+  hay: null,
+  sesion: { number: null, mode: null },
+  equipos: [{ teamNumber: null, members: [{ displayName: null, role: null, isOffRole: null }] }],
+  banca: [{ displayName: null, roles: null }],
+  marcador: { t1: null, t2: null },
+  partida: { numero: null, enJuego: null },
+  cronometro: { endsAt: null, remaining: null, seconds: null, running: null },
+  preciosTriplicados: null,
+  recompensas: [{ codigo: null, etiqueta: null, precio: null }],
+  banco: [{ displayName: null, bits: null, subs: null }],
+  carcel: [{ displayName: null, texto: null }],
+  restricciones: [{ displayName: null, texto: null }],
+  ultimaAccion: null,
+  at: null,
+} as const
+
+/**
+ * Lo que sigue sin poder aparecer **dentro del texto** de la última acción.
+ *
+ * Solo el texto libre: la forma ya la defiende `FORMA_PUBLICA`. La lista es
+ * corta a propósito, y es lo que de verdad no es de nadie más — los préstamos,
+ * los correos y los identificadores internos.
  */
 export const PROHIBIDO = [
-  'bits',
-  'subs',
-  'saldo',
-  'balance',
-  'ledger',
   'loan',
   'prestamo',
   'principal',
-  'jail',
-  'carcel',
-  'graveyard',
-  'cementerio',
-  'restriction',
-  'restriccion',
-  'note',
-  'nota',
-  'claim',
-  'canjeo',
+  'adeudo',
   'email',
   'user_id',
   'participation_id',
@@ -151,35 +229,47 @@ function normalizar(s: string) {
  */
 export function auditarEnVivo(payload: unknown): string[] {
   const problemas: string[] = []
-  const prohibidas = PROHIBIDO.map(normalizar)
 
-  function revisarClave(clave: string, ruta: string) {
-    const limpia = normalizar(clave)
-    for (const mala of prohibidas) {
-      if (limpia.includes(mala)) problemas.push(`${ruta}: campo "${clave}" (${mala})`)
-    }
-  }
+  /**
+   * Recorre el objeto contra la forma declarada.
+   *
+   * `spec === null` es una hoja y ahí se para: no se mira el valor. Un `null`
+   * o un `undefined` en el payload tampoco se inspecciona —media vista es
+   * opcional— porque lo que se audita es qué campos existen, no si están
+   * rellenos.
+   */
+  function revisar(valor: unknown, spec: unknown, ruta: string) {
+    if (spec === null) return
+    if (valor === null || valor === undefined) return
 
-  function recorrer(valor: unknown, ruta: string) {
-    if (Array.isArray(valor)) {
-      valor.forEach((v, i) => recorrer(v, `${ruta}[${i}]`))
+    if (Array.isArray(spec)) {
+      if (!Array.isArray(valor)) {
+        problemas.push(`${ruta}: se esperaba una lista`)
+        return
+      }
+      valor.forEach((v, i) => revisar(v, spec[0], `${ruta}[${i}]`))
       return
     }
-    if (valor && typeof valor === 'object') {
-      for (const [k, v] of Object.entries(valor)) {
-        revisarClave(k, ruta || 'raíz')
-        recorrer(v, ruta ? `${ruta}.${k}` : k)
+
+    if (typeof valor !== 'object') return
+
+    const forma = spec as Record<string, unknown>
+    for (const [clave, dentro] of Object.entries(valor)) {
+      if (!(clave in forma)) {
+        problemas.push(`${ruta || 'raíz'}: campo "${clave}" no está en la vista pública`)
+        continue
       }
+      revisar(dentro, forma[clave], ruta ? `${ruta}.${clave}` : clave)
     }
   }
 
-  recorrer(payload, '')
+  revisar(payload, FORMA_PUBLICA, '')
 
   // El texto libre sí se mira por dentro: es lo único escrito para el host.
   const accion = (payload as { ultimaAccion?: unknown } | null)?.ultimaAccion
   if (typeof accion === 'string') {
     const limpia = normalizar(accion)
-    for (const mala of prohibidas) {
+    for (const mala of PROHIBIDO.map(normalizar)) {
       if (limpia.includes(mala)) problemas.push(`ultimaAccion menciona "${mala}"`)
     }
   }

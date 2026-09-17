@@ -277,6 +277,64 @@ probablemente les corresponde —«CRONO» es casi seguro «Cronomus»—. Con `
 cambio, sí registra al castigado en ese mes y le cuelga la restricción, porque entrar al mes que se
 va a jugar es lo que el host iba a hacer de todos modos.
 
+### A11. Qué ve el público en vivo, y por qué se amplió
+
+La Fase 4B cerró con una vista en vivo deliberadamente corta: equipos, marcador, cronómetro y poco
+más. La regla escrita era «nunca bits, saldos, préstamos, cárcel, restricciones ni notas», y estaba
+defendida en tres capas —el tipo `EnVivo`, una auditoría en caliente y las pruebas—.
+
+**El host la cambió el 17 de septiembre de 2026**, y el argumento es bueno: los paneles son *para los
+jugadores*, que es donde miran mientras negocian. El saldo de cada uno es el motivo de que exista la
+negociación, y en el Excel el banco entero salía en pantalla igualmente. Lo que el streamer necesita
+lo ve en el CCTM, así que **el overlay de OBS (`?overlay=1`) no cambia**: ahí siguen los equipos y el
+marcador y nada más, que es lo único que cabe en una esquina del stream.
+
+Entran: **recompensas con su precio** (ya multiplicado si la negociación está en ×3), el **banco
+completo** —jugadores y donantes, que es lo que pidió—, la **cárcel** y las **restricciones**.
+
+**Siguen fuera, y no por olvido:**
+
+- **Los préstamos.** No se pidieron, y un adeudo que crece un 10 % al día es lo más parecido a una
+  deuda personal que hay en el modelo.
+- **Las notas del host.** Se quedaron fuera por decisión suya y es la correcta: son su cuaderno,
+  texto libre escrito sin pensar que se ve. Es exactamente el motivo por el que `ultimaAccion` lleva
+  lista blanca desde la Fase 4B.
+- **El historial de canjeos** y el **cementerio**, que nadie pidió.
+
+#### La auditoría pasó de lista negra a lista blanca
+
+`auditarEnVivo` comprobaba que ningún **nombre de campo** contuviera palabras como `bits`, `saldo` o
+`carcel`, y si encontraba una descartaba el payload entero. Funcionó mientras la vista enseñaba
+cuatro cosas; en cuanto hubo que sacar los saldos dejó de servir, porque prohibir «bits» era justo lo
+contrario de lo que se quería —y quitar la palabra no protegía de que alguien añadiera mañana un
+campo nuevo con otro nombre.
+
+Ahora la forma está **declarada** en `FORMA_PUBLICA` (`shared/live.ts`) y lo que no esté ahí no sale,
+se llame como se llame. Es estrictamente más fuerte que la lista de palabras, y es lo que permite
+añadir un panel sin miedo: quien lo añada tiene que pasar por la declaración, que es el sitio donde
+se decide qué es público. La lista negra sobrevive solo para el **texto libre** de `ultimaAccion`, y
+se quedó en lo que de verdad no es de nadie: préstamos, correos e identificadores internos.
+
+#### Y lo que mueve un panel tiene que avisar
+
+`ACCIONES_PUBLICAS` creció con `ledger.entry`, `ledger.open`, `reward.claim`, `restriction.create`,
+`restriction.lift`, `catalog.add` y `catalog.update`. Sin eso el saldo se quedaría congelado en
+pantalla hasta que el host tocara cualquier otra cosa, y un panel que miente es peor que no tenerlo.
+
+Las que llevan texto del host —el motivo de un movimiento, la nota de una restricción— avisan con
+**texto fijo** («Movimiento en el banco»): la cifra ya está en el panel, que es estructurado y se
+acaba de refrescar, así que el aviso solo tiene que decir que mires.
+
+También dejó de exigirse `sessionId` para publicar: el banco y el catálogo se tocan desde Economía y
+Ajustes, que no cuelgan de una copa, y `cargarEnVivo` busca la sesión abierta por su cuenta.
+
+#### El coste
+
+El payload pasó de ~1 kB a **~3,6 kB** medidos con el banco real de 43 cuentas, y se difunde a cada
+acción del host a hasta 200 espectadores. Son unos 700 kB por acción contra los 200 de antes. Entra
+de sobra en la cuota de mensajes del plan, pero conviene saberlo si algún día el banco crece mucho:
+lo que se recorta primero es el banco, no los equipos.
+
 ### A6. Banco de bits/subs: cuenta unificada
 
 §14–§15 piden que un *supporter* que no juega tenga saldo. Se modela como `ledger_account` que apunta
@@ -390,7 +448,10 @@ Eso es exactamente el árbol de decisión de §28.
 
 - `anon`: `SELECT` solo sobre `public_tier_ranking`, `public_roster` y `public_session_live`.
 - `public_session_live` (para la vista en vivo del MVP) expone **solo**: número de sesión, estado, modo,
-  composición de equipos con nombre/rol/elo, marcador de partidas y última acción. **Nunca** bits, saldos,
-  préstamos, cárcel, restricciones ni notas.
+  composición de equipos con nombre/rol/elo, marcador de partidas y última acción.
+
+  **Ampliado el 17 de septiembre de 2026 — ver A11.** La vista en vivo enseña además los precios de
+  las recompensas, el banco entero, la cárcel y las restricciones. **Siguen fuera** los préstamos,
+  las notas del host y el historial de canjeos.
 - `authenticated` (host): sin escritura directa; todas las mutaciones pasan por `server/api/*` con
   `service_role`, que valida rol de host, reglas de negocio y escribe `action_log`.

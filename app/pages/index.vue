@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CANAL_TWITCH_NOMBRE } from '#shared/enlaces'
+import { CANAL_TWITCH_NOMBRE, DISCORD_DEV } from '#shared/enlaces'
 
 // Los administra el host en /host/ajustes; el layout ya los cargó.
 const { twitch, paypal } = useEnlaces()
@@ -105,6 +105,14 @@ const modes = [
           Va al desarrollador de la página, no a los premios del torneo. El pago lo gestiona PayPal
           en su propia página.
         </p>
+
+        <!-- Separado del aviso de PayPal por una línea: son dos cosas
+             distintas —una advierte, la otra ofrece— y juntas se leían como
+             la misma letra pequeña. -->
+        <p class="dona__curro">
+          ¿Quieres una página como esta? La desarrollo yo. Escríbeme por Discord:
+          <b>{{ DISCORD_DEV }}</b>
+        </p>
       </div>
     </section>
   </div>
@@ -152,6 +160,24 @@ const modes = [
   font-size: 10.5px;
   line-height: 1.7;
   color: var(--dim);
+}
+
+.dona__curro {
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.dona__curro b {
+  /* El usuario de Discord se copia a mano, así que se pinta como algo que se
+     copia: monoespaciado, y con su propio color para que se vea dónde acaba. */
+  font-family: var(--f-mono);
+  font-weight: 600;
+  color: var(--text);
+  user-select: all;
 }
 
 .hero {

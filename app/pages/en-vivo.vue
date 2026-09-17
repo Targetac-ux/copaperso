@@ -25,12 +25,36 @@ useSeoMeta({
 })
 
 const { estado, conexion } = useEnVivo()
-const { enabled: sonido, chime, toggle: alternarSonido } = useTicTac({
+const {
+  enabled: sonido,
+  chime,
+  toggle: alternarSonido,
+} = useTicTac({
   clave: 'copaperso:aviso-publico',
   estado: 'aviso-publico',
 })
 
 /** En ARAM AFK no hay posiciones, así que tampoco se enseñan aquí. */
+/**
+ * Cárcel y restricciones en una sola lista.
+ *
+ * Son dos tablas distintas por dentro, pero para quien mira es lo mismo: a
+ * quién le pesa algo esta noche. Dos paneles casi vacíos al lado uno del otro
+ * se leían como un error de maquetación.
+ *
+ * Y sin repetir a nadie: la cárcel importada del Excel vive como restricción
+ * `CARCEL`, así que quien esté en las dos saldría dos veces con el mismo texto.
+ */
+const castigos = computed(() => {
+  const vistos = new Set<string>()
+  return [...estado.value.carcel, ...estado.value.restricciones].filter((c) => {
+    const clave = `${c.displayName}·${c.texto}`
+    if (vistos.has(clave)) return false
+    vistos.add(clave)
+    return true
+  })
+})
+
 const conRoles = computed(() =>
   estado.value?.sesion ? importanLosRoles(estado.value.sesion.mode as SessionMode) : true,
 )
@@ -167,6 +191,50 @@ const huecos = (n: number) => Math.max(0, 5 - n)
           </li>
         </ul>
       </section>
+
+      <!--
+        Los paneles de negociación **no salen en el overlay de OBS**: son para
+        que los jugadores los miren en la web mientras negocian. El host ve
+        todo esto, y más, en el CCTM. En una esquina del stream no cabrían, y
+        lo que el stream necesita enseñar son los equipos y el marcador.
+      -->
+      <div v-if="!overlay" class="paneles">
+        <section v-if="estado.recompensas.length" class="panel">
+          <h2>
+            Recompensas
+            <i v-if="estado.preciosTriplicados" class="x3">×3</i>
+          </h2>
+          <ul class="precios">
+            <li v-for="r in estado.recompensas" :key="r.codigo">
+              <span>{{ r.etiqueta }}</span>
+              <b>{{ r.precio.toLocaleString('es-MX') }}</b>
+            </li>
+          </ul>
+        </section>
+
+        <section v-if="estado.banco.length" class="panel panel--banco">
+          <h2>Banco</h2>
+          <ul class="saldos">
+            <li v-for="c in estado.banco" :key="c.displayName">
+              <span>{{ c.displayName }}</span>
+              <b>
+                {{ c.bits.toLocaleString('es-MX') }}
+                <em v-if="c.subs">+{{ c.subs }} sub{{ c.subs === 1 ? '' : 's' }}</em>
+              </b>
+            </li>
+          </ul>
+        </section>
+
+        <section v-if="castigos.length" class="panel">
+          <h2>Cárcel y restricciones</h2>
+          <ul class="castigos">
+            <li v-for="(c, i) in castigos" :key="`${c.displayName}-${i}`">
+              <span>{{ c.displayName }}</span>
+              <i>{{ c.texto }}</i>
+            </li>
+          </ul>
+        </section>
+      </div>
 
       <p v-if="estado.ultimaAccion" class="ultima">
         <span class="etq">Último movimiento</span>
@@ -431,11 +499,21 @@ const huecos = (n: number) => Math.max(0, 5 - n)
   color: var(--dim);
 }
 
-.rol--top { color: var(--rol-top); }
-.rol--jg { color: var(--rol-jg); }
-.rol--mid { color: var(--rol-mid); }
-.rol--adc { color: var(--rol-adc); }
-.rol--sup { color: var(--rol-sup); }
+.rol--top {
+  color: var(--rol-top);
+}
+.rol--jg {
+  color: var(--rol-jg);
+}
+.rol--mid {
+  color: var(--rol-mid);
+}
+.rol--adc {
+  color: var(--rol-adc);
+}
+.rol--sup {
+  color: var(--rol-sup);
+}
 
 .nombre {
   font-size: 14px;
@@ -451,6 +529,92 @@ const huecos = (n: number) => Math.max(0, 5 - n)
   font-size: 9px;
   text-transform: uppercase;
   color: var(--gold);
+}
+
+/**
+ * Los tres paneles de negociación.
+ *
+ * En tres columnas mientras quepan, y apilados por debajo de 860 px — es la
+ * misma rotura que ya usan los equipos, y así el teléfono no acaba con tres
+ * columnas de un dedo de ancho. El banco lleva su propio alto máximo: con 43
+ * cuentas, sin él empuja el resto de la página fuera de la pantalla.
+ */
+.paneles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 9px 12px 11px;
+  min-width: 0;
+}
+.panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin: 0 0 7px;
+}
+.panel h2 .x3 {
+  font-style: normal;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+}
+.panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.panel li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.panel li + li {
+  border-top: 1px solid var(--line-soft);
+}
+/* El nombre cede y se corta; la cifra nunca, que es lo que se viene a leer. */
+.panel li span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.panel li b {
+  flex: none;
+  font-family: var(--f-mono);
+  font-weight: 600;
+  color: var(--text);
+}
+.panel li i {
+  flex: none;
+  font-style: normal;
+  font-size: 11px;
+  color: var(--dim);
+}
+.panel li em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--gold);
+}
+.precios b {
+  color: var(--gold);
+}
+.panel--banco ul {
+  max-height: 260px;
+  overflow-y: auto;
 }
 
 .banca {
@@ -503,8 +667,17 @@ const huecos = (n: number) => Math.max(0, 5 - n)
   gap: 9px;
 }
 
+/* Tres columnas de paneles se quedan sin ancho antes que los equipos: aquí
+   caben dos, y en el móvil de verdad se apilan con todo lo demás. */
+@media (max-width: 860px) {
+  .paneles {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 620px) {
-  .equipos {
+  .equipos,
+  .paneles {
     grid-template-columns: 1fr;
   }
 
