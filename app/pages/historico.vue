@@ -27,7 +27,6 @@ interface Fila {
 
 interface Mes {
   periodo: string
-  importadoDe: string | null
   filas: Fila[]
 }
 
@@ -60,10 +59,7 @@ const totales = computed(() => {
     <header class="hist__cab">
       <p class="eyebrow">CopaPerso</p>
       <h1>Histórico</h1>
-      <p class="hist__txt">
-        El roster de cada mes. El LP se reinicia al empezar el mes, así que los meses no se suman
-        entre sí: cada uno cuenta su propia historia.
-      </p>
+      <p class="hist__txt">Roster por mes con los stats de todos los bebetos que participan.</p>
     </header>
 
     <p v-if="!data.meses.length" class="hist__vacio">
@@ -86,14 +82,6 @@ const totales = computed(() => {
       <p class="hist__resumen">
         {{ totales.jugadores }} {{ totales.jugadores === 1 ? 'jugador' : 'jugadores' }} ·
         {{ totales.partidas }} participaciones en partida
-      </p>
-
-      <!-- Una victoria de febrero y una de octubre no están respaldadas por lo
-           mismo: la de febrero es un total que el host llevaba a mano. El panel
-           del host lo avisa desde el primer día y aquí tiene que decirse igual. -->
-      <p v-if="mes.importadoDe" class="hist__importado">
-        Este mes viene de la hoja de cálculo que se llevaba antes: las cifras son los totales que
-        había en ella, no partidas registradas aquí.
       </p>
 
       <div class="tabla-caja">
@@ -203,19 +191,6 @@ const totales = computed(() => {
   letter-spacing: 0.04em;
   color: var(--dim);
   margin: 0 0 10px;
-}
-
-.hist__importado {
-  font-size: 12.5px;
-  line-height: 1.6;
-  color: var(--dim);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-left: 2px solid var(--gold);
-  border-radius: var(--r-sm);
-  padding: 9px 13px;
-  margin: 0 0 14px;
-  max-width: 68ch;
 }
 
 /* La tabla se desplaza dentro de su caja en vez de ensanchar la página: en

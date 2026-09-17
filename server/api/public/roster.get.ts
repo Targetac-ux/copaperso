@@ -16,31 +16,11 @@ import type { Database } from '#shared/types/database.types'
 export default defineEventHandler(async (event) => {
   const db = serverSupabaseServiceRole<Database>(event)
 
-  /**
-   * Las cifras salen de la vista pública; la procedencia del mes, de la tabla.
-   *
-   * `imported_from` **no se añade a `public_roster`** a propósito. Es un dato
-   * del mes, no de cada jugador: en la vista se repetiría en las 476 filas y
-   * habría que recrearla —con su migración, su `grant` y su test— para pintar
-   * un aviso. Aquí se pregunta aparte, que es una consulta más en el servidor
-   * y ni un byte más para quien visita la página.
-   */
-  const [{ data, error }, { data: importados }] = await Promise.all([
-    db
-      .from('public_roster')
-      .select('period_name, display_name, photo_url, current_lp, wins, losses, mvps, aces'),
-    db.from('participation').select('imported_from, period(name)').not('imported_from', 'is', null),
-  ])
+  const { data, error } = await db
+    .from('public_roster')
+    .select('period_name, display_name, photo_url, current_lp, wins, losses, mvps, aces')
 
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-
-  const deExcel = new Map<string, string>()
-  for (const p of (importados ?? []) as unknown as {
-    imported_from: string
-    period: { name: string } | null
-  }[]) {
-    if (p.period?.name) deExcel.set(p.period.name, p.imported_from)
-  }
 
   type Fila = {
     period_name: string
@@ -55,10 +35,7 @@ export default defineEventHandler(async (event) => {
 
   const filas = (data ?? []) as unknown as Fila[]
 
-  const meses = new Map<
-    string,
-    { periodo: string; importadoDe: string | null; filas: ReturnType<typeof aFila>[] }
-  >()
+  const meses = new Map<string, { periodo: string; filas: ReturnType<typeof aFila>[] }>()
 
   function aFila(f: Fila) {
     return {
@@ -76,11 +53,7 @@ export default defineEventHandler(async (event) => {
   }
 
   for (const f of filas) {
-    const mes = meses.get(f.period_name) ?? {
-      periodo: f.period_name,
-      importadoDe: deExcel.get(f.period_name) ?? null,
-      filas: [],
-    }
+    const mes = meses.get(f.period_name) ?? { periodo: f.period_name, filas: [] }
     mes.filas.push(aFila(f))
     meses.set(f.period_name, mes)
   }

@@ -808,12 +808,12 @@ de mes y las mismas cifras que ve el host.
 
 - Los porcentajes salen de `winratePct` y `formatWinrate` de `shared/roster.ts`, las mismas que usan
   el panel y el CSV. Una fórmula propia aquí acabaría diciendo un número distinto del mismo jugador.
-- **`imported_from` no se añadió a la vista.** Es un dato del mes, no de cada jugador: en la vista se
-  repetiría en las 476 filas y habría obligado a recrearla con su migración, su `grant` y su test
-  para pintar un aviso. El endpoint lo pregunta aparte, que es una consulta más en el servidor y ni
-  un byte más para quien visita la página.
-- Los meses importados llevan su aviso, igual que en `/host/roster`: una victoria de febrero es un
-  total que el host llevaba a mano, no una partida registrada.
+- **La página pública no avisa de qué meses vienen del Excel**, y es decisión del host: al
+  espectador le da igual de dónde salió la cifra, y la advertencia solo ocupaba sitio. El aviso
+  sigue en `/host/roster`, que es donde importa — quien revisa un mes sí tiene que saber si esas
+  victorias son totales de una hoja o partidas registradas aquí.
+- Por eso `imported_from` tampoco se consulta: al quitarse el aviso, la consulta que lo alimentaba
+  se quedó sin para qué y salió con él. La vista `public_roster` nunca llegó a tocarse.
 
 **Tier rankings de meses pasados.** `POST /api/tiers` acepta `period_id` y el panel tiene un
 selector junto a «Empezar desde el mes». Con los 476 históricos ya en la base, la edición de marzo
