@@ -1380,10 +1380,10 @@
     "semantic_hash": "82efb97a359f5c7290bf2513d14686be"
   },
   "README.md": {
-    "mtime": 1789667178.2673082,
-    "seen": 1789759690.705924,
-    "ast_hash": "af3eb6da6ecb19bf692b432bce52a8ac",
-    "semantic_hash": "af3eb6da6ecb19bf692b432bce52a8ac"
+    "mtime": 1790028634.3881958,
+    "seen": 1790028643.03858,
+    "ast_hash": "8e39d511a18ef5c8b0db613a33c189f7",
+    "semantic_hash": ""
   },
   "docs/01-decisiones-tecnicas.md": {
     "mtime": 1788465022.5851533,
@@ -1432,5 +1432,473 @@
     "seen": 1789759690.7059278,
     "ast_hash": "d1cddb2e796da03beb2170078719089e",
     "semantic_hash": "d1cddb2e796da03beb2170078719089e"
+  },
+  "assets/backgrounds/hero-bg.jpg": {
+    "mtime": 1788823560.460016,
+    "seen": 1790028643.0385861,
+    "ast_hash": "33e6e94957bb1bb566d5fcec7c0bd3b5",
+    "semantic_hash": ""
+  },
+  "assets/backgrounds/textura.png": {
+    "mtime": 1788823670.5176325,
+    "seen": 1790028643.0385869,
+    "ast_hash": "b1843e7cf086d2cd1ec68db767a9988c",
+    "semantic_hash": ""
+  },
+  "assets/brand/favicon.png": {
+    "mtime": 1788910244.968968,
+    "seen": 1790028643.0385869,
+    "ast_hash": "9c1ca1cf6af5881de88f40144d98150b",
+    "semantic_hash": ""
+  },
+  "assets/brand/isotipo.svg": {
+    "mtime": 1788911297.0086997,
+    "seen": 1790028643.0385878,
+    "ast_hash": "dcf01b9cbebd2ba157c9a8b64787a606",
+    "semantic_hash": ""
+  },
+  "assets/brand/isotipo.webp": {
+    "mtime": 1789660031.940772,
+    "seen": 1790028643.0385878,
+    "ast_hash": "e8286073a42f0454ffef201c3a10f5ec",
+    "semantic_hash": ""
+  },
+  "assets/brand/keyart-cuadrado.png": {
+    "mtime": 1788566249.4221122,
+    "seen": 1790028643.038589,
+    "ast_hash": "8ad8adb4fe45491644368ac1e1469d1e",
+    "semantic_hash": ""
+  },
+  "assets/brand/keyart.png": {
+    "mtime": 1789058234.503699,
+    "seen": 1790028643.038589,
+    "ast_hash": "fc92189b3695794b6dcf904bb7491162",
+    "semantic_hash": ""
+  },
+  "assets/brand/logo-horizontal-light.svg": {
+    "mtime": 1788969655.0297964,
+    "seen": 1790028643.03859,
+    "ast_hash": "4ca6ea2a8a5c737cd7dfff93072cd46b",
+    "semantic_hash": ""
+  },
+  "assets/brand/logo-horizontal.svg": {
+    "mtime": 1788914111.3966374,
+    "seen": 1790028643.03859,
+    "ast_hash": "46fcbc5ceb4a353ca8845d06b5d687b2",
+    "semantic_hash": ""
+  },
+  "assets/brand/og-image.png": {
+    "mtime": 1788823470.2545097,
+    "seen": 1790028643.038591,
+    "ast_hash": "d8ad88180ea9c35bc4fef85596e07fe2",
+    "semantic_hash": ""
+  },
+  "assets/brand/trofeo-hero.png": {
+    "mtime": 1788815497.9622517,
+    "seen": 1790028643.038591,
+    "ast_hash": "5e7333d4238c63f8964ddf14d07c21b1",
+    "semantic_hash": ""
+  },
+  "assets/modes/copa-analisis.svg": {
+    "mtime": 1788910856.1020484,
+    "seen": 1790028643.038592,
+    "ast_hash": "3ba72fc7894b647ec3f59aa069d00075",
+    "semantic_hash": ""
+  },
+  "assets/modes/copa-aram-afk.svg": {
+    "mtime": 1788969912.7757797,
+    "seen": 1790028643.038592,
+    "ast_hash": "ac51a4eed723cfe9a5f19d1fca4de80f",
+    "semantic_hash": ""
+  },
+  "assets/modes/copa-perso.svg": {
+    "mtime": 1788825166.388136,
+    "seen": 1790028643.038592,
+    "ast_hash": "1ab64213ed8f47e6040f0a54fdceebd8",
+    "semantic_hash": ""
+  },
+  "assets/modes/copa-random.svg": {
+    "mtime": 1788969958.7479384,
+    "seen": 1790028643.038593,
+    "ast_hash": "01c8068208e04df40d28ea9dc307200d",
+    "semantic_hash": ""
+  },
+  "assets/modes/copa-tryhard.svg": {
+    "mtime": 1788969991.028896,
+    "seen": 1790028643.038593,
+    "ast_hash": "19cb2dce8d409225206817ce8d8853b8",
+    "semantic_hash": ""
+  },
+  "assets/tiers/tier-a.svg": {
+    "mtime": 1788987046.34944,
+    "seen": 1790028643.038594,
+    "ast_hash": "227e8a5510e5b09276a29172c6e6535e",
+    "semantic_hash": ""
+  },
+  "assets/tiers/tier-b.svg": {
+    "mtime": 1789486583.086847,
+    "seen": 1790028643.038594,
+    "ast_hash": "f7bf138cf9fcefc45664c26a38e83b8e",
+    "semantic_hash": ""
+  },
+  "assets/tiers/tier-c.svg": {
+    "mtime": 1789424443.5040972,
+    "seen": 1790028643.038594,
+    "ast_hash": "c868181e705c980db7d6966e9f11b617",
+    "semantic_hash": ""
+  },
+  "assets/tiers/tier-d.svg": {
+    "mtime": 1789424527.117781,
+    "seen": 1790028643.038595,
+    "ast_hash": "06c57ec5fc48014e76dfca1c0731b4c0",
+    "semantic_hash": ""
+  },
+  "assets/tiers/tier-s-plus.svg": {
+    "mtime": 1789428545.6630979,
+    "seen": 1790028643.038595,
+    "ast_hash": "0c716431e706a05e05b7983b61947f07",
+    "semantic_hash": ""
+  },
+  "assets/tiers/tier-s.svg": {
+    "mtime": 1789427950.3676476,
+    "seen": 1790028643.0385962,
+    "ast_hash": "50c586c6e91f9944bb2a1a86c977a1cb",
+    "semantic_hash": ""
+  },
+  "assets/ui/ace.svg": {
+    "mtime": 1789428723.3782287,
+    "seen": 1790028643.0385962,
+    "ast_hash": "bfa0adc66cae781252dbe8197a59c374",
+    "semantic_hash": ""
+  },
+  "assets/ui/avatar-default.png": {
+    "mtime": 1788979210.2724183,
+    "seen": 1790028643.038597,
+    "ast_hash": "513f1e642176f4b940e871759121376b",
+    "semantic_hash": ""
+  },
+  "assets/ui/bits.svg": {
+    "mtime": 1789428789.1744735,
+    "seen": 1790028643.038597,
+    "ast_hash": "c95030849454cb66fba4eacbd5dad196",
+    "semantic_hash": ""
+  },
+  "assets/ui/blue-shell.png": {
+    "mtime": 1788978528.6151986,
+    "seen": 1790028643.038597,
+    "ast_hash": "d11a5ec9f6a0674345761c6c479cf6e7",
+    "semantic_hash": ""
+  },
+  "assets/ui/blue-shell.svg": {
+    "mtime": 1789428815.3977835,
+    "seen": 1790028643.0385978,
+    "ast_hash": "71007effe5ca322a47c4f9083678754c",
+    "semantic_hash": ""
+  },
+  "assets/ui/carcel.svg": {
+    "mtime": 1789428839.4126275,
+    "seen": 1790028643.0385978,
+    "ast_hash": "4f9f17c54bd40fa2ff5e68290700d0d4",
+    "semantic_hash": ""
+  },
+  "assets/ui/cementerio.svg": {
+    "mtime": 1789428857.0286481,
+    "seen": 1790028643.038599,
+    "ast_hash": "3474b4ba0ed67128c170469cfcafe312",
+    "semantic_hash": ""
+  },
+  "assets/ui/dado.svg": {
+    "mtime": 1789428886.2958674,
+    "seen": 1790028643.038599,
+    "ast_hash": "b3a02c439e8fe76e4287e5a25feefc0c",
+    "semantic_hash": ""
+  },
+  "assets/ui/mvp.svg": {
+    "mtime": 1789429005.6168919,
+    "seen": 1790028643.038599,
+    "ast_hash": "ef0288cbe124e0b878cb4e728b47a043",
+    "semantic_hash": ""
+  },
+  "assets/ui/premio-1.png": {
+    "mtime": 1788979616.9862065,
+    "seen": 1790028643.0386,
+    "ast_hash": "afb8394d5cb780efb17d467443082f23",
+    "semantic_hash": ""
+  },
+  "assets/ui/premio-2.png": {
+    "mtime": 1788979654.3050447,
+    "seen": 1790028643.038601,
+    "ast_hash": "083f9c866922ec434b6a581460235c67",
+    "semantic_hash": ""
+  },
+  "assets/ui/premio-3.png": {
+    "mtime": 1788979686.3069928,
+    "seen": 1790028643.038601,
+    "ast_hash": "ff7bd1204fc8ff4530e287c61e326d60",
+    "semantic_hash": ""
+  },
+  "assets/ui/prestamo.svg": {
+    "mtime": 1789429203.3066754,
+    "seen": 1790028643.038601,
+    "ast_hash": "d748067873fec2df712b9e0a773eb0b7",
+    "semantic_hash": ""
+  },
+  "assets/ui/sub.svg": {
+    "mtime": 1789429105.7130582,
+    "seen": 1790028643.0386019,
+    "ast_hash": "e4c920cc36439fe6c28c1ab5818212e1",
+    "semantic_hash": ""
+  },
+  "public/backgrounds/textura.webp": {
+    "mtime": 1789660038.8160388,
+    "seen": 1790028643.0386019,
+    "ast_hash": "0391c09e9bcf2c43173d03e8c6cc354b",
+    "semantic_hash": ""
+  },
+  "public/brand/favicon-180.png": {
+    "mtime": 1789660038.407336,
+    "seen": 1790028643.038603,
+    "ast_hash": "3fa9060e97b6b77a1e122dc5cac41ed2",
+    "semantic_hash": ""
+  },
+  "public/brand/favicon-32.png": {
+    "mtime": 1789660038.3920228,
+    "seen": 1790028643.038603,
+    "ast_hash": "1f264a25e4f37fc4cfeb00df5029b3eb",
+    "semantic_hash": ""
+  },
+  "public/brand/favicon-512.png": {
+    "mtime": 1789660038.4398284,
+    "seen": 1790028643.038604,
+    "ast_hash": "9cdcffe7d260b2caae1b3d0ab9bb0be9",
+    "semantic_hash": ""
+  },
+  "public/brand/isotipo.webp": {
+    "mtime": 1789660038.2829747,
+    "seen": 1790028643.038604,
+    "ast_hash": "f5cbe0005dffff5d283979e15d69c4e2",
+    "semantic_hash": ""
+  },
+  "public/brand/keyart-900.webp": {
+    "mtime": 1789660038.5681238,
+    "seen": 1790028643.038604,
+    "ast_hash": "8fed0eb034d63b79a55c694e7218df80",
+    "semantic_hash": ""
+  },
+  "public/brand/keyart.jpg": {
+    "mtime": 1789660038.65069,
+    "seen": 1790028643.038605,
+    "ast_hash": "e52687e31902ee332b668eeee10480bb",
+    "semantic_hash": ""
+  },
+  "public/brand/keyart.webp": {
+    "mtime": 1789660038.519302,
+    "seen": 1790028643.038605,
+    "ast_hash": "4178b26d8b0510a67d67d396178a2597",
+    "semantic_hash": ""
+  },
+  "public/brand/logo-horizontal-light.svg": {
+    "mtime": 1789660038.374488,
+    "seen": 1790028643.0386062,
+    "ast_hash": "d10f0eda25c88efd009737a7382ad82b",
+    "semantic_hash": ""
+  },
+  "public/brand/logo-horizontal.svg": {
+    "mtime": 1789660038.3330815,
+    "seen": 1790028643.0386062,
+    "ast_hash": "fcd28e500d94eb05d41a765babce047c",
+    "semantic_hash": ""
+  },
+  "public/brand/og-image.jpg": {
+    "mtime": 1789660038.755759,
+    "seen": 1790028643.0386071,
+    "ast_hash": "382c85e4a7308a643c6e5e2987069a6b",
+    "semantic_hash": ""
+  },
+  "public/brand/trofeo-hero.webp": {
+    "mtime": 1789660038.7178004,
+    "seen": 1790028643.0386071,
+    "ast_hash": "a3f0eaa3ad34ae0c5f0f10806f241272",
+    "semantic_hash": ""
+  },
+  "public/favicon.png": {
+    "mtime": 1789660038.3862543,
+    "seen": 1790028643.0386078,
+    "ast_hash": "876f43de6ea96abcd9bd6d16066d5e54",
+    "semantic_hash": ""
+  },
+  "public/modes/copa-analisis.webp": {
+    "mtime": 1789660039.3416371,
+    "seen": 1790028643.0386078,
+    "ast_hash": "fdd2069e812b9f260238bbc3780ab77b",
+    "semantic_hash": ""
+  },
+  "public/modes/copa-aram-afk.webp": {
+    "mtime": 1789660039.3494408,
+    "seen": 1790028643.0386078,
+    "ast_hash": "06d3d58db5b5f641b68419541f272012",
+    "semantic_hash": ""
+  },
+  "public/modes/copa-perso.webp": {
+    "mtime": 1789660039.3221347,
+    "seen": 1790028643.0386088,
+    "ast_hash": "82fc195acfa83196881b8fdc030f47eb",
+    "semantic_hash": ""
+  },
+  "public/modes/copa-random.webp": {
+    "mtime": 1789660039.3355553,
+    "seen": 1790028643.0386088,
+    "ast_hash": "84434369b16502e13976689af53a5cde",
+    "semantic_hash": ""
+  },
+  "public/modes/copa-tryhard.webp": {
+    "mtime": 1789660039.3274226,
+    "seen": 1790028643.03861,
+    "ast_hash": "02facb357544cd5938992e9ad20aeeca",
+    "semantic_hash": ""
+  },
+  "public/tiers/tier-a.svg": {
+    "mtime": 1789660039.4008808,
+    "seen": 1790028643.03861,
+    "ast_hash": "3ac6d36f2ca736e41e1038d24f575225",
+    "semantic_hash": ""
+  },
+  "public/tiers/tier-b.svg": {
+    "mtime": 1789660039.4422402,
+    "seen": 1790028643.038611,
+    "ast_hash": "2d1c8f9e2852d43688728e75e48a0f9a",
+    "semantic_hash": ""
+  },
+  "public/tiers/tier-c.svg": {
+    "mtime": 1789660039.484261,
+    "seen": 1790028643.038611,
+    "ast_hash": "d8b9a3a4ae84143dde76f2eaa135d533",
+    "semantic_hash": ""
+  },
+  "public/tiers/tier-d.svg": {
+    "mtime": 1789660039.5011582,
+    "seen": 1790028643.038611,
+    "ast_hash": "016b2c6321706e99d517a794a17ff841",
+    "semantic_hash": ""
+  },
+  "public/tiers/tier-s-plus.svg": {
+    "mtime": 1789660039.5800683,
+    "seen": 1790028643.038612,
+    "ast_hash": "d628658c73b6327db6d3eafcf8bb2546",
+    "semantic_hash": ""
+  },
+  "public/tiers/tier-s.svg": {
+    "mtime": 1789660039.7211561,
+    "seen": 1790028643.038612,
+    "ast_hash": "ad8d1e085de3c3458ced91daf7dac0be",
+    "semantic_hash": ""
+  },
+  "public/ui/ace.svg": {
+    "mtime": 1789660039.7756402,
+    "seen": 1790028643.038613,
+    "ast_hash": "646f4aad28a38e953fd1d423c0ff5b48",
+    "semantic_hash": ""
+  },
+  "public/ui/avatar-default.png": {
+    "mtime": 1789660038.9428833,
+    "seen": 1790028643.038613,
+    "ast_hash": "e3dc3861a29b7756f9608ed80eec2f35",
+    "semantic_hash": ""
+  },
+  "public/ui/avatar-default.webp": {
+    "mtime": 1789660038.919747,
+    "seen": 1790028643.038614,
+    "ast_hash": "f1bc11a5161aa36f5493463fcc039814",
+    "semantic_hash": ""
+  },
+  "public/ui/bits.svg": {
+    "mtime": 1789660039.9347434,
+    "seen": 1790028643.038614,
+    "ast_hash": "b8dfec3c23360fa432a316486fdf69ea",
+    "semantic_hash": ""
+  },
+  "public/ui/blue-shell.png": {
+    "mtime": 1789660038.9053977,
+    "seen": 1790028643.038615,
+    "ast_hash": "fde4a61200bbb8fde83e16c581a7910f",
+    "semantic_hash": ""
+  },
+  "public/ui/blue-shell.webp": {
+    "mtime": 1789660038.8522298,
+    "seen": 1790028643.038615,
+    "ast_hash": "85efab6103cbe3e6e79e0d01bdfc4d3c",
+    "semantic_hash": ""
+  },
+  "public/ui/carcel.svg": {
+    "mtime": 1789660039.9377885,
+    "seen": 1790028643.038615,
+    "ast_hash": "51e31c578d3d15174ad2be7a44bfeea4",
+    "semantic_hash": ""
+  },
+  "public/ui/cementerio.svg": {
+    "mtime": 1789660039.9411306,
+    "seen": 1790028643.0386162,
+    "ast_hash": "829d64c3591f5d42c1f50209c23b8fb9",
+    "semantic_hash": ""
+  },
+  "public/ui/dado.svg": {
+    "mtime": 1789660039.9446604,
+    "seen": 1790028643.0386162,
+    "ast_hash": "f3feefc60a58e0708bcee1fb67a44d45",
+    "semantic_hash": ""
+  },
+  "public/ui/mvp.svg": {
+    "mtime": 1789660039.953635,
+    "seen": 1790028643.0386171,
+    "ast_hash": "4bf0d7a6404828cc613c2732b7c2bcfd",
+    "semantic_hash": ""
+  },
+  "public/ui/premio-1.png": {
+    "mtime": 1789660039.0693972,
+    "seen": 1790028643.0386171,
+    "ast_hash": "293db91a697d3df884d85dc6bfb86451",
+    "semantic_hash": ""
+  },
+  "public/ui/premio-1.webp": {
+    "mtime": 1789660038.9702723,
+    "seen": 1790028643.0386171,
+    "ast_hash": "18b588aaa36de9d2e1f41ea3f9a836ef",
+    "semantic_hash": ""
+  },
+  "public/ui/premio-2.png": {
+    "mtime": 1789660039.1848586,
+    "seen": 1790028643.038618,
+    "ast_hash": "db801fac75f6280ff63e75b85723066c",
+    "semantic_hash": ""
+  },
+  "public/ui/premio-2.webp": {
+    "mtime": 1789660039.097366,
+    "seen": 1790028643.038618,
+    "ast_hash": "3b9a7a6870dbd87dabcf07544742c737",
+    "semantic_hash": ""
+  },
+  "public/ui/premio-3.png": {
+    "mtime": 1789660039.3169014,
+    "seen": 1790028643.0386188,
+    "ast_hash": "dd07614f8dd724fe7adfd7bda602d78a",
+    "semantic_hash": ""
+  },
+  "public/ui/premio-3.webp": {
+    "mtime": 1789660039.2131302,
+    "seen": 1790028643.0386188,
+    "ast_hash": "83eed5b1b6af9cd49655eb609b2d501c",
+    "semantic_hash": ""
+  },
+  "public/ui/prestamo.svg": {
+    "mtime": 1789660039.9577267,
+    "seen": 1790028643.03862,
+    "ast_hash": "25e4353de88b874a2313f3eeb3c59b6c",
+    "semantic_hash": ""
+  },
+  "public/ui/sub.svg": {
+    "mtime": 1789660039.9941142,
+    "seen": 1790028643.03862,
+    "ast_hash": "a5bbd487dadacb03518a4db683a7ce3c",
+    "semantic_hash": ""
   }
 }
